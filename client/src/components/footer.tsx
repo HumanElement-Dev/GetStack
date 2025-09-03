@@ -9,7 +9,19 @@ export default function Footer() {
             </div>
             <span className="text-foreground font-medium">GetStack</span>
           </div>
-          <p className="text-sm text-muted-foreground">© 2025 GetStack. A [HumanElement] Idea</p>
+          <p className="text-sm text-muted-foreground">
+            © 2025 GetStack. A{" "}
+            <a 
+              href="https://humanelement.agency" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-primary hover:text-blue-600 transition-colors duration-200 font-medium"
+              data-testid="link-humanelement"
+            >
+              HumanElement
+            </a>{" "}
+            Idea
+          </p>
         </div>
       </div>
     </footer>
