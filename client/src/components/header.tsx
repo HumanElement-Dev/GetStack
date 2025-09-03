@@ -6,7 +6,7 @@ export default function Header() {
           {/* Logo */}
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-[#2563eb00]">
-              <i className="fas fa-layer-group text-sm text-[#000000]"></i>
+              <i className="fas fa-layer-group text-lg text-[#000000]"></i>
             </div>
             <span className="text-xl font-semibold text-foreground">GetStack</span>
           </div>
