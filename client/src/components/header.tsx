@@ -5,7 +5,7 @@ export default function Header() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-[#2563eb00]">
               <i className="fas fa-layer-group text-primary-foreground text-sm"></i>
             </div>
             <span className="text-xl font-semibold text-foreground">GetStack</span>
