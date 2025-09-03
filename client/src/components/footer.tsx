@@ -9,9 +9,7 @@ export default function Footer() {
             </div>
             <span className="text-foreground font-medium">GetStack</span>
           </div>
-          <p className="text-sm text-muted-foreground">
-            © 2024 GetStack. Built with modern web technologies.
-          </p>
+          <p className="text-sm text-muted-foreground">© 2025 GetStack. A [HumanElement] Idea</p>
         </div>
       </div>
     </footer>
