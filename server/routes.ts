@@ -40,20 +40,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         let pluginCount = null;
         let technologies: string[] = [];
 
-        // Check for WordPress indicators in headers
+        // Check for WordPress indicators in headers (very specific)
         const generator = response.headers.get('x-generator') || response.headers.get('generator');
-        if (generator && generator.toLowerCase().includes('wordpress')) {
+        if (generator && /^WordPress\s+[\d\.]+/i.test(generator)) {
           isWordPress = true;
-          const versionMatch = generator.match(/wordpress\s+([\d\.]+)/i);
+          const versionMatch = generator.match(/WordPress\s+([\d\.]+)/i);
           if (versionMatch) {
             wordPressVersion = versionMatch[1];
           }
+          console.log(`WordPress detected via header: ${generator}`);
         }
 
-        // Check for common WordPress headers
+        // Check for WordPress in X-Powered-By header (must be exact)
         const poweredBy = response.headers.get('x-powered-by');
-        if (poweredBy && poweredBy.toLowerCase().includes('wordpress')) {
+        if (poweredBy && /^WordPress/i.test(poweredBy)) {
           isWordPress = true;
+          console.log(`WordPress detected via X-Powered-By: ${poweredBy}`);
         }
 
         // If HEAD request didn't give us enough info, try GET request for content analysis
@@ -69,50 +71,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
             const content = await fullResponse.text();
             
-            // More precise WordPress detection - require multiple strong indicators
+            // Very strict WordPress detection - require concrete evidence
             let wpScore = 0;
-            const strongIndicators = [];
+            const detectedIndicators = [];
             
-            // Strong WordPress indicators (each worth 2 points)
-            if (/wp-content\/themes\//i.test(content)) {
-              wpScore += 2;
-              strongIndicators.push('wp-content/themes');
+            // Only the most reliable WordPress indicators
+            
+            // WordPress generator meta tag (strongest indicator)
+            if (/<meta[^>]*name=["']generator["'][^>]*content=["'][^"']*WordPress[^"']*["']/i.test(content)) {
+              wpScore += 4;
+              detectedIndicators.push('WordPress generator meta tag');
             }
-            if (/wp-content\/plugins\//i.test(content)) {
-              wpScore += 2;
-              strongIndicators.push('wp-content/plugins');
-            }
-            if (/wp-includes\//i.test(content)) {
-              wpScore += 2;
-              strongIndicators.push('wp-includes');
-            }
-            if (/<meta[^>]*generator[^>]*content="WordPress/i.test(content)) {
-              wpScore += 3; // Generator meta tag is very strong indicator
-              strongIndicators.push('generator meta tag');
-            }
+            
+            // WordPress REST API endpoints
             if (/wp-json\/wp\/v2\//i.test(content)) {
-              wpScore += 2;
-              strongIndicators.push('wp-json API');
-            }
-            if (/wp-embed\.min\.js/i.test(content)) {
-              wpScore += 2;
-              strongIndicators.push('wp-embed');
+              wpScore += 3;
+              detectedIndicators.push('WordPress REST API');
             }
             
-            // Weaker indicators (each worth 1 point)
-            if (/wp-content\//i.test(content) && !strongIndicators.includes('wp-content/themes') && !strongIndicators.includes('wp-content/plugins')) {
-              wpScore += 1;
-              strongIndicators.push('wp-content general');
-            }
-            if (/\/wp-admin\//i.test(content)) {
-              wpScore += 1;
-              strongIndicators.push('wp-admin');
+            // WordPress admin area references
+            if (/wp-admin\/admin-ajax\.php/i.test(content)) {
+              wpScore += 2;
+              detectedIndicators.push('WordPress admin-ajax');
             }
             
-            // Require a minimum score to avoid false positives
-            if (wpScore >= 3) {
+            // WordPress theme directory structure
+            if (/wp-content\/themes\/[^\/\s"']+\/style\.css/i.test(content)) {
+              wpScore += 2;
+              detectedIndicators.push('WordPress theme structure');
+            }
+            
+            // WordPress plugin directory structure  
+            if (/wp-content\/plugins\/[^\/\s"']+\/[^\/\s"']+\.js/i.test(content)) {
+              wpScore += 2;
+              detectedIndicators.push('WordPress plugin structure');
+            }
+            
+            // WordPress includes
+            if (/wp-includes\/js\/wp-embed\.min\.js/i.test(content)) {
+              wpScore += 2;
+              detectedIndicators.push('WordPress wp-embed');
+            }
+            
+            // WordPress version info in comments
+            if (/<!--[\s]*WordPress[\s]+[\d\.]+[\s]*-->/i.test(content)) {
+              wpScore += 2;
+              detectedIndicators.push('WordPress version comment');
+            }
+            
+            // Require a higher minimum score and multiple indicators
+            if (wpScore >= 4 && detectedIndicators.length >= 2) {
               isWordPress = true;
             }
+            
+            // Log detection details for debugging
+            console.log(`Detection for ${normalizedDomain}: Score: ${wpScore}, Indicators: [${detectedIndicators.join(', ')}], WordPress: ${wpScore >= 4 && detectedIndicators.length >= 2}`);
 
             // Extract WordPress version from generator meta tag
             const generatorMatch = content.match(/<meta[^>]*generator[^>]*content="WordPress\s+([\d\.]+)"[^>]*>/i);
