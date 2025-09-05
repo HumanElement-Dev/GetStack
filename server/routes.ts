@@ -77,10 +77,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             
             // Only the most reliable WordPress indicators
             
-            // WordPress generator meta tag (strongest indicator)
-            if (/<meta[^>]*name=["']generator["'][^>]*content=["'][^"']*WordPress[^"']*["']/i.test(content)) {
+            // WordPress generator meta tag (strongest indicator) - must be exactly a generator tag
+            const generatorMetaMatch = content.match(/<meta[^>]*name=["']generator["'][^>]*content=["']([^"']*WordPress[^"']*)["']/i);
+            if (generatorMetaMatch && /^WordPress\s+[\d\.]+/i.test(generatorMetaMatch[1].trim())) {
               wpScore += 4;
-              detectedIndicators.push('WordPress generator meta tag');
+              detectedIndicators.push(`WordPress generator meta tag: ${generatorMetaMatch[1]}`);
             }
             
             // WordPress REST API endpoints
@@ -125,7 +126,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
             
             // Log detection details for debugging
-            console.log(`Detection for ${normalizedDomain}: Score: ${wpScore}, Indicators: [${detectedIndicators.join(', ')}], WordPress: ${wpScore >= 4 && detectedIndicators.length >= 2}`);
+            console.log(`\n=== WordPress Detection for ${normalizedDomain} ===`);
+            console.log(`Score: ${wpScore}`);
+            console.log(`Indicators found: [${detectedIndicators.join(', ')}]`);
+            console.log(`Detection result: ${wpScore >= 4 && detectedIndicators.length >= 2 ? 'WordPress' : 'Not WordPress'}`);
+            console.log(`Requirements: Score >= 4 AND >= 2 indicators`);
+            console.log(`=====================================\n`);
 
             // Extract WordPress version from generator meta tag
             const generatorMatch = content.match(/<meta[^>]*generator[^>]*content="WordPress\s+([\d\.]+)"[^>]*>/i);
