@@ -69,21 +69,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
             const content = await fullResponse.text();
             
-            // Check for WordPress indicators in HTML content
-            const wpIndicators = [
-              /wp-content/i,
-              /wp-includes/i,
-              /wp-json/i,
-              /wordpress/i,
-              /generator.*wordpress/i,
-              /wp-embed/i,
-            ];
-
-            for (const indicator of wpIndicators) {
-              if (indicator.test(content)) {
-                isWordPress = true;
-                break;
-              }
+            // More precise WordPress detection - require multiple strong indicators
+            let wpScore = 0;
+            const strongIndicators = [];
+            
+            // Strong WordPress indicators (each worth 2 points)
+            if (/wp-content\/themes\//i.test(content)) {
+              wpScore += 2;
+              strongIndicators.push('wp-content/themes');
+            }
+            if (/wp-content\/plugins\//i.test(content)) {
+              wpScore += 2;
+              strongIndicators.push('wp-content/plugins');
+            }
+            if (/wp-includes\//i.test(content)) {
+              wpScore += 2;
+              strongIndicators.push('wp-includes');
+            }
+            if (/<meta[^>]*generator[^>]*content="WordPress/i.test(content)) {
+              wpScore += 3; // Generator meta tag is very strong indicator
+              strongIndicators.push('generator meta tag');
+            }
+            if (/wp-json\/wp\/v2\//i.test(content)) {
+              wpScore += 2;
+              strongIndicators.push('wp-json API');
+            }
+            if (/wp-embed\.min\.js/i.test(content)) {
+              wpScore += 2;
+              strongIndicators.push('wp-embed');
+            }
+            
+            // Weaker indicators (each worth 1 point)
+            if (/wp-content\//i.test(content) && !strongIndicators.includes('wp-content/themes') && !strongIndicators.includes('wp-content/plugins')) {
+              wpScore += 1;
+              strongIndicators.push('wp-content general');
+            }
+            if (/\/wp-admin\//i.test(content)) {
+              wpScore += 1;
+              strongIndicators.push('wp-admin');
+            }
+            
+            // Require a minimum score to avoid false positives
+            if (wpScore >= 3) {
+              isWordPress = true;
             }
 
             // Extract WordPress version from generator meta tag
@@ -108,13 +136,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
               pluginCount = `${uniquePlugins.size} detected`;
             }
 
-            // Detect other technologies
-            if (content.includes('react')) technologies.push('React');
-            if (content.includes('vue')) technologies.push('Vue.js');
-            if (content.includes('angular')) technologies.push('Angular');
-            if (content.includes('next.js') || content.includes('_next')) technologies.push('Next.js');
-            if (content.includes('tailwind') || content.includes('tw-')) technologies.push('Tailwind CSS');
-            if (content.includes('bootstrap')) technologies.push('Bootstrap');
+            // Detect other technologies with more precision
+            if (/react/i.test(content) && (/react\.js|reactjs|react\.min\.js/i.test(content) || /__react/i.test(content))) {
+              technologies.push('React');
+            }
+            if (/vue/i.test(content) && (/vue\.js|vuejs|vue\.min\.js/i.test(content) || /\bVue\b/g.test(content))) {
+              technologies.push('Vue.js');
+            }
+            if (/angular/i.test(content) && (/angular\.js|angularjs|angular\.min\.js/i.test(content) || /ng-/i.test(content))) {
+              technologies.push('Angular');
+            }
+            if (/next\.js/i.test(content) || /_next\//i.test(content)) {
+              technologies.push('Next.js');
+            }
+            if (/tailwind/i.test(content) && (/tailwindcss|tailwind\.css/i.test(content) || /\btw-/i.test(content))) {
+              technologies.push('Tailwind CSS');
+            }
+            if (/bootstrap/i.test(content) && (/bootstrap\.css|bootstrap\.js|bootstrap\.min/i.test(content) || /\bbs-/i.test(content))) {
+              technologies.push('Bootstrap');
+            }
+            
+            // Detect static site generators
+            if (/<meta[^>]*generator[^>]*content="[^"]*Jekyll[^"]*"/i.test(content)) {
+              technologies.push('Jekyll');
+            }
+            if (/<meta[^>]*generator[^>]*content="[^"]*Hugo[^"]*"/i.test(content)) {
+              technologies.push('Hugo');
+            }
+            if (/<meta[^>]*generator[^>]*content="[^"]*Gatsby[^"]*"/i.test(content)) {
+              technologies.push('Gatsby');
+            }
+            
+            // Detect common hosting/static site patterns
+            if (/netlify/i.test(content)) {
+              technologies.push('Netlify');
+            }
+            if (/vercel/i.test(content)) {
+              technologies.push('Vercel');
+            }
+            
+            // If no WordPress indicators but has static site characteristics
+            if (wpScore < 3 && !content.includes('wp-') && technologies.length > 0) {
+              technologies.push('Static HTML');
+            }
 
           } catch (contentError) {
             console.error('Error fetching content:', contentError);
