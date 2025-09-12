@@ -114,7 +114,7 @@ export default function DetectionForm({ onResult, isLoading, setIsLoading }: Det
                     <Input
                       {...field}
                       type="text"
-                      placeholder="e.g., humanelement.agency, www.example.com, or https://example.com"
+                      placeholder="Enter website URL here"
                       className="pr-10"
                       data-testid="input-domain"
                       onChange={(e) => {
