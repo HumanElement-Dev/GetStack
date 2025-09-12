@@ -34,11 +34,19 @@ export const insertDetectionRequestSchema = createInsertSchema(detectionRequests
 export const detectionRequestSchema = z.object({
   domain: z.string().min(1, "Domain is required").refine(
     (domain) => {
-      // Allow domains with or without protocol
-      const urlPattern = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
-      return urlPattern.test(domain);
+      // Clean up the input first
+      const cleanDomain = domain.trim();
+      
+      // Allow a wide variety of URL formats:
+      // - Plain domains: example.com, subdomain.example.com
+      // - With www: www.example.com
+      // - With protocol: http://example.com, https://example.com
+      // - With paths: example.com/path, https://example.com/path
+      const urlPattern = /^(https?:\/\/)?(www\.)?([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)*[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.([a-zA-Z]{2,})([\/\w\.\-~:?#@!$&'()*+,;=]*)?$/i;
+      
+      return urlPattern.test(cleanDomain) && cleanDomain.includes('.');
     },
-    "Please enter a valid domain or URL"
+    "Please enter a valid domain or URL (e.g., example.com, www.example.com, https://example.com)"
   ),
 });
 
