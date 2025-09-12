@@ -1,33 +1,47 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1"
+    />
     <title>GetStack - WordPress Detection Tool</title>
-    <meta name="description" content="Instantly detect if any website is running WordPress. Get detailed insights about WordPress installations, themes, and plugins with our fast and secure analysis tool." />
+    <meta
+      name="description"
+      content="Instantly detect if any website is running WordPress. Get detailed insights about WordPress installations, themes, and plugins with our fast and secure analysis tool."
+    />
     
-    <!-- Favicon using Font Awesome layer-group icon from CDN -->
-    <link rel="icon" type="image/svg+xml" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/layer-group.svg">
-    <link rel="shortcut icon" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/layer-group.svg">
-    
-    <!-- OLD favicon links to be removed -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBmaWxsPSIjMDAwMDAwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxwYXRoIGQ9Ik00ODAgODBINDQ4VjQ4YzAtMjYuNS0yMS41LTQ4LTQ4LTQ4SDExMkM4NS41IDAgNjQgMjEuNSA2NCA0OHYzMkgzMkMxNC4zIDgwIDAgOTQuMyAwIDExMnYzMmMwIDE3LjcgMTQuMyAzMiAzMiAzMmgzMnYzMmMwIDI2LjUgMjEuNSA0OCA0OCA0OGgyODhjMjYuNSAwIDQ4LTIxLjUgNDgtNDh2LTMyaDMyYzE3LjcgMCAzMi0xNC4zIDMyLTMydi0zMmMwLTE3LjctMTQuMy0zMi0zMi0zMnpNMTEyIDQ4aDI4OHYxMjhIMTEyVjQ4em0zMjAgMTYwdjE2SD5sMTZ2LTJIMHYTMGMWMTY4djQwSDQ4djMyYzAgMjYuNSAyMS41IDQ4IDQ4IDQ4aDI4OGMyNi41IDAgNDgtMjEuNSA0OC00OHYtMzJoMzJjMTcuNyAwIDMyLTE0LjMgMzItMzJ2LTMyYzAtMTcuNy0xNC4zLTMyLTMyLTMySDQ0OFYyNDBjMC0yNi41LTIxLjUtNDgtNDgtNDhIMTEyYy0yNi41IDAtNDggMjEuNS00OCA0OHYzMkgzMmMtMTcuNyAwLTMyIDE0LjMtMzIgMzJ2MzJjMCAxNy43IDE0LjMgMzIgMzIgMzJoMzJ2MzJjMCAyNi41IDIxLjUgNDggNDggNDhoMjg4YzI2LjUgMCA0OC0yMS41IDQ4LTQ4di0zMmgzMmMxNy43IDAgMzItMTQuMyAzMi0zMnYtMzJjMC0xNy43LTE0LjMtMzItMzItMzJ6TTExMiAyNDBoMjg4djEyOEgxMTJWMjQwem0wIDIwOGgyODh2MTI4SDExMlY0NDh6Ii8+PC9zdmc+?v=2">
-    <link rel="shortcut icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBmaWxsPSIjMDAwMDAwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxwYXRoIGQ9Ik00ODAgODBINDQ4VjQ4YzAtMjYuNS0yMS41LTQ4LTQ4LTQ4SDExMkM4NS41IDAgNjQgMjEuNSA2NCA0OHYzMkgzMkMxNC4zIDgwIDAgOTQuMyAwIDExMnYzMmMwIDE3LjcgMTQuMyAzMiAzMiAzMmgzMnYzMmMwIDI2LjUgMjEuNSA0OCA0OCA0OGgyODhjMjYuNSAwIDQ4LTIxLjUgNDgtNDh2LTMyaDMyYzE3LjcgMCAzMi0xNC4zIDMyLTMydi0zMmMwLTE3LjctMTQuMy0zMi0zMi0zMnpNMTEyIDQ4aDI4OHYxMjhIMTEyVjQ4em0zMjAgMTYwdjE2SDlsMTZ2LTJIMHYTMGMWMTY4djQwSDQ4djMyYzAgMjYuNSAyMS41IDQ4IDQ4IDQ4aDI4OGMyNi41IDAgNDgtMjEuNSA0OC00OHYtMzJoMzJjMTcuNyAwIDMyLTE0LjMgMzItMzJ2LTMyYzAtMTcuNy0xNC4zLTMyLTMyLTMySDQ0OFYyNDBjMC0yNi41LTIxLjUtNDgtNDgtNDhIMTEyYy0yNi41IDAtNDggMjEuNS00OCA0OHYzMkgzMmMtMTcuNyAwLTMyIDE0LjMtMzIgMzJ2MzJjMCAxNy43IDE0LjMgMzIgMzIgMzJoMzJ2MzJjMCAyNi41IDIxLjUgNDggNDggNDhoMjg4YzI2LjUgMCA0OC0yMS41IDQ4LTQ4di0zMmgzMmMxNy43IDAgMzItMTQuMyAzMi0zMnYtMzJjMC0xNy43LTE0LjMtMzItMzItMzJ6TTExMiAyNDBoMjg4djEyOEgxMTJWMjQwem0wIDIwOGgyODh2MTI4SDExMlY0NDh6Ii8+PC9zdmc+?v=2">
-    
+    <!-- Local favicon (Font Awesome layer-group) -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+   
+
     <!-- Open Graph tags -->
     <meta property="og:title" content="GetStack - WordPress Detection Tool" />
-    <meta property="og:description" content="Instantly detect if any website is running WordPress. Get detailed insights about WordPress installations, themes, and plugins." />
+    <meta
+      property="og:description"
+      content="Instantly detect if any website is running WordPress. Get detailed insights about WordPress installations, themes, and plugins."
+    />
     <meta property="og:type" content="website" />
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
-    <script type="text/javascript" src="https://replit.com/public/js/replit-dev-banner.js"></script>
+    <script
+      type="text/javascript"
+      src="https://replit.com/public/js/replit-dev-banner.js"
+    ></script>
   </body>
 </html>
