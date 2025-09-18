@@ -36,7 +36,10 @@ export default function DetectionForm({ onResult, isLoading, setIsLoading }: Det
       setIsLoading(true);
       onResult(null);
     },
-    onSuccess: (data: DetectionResult) => {
+    onSuccess: async (data: DetectionResult) => {
+      // Add minimum loading duration for animations to be visible
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       onResult(data);
       toast({
         title: "Analysis Complete",

@@ -44,42 +44,73 @@ export default function ResultsDisplay({ result, isLoading }: ResultsDisplayProp
     );
   }
 
-  // WordPress detected
+  // WordPress detected - First Card: Confirmation
   if (result.isWordPress) {
     return (
-      <div className="bg-green-50 border border-green-200 rounded-xl p-6 mb-8" data-testid="wordpress-detected">
-        <div className="flex items-start space-x-4">
-          <div className="flex-shrink-0">
-            <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-              <i className="fab fa-wordpress text-green-600 text-lg"></i>
+      <div className="space-y-6">
+        {/* WordPress Confirmation Card */}
+        <div className="bg-green-50 border border-green-200 rounded-xl p-6" data-testid="wordpress-detected">
+          <div className="flex items-start space-x-4">
+            <div className="flex-shrink-0">
+              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                <i className="fab fa-wordpress text-green-600 text-lg"></i>
+              </div>
             </div>
-          </div>
-          <div className="flex-1">
-            <h3 className="text-lg font-semibold text-green-800 mb-2">
-              WordPress Detected!
-            </h3>
-            <p className="text-green-700 mb-4" data-testid="text-domain">
-              <span className="font-medium">{result.domain}</span> is running on WordPress
-            </p>
-            <div className="bg-white rounded-lg p-4 border border-green-200">
-              <h4 className="font-medium text-green-800 mb-2">Detection Details:</h4>
-              <ul className="space-y-1 text-sm text-green-700">
-                {result.wordPressVersion && (
-                  <li data-testid="text-version">• WordPress Version: {result.wordPressVersion}</li>
-                )}
-                {result.theme && (
-                  <li data-testid="text-theme">• Active Theme: {result.theme}</li>
-                )}
-                {result.pluginCount && (
-                  <li data-testid="text-plugins">• Plugins: {result.pluginCount}</li>
-                )}
-                {!result.wordPressVersion && !result.theme && !result.pluginCount && (
-                  <li>• WordPress detected via standard indicators</li>
-                )}
-              </ul>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-green-800 mb-2">
+                WordPress Detected!
+              </h3>
+              <p className="text-green-700 mb-4" data-testid="text-domain">
+                <span className="font-medium">{result.domain}</span> is running on WordPress
+              </p>
+              {result.wordPressVersion && (
+                <div className="bg-white rounded-lg p-4 border border-green-200">
+                  <h4 className="font-medium text-green-800 mb-2">WordPress Version:</h4>
+                  <p className="text-sm text-green-700" data-testid="text-version">
+                    {result.wordPressVersion}
+                  </p>
+                </div>
+              )}
+              {!result.wordPressVersion && (
+                <div className="bg-white rounded-lg p-4 border border-green-200">
+                  <p className="text-sm text-green-700">WordPress detected via standard indicators</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
+
+        {/* Theme & Plugin Details Card */}
+        {(result.theme || result.pluginCount) && (
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-6" data-testid="theme-plugin-details">
+            <div className="flex items-start space-x-4">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                  <i className="fas fa-layer-group text-blue-600 text-lg"></i>
+                </div>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-blue-800 mb-2">
+                  Theme & Plugin Details
+                </h3>
+                <div className="bg-white rounded-lg p-4 border border-blue-200">
+                  <ul className="space-y-2 text-sm text-blue-700">
+                    {result.theme && (
+                      <li data-testid="text-theme">
+                        <span className="font-medium">Active Theme:</span> {result.theme}
+                      </li>
+                    )}
+                    {result.pluginCount && (
+                      <li data-testid="text-plugins">
+                        <span className="font-medium">Plugins:</span> {result.pluginCount}
+                      </li>
+                    )}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }

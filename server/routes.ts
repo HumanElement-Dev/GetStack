@@ -20,9 +20,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const { domain } = validationResult.data;
       
-      // Normalize domain (remove protocol if present)
+      // Normalize domain (remove protocol if present)  
       const normalizedDomain = domain.replace(/^https?:\/\//, '').replace(/\/$/, '');
       const urlToCheck = normalizedDomain.startsWith('http') ? normalizedDomain : `https://${normalizedDomain}`;
+
+      // Basic SSRF protection - reject private IP ranges
+      const hostname = new URL(urlToCheck).hostname;
+      const isPrivateIP = /^(10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.|127\.|localhost|::1|fc00:|fe80:)/i.test(hostname);
+      
+      if (isPrivateIP) {
+        return res.status(400).json({
+          error: 'Invalid domain - private IP addresses are not allowed',
+          details: 'Please use a public domain name'
+        });
+      }
 
       try {
         // Perform WordPress detection
@@ -58,8 +69,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log(`WordPress detected via X-Powered-By: ${poweredBy}`);
         }
 
-        // If HEAD request didn't give us enough info, try GET request for content analysis
-        if (!isWordPress) {
+        // Always try GET request for content analysis to get theme/plugin details
+        // This ensures we can show the second card even when WordPress is detected via headers
+        let contentAnalyzed = false;
+        if (true) { // Always fetch content for details
           try {
             const fullResponse = await fetch(urlToCheck, {
               method: 'GET',
@@ -125,34 +138,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
               isWordPress = true;
             }
             
-            // Log detection details for debugging
-            console.log(`\n=== WordPress Detection for ${normalizedDomain} ===`);
-            console.log(`Score: ${wpScore}`);
-            console.log(`Indicators found: [${detectedIndicators.join(', ')}]`);
-            console.log(`Detection result: ${wpScore >= 4 && detectedIndicators.length >= 2 ? 'WordPress' : 'Not WordPress'}`);
-            console.log(`Requirements: Score >= 4 AND >= 2 indicators`);
-            console.log(`=====================================\n`);
-
             // Extract WordPress version from generator meta tag
             const generatorMatch = content.match(/<meta[^>]*generator[^>]*content="WordPress\s+([\d\.]+)"[^>]*>/i);
             if (generatorMatch) {
               isWordPress = true;
               wordPressVersion = generatorMatch[1];
             }
+            
+            // Log detection details for debugging
+            console.log(`\n=== WordPress Detection for ${normalizedDomain} ===`);
+            console.log(`Score: ${wpScore}`);
+            console.log(`Indicators found: [${detectedIndicators.join(', ')}]`);
+            console.log(`Detection result: ${isWordPress ? 'WordPress' : 'Not WordPress'}`);
+            console.log(`Requirements: Score >= 4 AND >= 2 indicators`);
+            console.log(`=====================================\n`);
 
-            // Extract theme name
-            const themeMatch = content.match(/wp-content\/themes\/([^\/\?"']+)/i);
-            if (themeMatch) {
-              theme = themeMatch[1];
-            }
+            // Only extract theme/plugin info if WordPress is detected
+            if (isWordPress) {
+              // Extract theme name - improved detection
+              const themeMatches = content.match(/wp-content\/themes\/([^\/\?"'\s]+)/gi);
+              if (themeMatches && themeMatches.length > 0) {
+                // Get the most common theme (in case of child themes)
+                const themeNames = themeMatches.map(match => 
+                  match.match(/wp-content\/themes\/([^\/\?"'\s]+)/i)?.[1]
+                ).filter(Boolean);
+                theme = themeNames[0] || null;
+              }
+              
+              // Also check for theme references in stylesheets
+              if (!theme) {
+                const styleThemeMatch = content.match(/themes\/([^\/\?"'\s]+)\/style\.css/i);
+                if (styleThemeMatch) {
+                  theme = styleThemeMatch[1];
+                }
+              }
 
-            // Count plugins (rough estimate)
-            const pluginMatches = content.match(/wp-content\/plugins\/[^\/\?"']+/gi);
-            if (pluginMatches) {
-              const uniquePlugins = new Set(pluginMatches.map(match => 
-                match.match(/wp-content\/plugins\/([^\/\?"']+)/i)?.[1]
-              ).filter(Boolean));
-              pluginCount = `${uniquePlugins.size} detected`;
+              // Count plugins (rough estimate) - improved detection
+              const pluginMatches = content.match(/wp-content\/plugins\/[^\/\?"'\s]+/gi);
+              if (pluginMatches && pluginMatches.length > 0) {
+                const uniquePlugins = new Set(pluginMatches.map(match => 
+                  match.match(/wp-content\/plugins\/([^\/\?"'\s]+)/i)?.[1]
+                ).filter(Boolean));
+                if (uniquePlugins.size > 0) {
+                  pluginCount = `${uniquePlugins.size} detected`;
+                }
+              }
+              
+              // Alternative plugin detection via JS files
+              if (!pluginCount) {
+                const jsPluginMatches = content.match(/plugins\/([^\/\?"'\s]+)\/[^\/\?"'\s]*\.js/gi);
+                if (jsPluginMatches && jsPluginMatches.length > 0) {
+                  const uniqueJsPlugins = new Set(jsPluginMatches.map(match => 
+                    match.match(/plugins\/([^\/\?"'\s]+)\//i)?.[1]
+                  ).filter(Boolean));
+                  if (uniqueJsPlugins.size > 0) {
+                    pluginCount = `${uniqueJsPlugins.size} detected`;
+                  }
+                }
+              }
+              
+              // If we have WordPress but no theme/plugin info, provide fallback
+              if (!theme && !pluginCount) {
+                theme = 'Active theme detected';
+                pluginCount = 'Plugins detected';
+              }
             }
 
             // Detect other technologies with more precision

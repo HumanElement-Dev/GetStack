@@ -21,6 +21,7 @@ export default function Home() {
   const [result, setResult] = useState<DetectionResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+
   return (
     <div className="min-h-screen bg-background text-foreground font-sans">
       <Header />
@@ -28,7 +29,7 @@ export default function Home() {
       <main className="flex-1 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl mx-auto">
           {/* Hero Section */}
-          <div className="text-center mb-12">
+          <div className={`text-center mb-12 transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
             <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-4">
               Is this website running WordPress?
             </h1>
@@ -38,11 +39,13 @@ export default function Home() {
           </div>
 
           {/* Detection Form */}
-          <DetectionForm 
-            onResult={setResult} 
-            isLoading={isLoading} 
-            setIsLoading={setIsLoading} 
-          />
+          <div className={`transition-transform duration-300 ${isLoading ? '-translate-y-8' : 'translate-y-0'}`}>
+            <DetectionForm 
+              onResult={setResult} 
+              isLoading={isLoading} 
+              setIsLoading={setIsLoading} 
+            />
+          </div>
 
           {/* Results Display */}
           <ResultsDisplay result={result} isLoading={isLoading} />
