@@ -50,7 +50,7 @@ export default function Sidebar() {
       {/* Footer */}
       <div className="p-4 border-t border-border">
         <div className="text-xs text-muted-foreground text-center">
-          <p>Made by <a href="https://humanelement.agency" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">HumanElement</a></p>
+          <p>A [<a href="https://humanelement.agency" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">HumanElement</a>] idea</p>
         </div>
       </div>
     </aside>
