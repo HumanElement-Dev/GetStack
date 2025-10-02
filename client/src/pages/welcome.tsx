@@ -22,7 +22,7 @@ export default function Welcome() {
               The fastest way to detect if a website is built with WordPress. 
               Analyze any domain to discover themes, plugins, versions, and more.
             </p>
-            <Link href="/detect">
+            <Link href="/dashboard">
               <Button 
                 size="lg" 
                 className="px-8 py-4 text-lg font-semibold"
@@ -66,7 +66,7 @@ export default function Welcome() {
             <p className="text-muted-foreground mb-6">
               Enter any domain or URL to start discovering its WordPress technology stack.
             </p>
-            <Link href="/detect">
+            <Link href="/dashboard">
               <Button 
                 variant="outline" 
                 size="lg"
