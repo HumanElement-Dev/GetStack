@@ -34,9 +34,7 @@ export default function Welcome() {
             <div className="text-center p-6 rounded-lg border bg-card">
               <i className="fas fa-search text-3xl text-primary mb-4"></i>
               <h3 className="text-xl font-semibold mb-3">Instant Detection</h3>
-              <p className="text-muted-foreground">
-                Get immediate results about whether a website runs on WordPress with detailed analysis.
-              </p>
+              <p className="text-muted-foreground">Get immediate results about whether a website runs on WordPress or Wix with detailed analysis.</p>
             </div>
             
             <div className="text-center p-6 rounded-lg border bg-card">
