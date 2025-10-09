@@ -12,7 +12,7 @@ export default function Sidebar() {
   return (
     <aside className="w-64 bg-card border-r border-border flex flex-col h-screen sticky top-0">
       {/* Branding */}
-      <div className="p-6 border-b border-border">
+      <div className="p-6">
         <Link href="/" data-testid="link-sidebar-home">
           <div className="flex items-center space-x-3 cursor-pointer hover:opacity-80 transition-opacity">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center">
