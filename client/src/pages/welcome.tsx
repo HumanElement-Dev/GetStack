@@ -7,7 +7,6 @@ export default function Welcome() {
   return (
     <div className="min-h-screen bg-background text-foreground font-sans">
       <Header />
-      
       <main className="flex-1 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           {/* Hero Section */}
@@ -63,9 +62,7 @@ export default function Welcome() {
           {/* Call to Action */}
           <div className="text-center bg-muted/30 rounded-lg p-8">
             <h2 className="text-2xl font-bold mb-4">Ready to analyze a website?</h2>
-            <p className="text-muted-foreground mb-6">
-              Enter any domain or URL to start discovering its WordPress technology stack.
-            </p>
+            <p className="text-muted-foreground mb-6">Enter any domain or URL to start discovering its technology stack.</p>
             <Link href="/dashboard">
               <Button 
                 variant="outline" 
@@ -78,7 +75,6 @@ export default function Welcome() {
           </div>
         </div>
       </main>
-
       <Footer />
     </div>
   );
