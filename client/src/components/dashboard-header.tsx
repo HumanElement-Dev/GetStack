@@ -1,4 +1,5 @@
 import { Bell, User } from "lucide-react";
+import { Link } from "wouter";
 
 export default function DashboardHeader() {
   return (
@@ -10,7 +11,13 @@ export default function DashboardHeader() {
       </div>
 
       {/* Actions */}
-      <div className="flex items-center space-x-4">
+      <div className="flex items-center space-x-3">
+        <Link href="/detect" className="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-lg transition-colors duration-200 font-medium text-sm" data-testid="button-free-tool">
+          Free Tool
+        </Link>
+        <Link href="/dashboard" className="bg-primary hover:bg-blue-600 text-primary-foreground px-4 py-2 rounded-lg transition-colors duration-200 font-medium text-sm" data-testid="button-dashboard">
+          Dashboard
+        </Link>
         <button 
           className="p-2 rounded-lg hover:bg-muted transition-colors"
           data-testid="button-notifications"

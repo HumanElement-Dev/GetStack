@@ -18,17 +18,13 @@ export default function Header() {
           </Link>
           
           {/* Navigation */}
-          <div className="flex items-center space-x-4">
-            {!location.startsWith("/detect") && (
-              <Link href="/detect" className="bg-primary hover:bg-blue-600 text-primary-foreground px-4 py-2 rounded-lg transition-colors duration-200 font-medium text-sm" data-testid="button-analyze">
-                Analyze Website
-              </Link>
-            )}
-            {location.startsWith("/detect") && (
-              <Link href="/" className="text-muted-foreground hover:text-foreground px-4 py-2 rounded-lg transition-colors duration-200 font-medium text-sm" data-testid="button-home">
-                Home
-              </Link>
-            )}
+          <div className="flex items-center space-x-3">
+            <Link href="/detect" className="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-lg transition-colors duration-200 font-medium text-sm" data-testid="button-free-tool">
+              Free Tool
+            </Link>
+            <Link href="/dashboard" className="bg-primary hover:bg-blue-600 text-primary-foreground px-4 py-2 rounded-lg transition-colors duration-200 font-medium text-sm" data-testid="button-dashboard">
+              Dashboard
+            </Link>
           </div>
         </div>
       </div>
