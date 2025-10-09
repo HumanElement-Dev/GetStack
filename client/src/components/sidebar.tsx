@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Home, Search, Settings, BarChart3 } from "lucide-react";
+import { Home, Search, Settings, BarChart3, LogOut } from "lucide-react";
 
 export default function Sidebar() {
   const [location] = useLocation();
@@ -46,6 +46,19 @@ export default function Sidebar() {
           );
         })}
       </nav>
+
+      {/* Leave Button */}
+      <div className="p-4">
+        <Link href="/">
+          <div
+            className="flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors cursor-pointer text-muted-foreground hover:bg-muted hover:text-foreground"
+            data-testid="button-leave"
+          >
+            <LogOut className="w-5 h-5" />
+            <span>Leave Dashboard</span>
+          </div>
+        </Link>
+      </div>
 
       {/* Footer */}
       <div className="p-4 border-t border-border">
