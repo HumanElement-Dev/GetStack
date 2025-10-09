@@ -17,10 +17,7 @@ export default function Welcome() {
             <h1 className="text-5xl sm:text-6xl font-bold text-foreground mb-6">
               Welcome to GetStack
             </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-              The fastest way to detect if a website is built with WordPress. 
-              Analyze any domain to discover themes, plugins, versions, and more.
-            </p>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">The fastest way to detect what a website is built with. Analyze any domain to discover themes, plugins, versions, and more.</p>
             <Link href="/dashboard">
               <Button 
                 size="lg" 
