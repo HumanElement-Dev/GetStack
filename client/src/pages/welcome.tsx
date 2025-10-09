@@ -40,9 +40,7 @@ export default function Welcome() {
             <div className="text-center p-6 rounded-lg border bg-card">
               <i className="fas fa-puzzle-piece text-3xl text-primary mb-4"></i>
               <h3 className="text-xl font-semibold mb-3">Theme & Plugin Info</h3>
-              <p className="text-muted-foreground">
-                Discover active themes, plugin counts, and WordPress versions when available.
-              </p>
+              <p className="text-muted-foreground">Discover active themes, plugin counts, and WordPress/Wix versions when available.</p>
             </div>
             
             <div className="text-center p-6 rounded-lg border bg-card">
