@@ -39,7 +39,14 @@ export class MemStorage implements IStorage {
   async createDetectionRequest(insertRequest: InsertDetectionRequest): Promise<DetectionRequest> {
     const id = randomUUID();
     const request: DetectionRequest = {
-      ...insertRequest,
+      domain: insertRequest.domain,
+      cmsType: insertRequest.cmsType ?? null,
+      isWordPress: insertRequest.isWordPress ?? null,
+      wordPressVersion: insertRequest.wordPressVersion ?? null,
+      theme: insertRequest.theme ?? null,
+      pluginCount: insertRequest.pluginCount ?? null,
+      technologies: insertRequest.technologies ?? null,
+      error: insertRequest.error ?? null,
       id,
       createdAt: new Date(),
     };

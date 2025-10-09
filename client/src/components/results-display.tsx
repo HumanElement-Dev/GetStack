@@ -1,4 +1,15 @@
-import type { DetectionResult } from "@/pages/home";
+export interface DetectionResult {
+  id: string;
+  domain: string;
+  cmsType?: string | null;
+  isWordPress: boolean | null;
+  wordPressVersion?: string | null;
+  theme?: string | null;
+  pluginCount?: string | null;
+  technologies?: string[];
+  error?: string;
+  createdAt: string;
+}
 
 interface ResultsDisplayProps {
   result: DetectionResult | null;
@@ -44,8 +55,8 @@ export default function ResultsDisplay({ result, isLoading }: ResultsDisplayProp
     );
   }
 
-  // WordPress detected - First Card: Confirmation
-  if (result.isWordPress) {
+  // WordPress detected
+  if (result.cmsType === 'wordpress' || result.isWordPress) {
     return (
       <div className="space-y-6">
         {/* WordPress Confirmation Card */}
@@ -58,10 +69,10 @@ export default function ResultsDisplay({ result, isLoading }: ResultsDisplayProp
             </div>
             <div className="flex-1">
               <h3 className="text-lg font-semibold text-green-800 mb-2">
-                WordPress Detected!
+                This website is running WordPress
               </h3>
               <p className="text-green-700 mb-4" data-testid="text-domain">
-                <span className="font-medium">{result.domain}</span> is running on WordPress
+                <span className="font-medium">{result.domain}</span> is powered by WordPress
               </p>
               {result.wordPressVersion && (
                 <div className="bg-white rounded-lg p-4 border border-green-200">
@@ -111,6 +122,35 @@ export default function ResultsDisplay({ result, isLoading }: ResultsDisplayProp
             </div>
           </div>
         )}
+      </div>
+    );
+  }
+
+  // Wix detected
+  if (result.cmsType === 'wix') {
+    return (
+      <div className="space-y-6">
+        {/* Wix Confirmation Card */}
+        <div className="bg-green-50 border border-green-200 rounded-xl p-6" data-testid="wix-detected">
+          <div className="flex items-start space-x-4">
+            <div className="flex-shrink-0">
+              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                <i className="fab fa-wix text-green-600 text-lg"></i>
+              </div>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-green-800 mb-2">
+                This website is running Wix
+              </h3>
+              <p className="text-green-700 mb-4" data-testid="text-domain">
+                <span className="font-medium">{result.domain}</span> is powered by Wix
+              </p>
+              <div className="bg-white rounded-lg p-4 border border-green-200">
+                <p className="text-sm text-green-700">Wix website builder detected</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

@@ -46,6 +46,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
 
         let isWordPress = false;
+        let isWix = false;
+        let cmsType = null;
         let wordPressVersion = null;
         let theme = null;
         let pluginCount = null;
@@ -133,8 +135,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               detectedIndicators.push('WordPress version comment');
             }
             
-            // Require a higher minimum score and multiple indicators
-            if (wpScore >= 4 && detectedIndicators.length >= 2) {
+            // Require a minimum score, but allow single strong indicators
+            // If we have a generator meta tag (score 4), that's sufficient on its own
+            if (wpScore >= 4 && detectedIndicators.length >= 1) {
               isWordPress = true;
             }
             
@@ -150,7 +153,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             console.log(`Score: ${wpScore}`);
             console.log(`Indicators found: [${detectedIndicators.join(', ')}]`);
             console.log(`Detection result: ${isWordPress ? 'WordPress' : 'Not WordPress'}`);
-            console.log(`Requirements: Score >= 4 AND >= 2 indicators`);
+            console.log(`Requirements: Score >= 4 AND >= 1 indicator`);
             console.log(`=====================================\n`);
 
             // Only extract theme/plugin info if WordPress is detected
@@ -248,14 +251,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
               technologies.push('Static HTML');
             }
 
+            // Wix Detection - only check if WordPress was not detected
+            if (!isWordPress) {
+              let wixScore = 0;
+              const wixIndicators = [];
+
+              // Check for Wix-specific headers first
+              const wixRequestId = fullResponse.headers.get('X-Wix-Request-Id');
+              const wixInstance = fullResponse.headers.get('X-Wix-Instance');
+              const serverHeader = fullResponse.headers.get('Server');
+              
+              if (wixRequestId || wixInstance) {
+                wixScore += 5;
+                wixIndicators.push('Wix headers detected');
+              }
+
+              // Wix-specific content patterns
+              if (/static\.wixstatic\.com/i.test(content)) {
+                wixScore += 4;
+                wixIndicators.push('Wix static content CDN');
+              }
+
+              if (/parastorage\.com/i.test(content)) {
+                wixScore += 3;
+                wixIndicators.push('Wix Parastorage');
+              }
+
+              if (/_wix_browser_sess/i.test(content)) {
+                wixScore += 3;
+                wixIndicators.push('Wix session cookie');
+              }
+
+              if (/wix-warmup-data/i.test(content)) {
+                wixScore += 3;
+                wixIndicators.push('Wix warmup data');
+              }
+
+              if (/wix-thunderbolt/i.test(content)) {
+                wixScore += 3;
+                wixIndicators.push('Wix Thunderbolt');
+              }
+
+              if (/<meta[^>]*name=["']generator["'][^>]*content=["'][^"']*Wix\.com[^"']*["']/i.test(content)) {
+                wixScore += 4;
+                wixIndicators.push('Wix generator meta tag');
+              }
+
+              // Wix-specific JavaScript patterns
+              if (/clientSideRender\.min\.js/i.test(content) && /wix/i.test(content)) {
+                wixScore += 2;
+                wixIndicators.push('Wix client-side renderer');
+              }
+
+              // Require score >= 4 and at least 1 indicator for Wix detection
+              // Strong indicators like Wix headers or CDN alone are sufficient
+              if (wixScore >= 4 && wixIndicators.length >= 1) {
+                isWix = true;
+              }
+
+              console.log(`\n=== Wix Detection for ${normalizedDomain} ===`);
+              console.log(`Score: ${wixScore}`);
+              console.log(`Indicators found: [${wixIndicators.join(', ')}]`);
+              console.log(`Detection result: ${isWix ? 'Wix' : 'Not Wix'}`);
+              console.log(`Requirements: Score >= 4 AND >= 1 indicator`);
+              console.log(`=====================================\n`);
+            }
+
           } catch (contentError) {
             console.error('Error fetching content:', contentError);
           }
         }
 
+        // Set CMS type based on detection
+        if (isWordPress) {
+          cmsType = 'wordpress';
+        } else if (isWix) {
+          cmsType = 'wix';
+        }
+
         // Store the detection result
         const detectionRequest = await storage.createDetectionRequest({
           domain: normalizedDomain,
+          cmsType,
           isWordPress,
           wordPressVersion,
           theme,
@@ -267,6 +344,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.json({
           id: detectionRequest.id,
           domain: normalizedDomain,
+          cmsType,
           isWordPress,
           wordPressVersion,
           theme,
@@ -282,6 +360,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const errorMessage = fetchError instanceof Error ? fetchError.message : 'Unknown error occurred';
         const detectionRequest = await storage.createDetectionRequest({
           domain: normalizedDomain,
+          cmsType: null,
           isWordPress: null,
           wordPressVersion: null,
           theme: null,

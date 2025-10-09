@@ -1,20 +1,8 @@
 import Sidebar from "@/components/sidebar";
 import DashboardHeader from "@/components/dashboard-header";
 import DetectionForm from "@/components/detection-form";
-import ResultsDisplay from "@/components/results-display";
+import ResultsDisplay, { type DetectionResult } from "@/components/results-display";
 import { useState } from "react";
-
-export interface DetectionResult {
-  id: string;
-  domain: string;
-  isWordPress: boolean | null;
-  wordPressVersion?: string | null;
-  theme?: string | null;
-  pluginCount?: string | null;
-  technologies?: string[];
-  error?: string;
-  createdAt: string;
-}
 
 export default function Dashboard() {
   const [result, setResult] = useState<DetectionResult | null>(null);

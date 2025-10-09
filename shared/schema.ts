@@ -12,7 +12,8 @@ export const users = pgTable("users", {
 export const detectionRequests = pgTable("detection_requests", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   domain: text("domain").notNull(),
-  isWordPress: boolean("is_wordpress"),
+  cmsType: text("cms_type"), // 'wordpress', 'wix', or null
+  isWordPress: boolean("is_wordpress"), // keeping for backward compatibility
   wordPressVersion: text("wordpress_version"),
   theme: text("theme"),
   pluginCount: text("plugin_count"),
