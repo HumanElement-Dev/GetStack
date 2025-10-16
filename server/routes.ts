@@ -248,7 +248,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 });
               }
               
-              // Method 5: Try to get plugin info from WordPress REST API
+              // Method 5: Try to get plugin directory listing (rarely works due to security)
+              try {
+                const pluginsUrl = new URL('/wp-content/plugins/', urlToCheck).href;
+                const pluginsDirResponse = await fetch(pluginsUrl, {
+                  method: 'GET',
+                  headers: {
+                    'User-Agent': 'GetStack WordPress Detector/1.0',
+                  },
+                  signal: AbortSignal.timeout(5000),
+                });
+                
+                if (pluginsDirResponse.ok) {
+                  const dirContent = await pluginsDirResponse.text();
+                  
+                  // Check if directory listing is enabled (look for typical directory listing patterns)
+                  if (dirContent.includes('Index of') || dirContent.includes('Parent Directory')) {
+                    console.log('Directory listing found for /wp-content/plugins/');
+                    // Extract folder names from directory listing
+                    const folderMatches = dirContent.match(/href="([^"\/]+)\//gi);
+                    if (folderMatches) {
+                      folderMatches.forEach(match => {
+                        const folderMatch = match.match(/href="([^"\/]+)\//i);
+                        if (folderMatch && folderMatch[1] && folderMatch[1] !== '..' && !coreComponents.has(folderMatch[1])) {
+                          detectedPlugins.add(folderMatch[1]);
+                        }
+                      });
+                    }
+                  } else {
+                    console.log('Directory listing disabled for /wp-content/plugins/');
+                  }
+                }
+              } catch (dirError) {
+                console.log('Plugin directory check failed (expected for most sites)');
+              }
+              
+              // Method 6: Try to get plugin info from WordPress REST API
               try {
                 const apiUrl = new URL('/wp-json/', urlToCheck).href;
                 const apiResponse = await fetch(apiUrl, {
