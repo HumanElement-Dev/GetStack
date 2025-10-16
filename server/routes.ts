@@ -177,34 +177,103 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 }
               }
 
-              // Extract all plugins - improved detection
-              const pluginMatches = content.match(/wp-content\/plugins\/[^\/\?"'\s]+/gi);
+              // Extract all plugins - comprehensive detection
               const detectedPlugins = new Set<string>();
               
-              if (pluginMatches && pluginMatches.length > 0) {
-                pluginMatches.forEach(match => {
-                  const pluginSlug = match.match(/wp-content\/plugins\/([^\/\?"'\s]+)/i)?.[1];
-                  if (pluginSlug) {
+              // Method 1: Direct wp-content/plugins/ references (JS, CSS, images, etc.)
+              const allPluginMatches = content.match(/wp-content\/plugins\/([^\/\?"'\s<>]+)/gi);
+              if (allPluginMatches) {
+                allPluginMatches.forEach(match => {
+                  const pluginSlug = match.match(/wp-content\/plugins\/([^\/\?"'\s<>]+)/i)?.[1];
+                  if (pluginSlug && pluginSlug.length > 0) {
                     detectedPlugins.add(pluginSlug);
                   }
                 });
               }
               
-              // Alternative plugin detection via JS files
-              const jsPluginMatches = content.match(/plugins\/([^\/\?"'\s]+)\/[^\/\?"'\s]*\.js/gi);
-              if (jsPluginMatches && jsPluginMatches.length > 0) {
-                jsPluginMatches.forEach(match => {
-                  const pluginSlug = match.match(/plugins\/([^\/\?"'\s]+)\//i)?.[1];
-                  if (pluginSlug) {
-                    detectedPlugins.add(pluginSlug);
+              // Method 2: Look for plugin handles in script/style tags
+              // WordPress uses id attributes like 'plugin-name-js' or 'plugin-name-css'
+              const handleMatches = content.match(/id=['"]([^'"]+-(js|css|style|script))['"][^>]*>/gi);
+              if (handleMatches) {
+                handleMatches.forEach(match => {
+                  const handleMatch = match.match(/id=['"]([^'"]+)-(js|css|style|script)['"][^>]*>/i);
+                  if (handleMatch && handleMatch[1]) {
+                    const handle = handleMatch[1];
+                    // Common WordPress plugin patterns in handles
+                    if (handle.includes('plugin') || handle.includes('wp-') || handle.length > 3) {
+                      // Check if there's a corresponding plugins path nearby
+                      const pluginPathPattern = new RegExp(`plugins\\/([^\\/\\?"'\\s<>]+)`, 'i');
+                      const nearbyContent = content.substring(Math.max(0, content.indexOf(match) - 500), content.indexOf(match) + 500);
+                      const pathMatch = nearbyContent.match(pluginPathPattern);
+                      if (pathMatch && pathMatch[1]) {
+                        detectedPlugins.add(pathMatch[1]);
+                      }
+                    }
                   }
                 });
+              }
+              
+              // Method 3: Look for inline scripts with plugin data
+              const pluginDataMatches = content.match(/var\s+\w+\s*=\s*{[^}]*plugins\/([^\/\?"'\s<>]+)/gi);
+              if (pluginDataMatches) {
+                pluginDataMatches.forEach(match => {
+                  const pluginMatch = match.match(/plugins\/([^\/\?"'\s<>]+)/i);
+                  if (pluginMatch && pluginMatch[1]) {
+                    detectedPlugins.add(pluginMatch[1]);
+                  }
+                });
+              }
+              
+              // Method 4: Look for CSS/JS files from plugins (alternative patterns)
+              const assetMatches = content.match(/['"](https?:)?\/\/[^'"]*\/plugins\/([^\/\?"'\s<>]+)/gi);
+              if (assetMatches) {
+                assetMatches.forEach(match => {
+                  const pluginMatch = match.match(/\/plugins\/([^\/\?"'\s<>]+)/i);
+                  if (pluginMatch && pluginMatch[1]) {
+                    detectedPlugins.add(pluginMatch[1]);
+                  }
+                });
+              }
+              
+              // Method 5: Try to get plugin info from WordPress REST API
+              try {
+                const apiUrl = new URL('/wp-json/', urlToCheck).href;
+                const apiResponse = await fetch(apiUrl, {
+                  method: 'GET',
+                  headers: {
+                    'User-Agent': 'GetStack WordPress Detector/1.0',
+                  },
+                  signal: AbortSignal.timeout(5000),
+                });
+                
+                if (apiResponse.ok) {
+                  const apiData = await apiResponse.json();
+                  
+                  // Look for plugin namespaces in the API routes
+                  if (apiData && typeof apiData === 'object') {
+                    const apiString = JSON.stringify(apiData);
+                    // Many plugins register custom REST API routes with their plugin slug
+                    const pluginApiMatches = apiString.match(/\/wp-json\/([a-z0-9-_]+)\/v\d+/gi);
+                    if (pluginApiMatches) {
+                      pluginApiMatches.forEach(match => {
+                        const pluginMatch = match.match(/\/wp-json\/([a-z0-9-_]+)\/v\d+/i);
+                        if (pluginMatch && pluginMatch[1] && pluginMatch[1] !== 'wp') {
+                          detectedPlugins.add(pluginMatch[1]);
+                        }
+                      });
+                    }
+                  }
+                }
+              } catch (apiError) {
+                // REST API not available or timed out - this is expected for many sites
+                console.log('REST API check skipped or unavailable');
               }
               
               // Convert to array and set plugin count
               if (detectedPlugins.size > 0) {
                 plugins = Array.from(detectedPlugins);
                 pluginCount = `${detectedPlugins.size} detected`;
+                console.log(`Detected ${plugins.length} plugins: ${plugins.join(', ')}`);
               }
               
               // If we have WordPress but no theme/plugin info, provide fallback
