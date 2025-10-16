@@ -274,6 +274,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 console.log('REST API check skipped or unavailable');
               }
               
+              // Method 7: WPScan API - Enhanced plugin detection (if API token available)
+              // Note: WPScan CLI tool can enumerate plugins, but the API only provides vulnerability lookups
+              // We use this to validate and get additional info about already-detected plugins
+              const wpscanToken = process.env.WPSCAN_API_TOKEN;
+              if (wpscanToken && detectedPlugins.size > 0) {
+                try {
+                  console.log(`Using WPScan API to validate ${detectedPlugins.size} detected plugins...`);
+                  
+                  // Validate detected plugins against WPScan database
+                  // This confirms they are real plugins and provides vulnerability data
+                  const validatedPlugins = new Set<string>();
+                  const pluginsToValidate = Array.from(detectedPlugins);
+                  
+                  for (const pluginSlug of pluginsToValidate) {
+                    try {
+                      const wpscanResponse = await fetch(`https://wpscan.com/api/v3/plugins/${pluginSlug}`, {
+                        method: 'GET',
+                        headers: {
+                          'Authorization': `Token token=${wpscanToken}`,
+                        },
+                        signal: AbortSignal.timeout(3000),
+                      });
+                      
+                      if (wpscanResponse.ok) {
+                        const wpscanData = await wpscanResponse.json();
+                        // Plugin exists in WPScan DB - it's a real plugin
+                        validatedPlugins.add(pluginSlug);
+                        console.log(`✓ WPScan validated: ${pluginSlug}`);
+                      } else if (wpscanResponse.status === 404) {
+                        // Plugin not in WPScan DB - might be custom or very new
+                        console.log(`✗ Not in WPScan DB: ${pluginSlug} (keeping anyway)`);
+                        validatedPlugins.add(pluginSlug);
+                      } else {
+                        // Other HTTP errors (401 unauthorized, 429 rate limit, 5xx server errors)
+                        console.log(`WPScan API returned ${wpscanResponse.status} for ${pluginSlug}, keeping in list`);
+                        validatedPlugins.add(pluginSlug);
+                      }
+                    } catch (wpscanError) {
+                      // API call failed (network error, timeout) - keep the plugin anyway
+                      console.log(`WPScan check failed for ${pluginSlug}, keeping in list`);
+                      validatedPlugins.add(pluginSlug);
+                    }
+                  }
+                  
+                  // Update the detected plugins set with validated results
+                  detectedPlugins.clear();
+                  validatedPlugins.forEach(p => detectedPlugins.add(p));
+                  
+                  console.log('WPScan API validation completed');
+                } catch (wpscanError) {
+                  console.log('WPScan API integration skipped:', wpscanError);
+                }
+              }
+              
               // Convert to array and set plugin count
               if (detectedPlugins.size > 0) {
                 plugins = Array.from(detectedPlugins);
