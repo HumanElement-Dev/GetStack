@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, boolean, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -9,6 +9,20 @@ export const users = pgTable("users", {
   password: text("password").notNull(),
 });
 
+export const pluginSchema = z.object({
+  slug: z.string(),
+  name: z.string(),
+  description: z.string(),
+  category: z.string(),
+  icon: z.string(),
+  color: z.string(),
+  version: z.string().optional(),
+  dependencies: z.array(z.string()),
+  parent: z.string().nullable(),
+});
+
+export type Plugin = z.infer<typeof pluginSchema>;
+
 export const detectionRequests = pgTable("detection_requests", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   domain: text("domain").notNull(),
@@ -17,7 +31,7 @@ export const detectionRequests = pgTable("detection_requests", {
   wordPressVersion: text("wordpress_version"),
   theme: text("theme"),
   pluginCount: text("plugin_count"),
-  plugins: text("plugins").array(),
+  plugins: jsonb("plugins").$type<Plugin[]>(),
   technologies: text("technologies").array(),
   error: text("error"),
   createdAt: timestamp("created_at").defaultNow(),

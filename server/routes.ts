@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { detectionRequestSchema } from "@shared/schema";
+import { detectionRequestSchema, type Plugin } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { readFileSync, existsSync } from "fs";
 import { fileURLToPath } from "url";
@@ -23,6 +23,42 @@ if (!existsSync(signaturesPath)) {
 }
 
 const pluginSignatures = JSON.parse(readFileSync(signaturesPath, 'utf-8'));
+
+// Load plugin metadata
+let metadataPath = join(__dirname, 'plugin-metadata.json');
+if (!existsSync(metadataPath)) {
+  metadataPath = join(__dirname, '..', 'server', 'plugin-metadata.json');
+}
+if (!existsSync(metadataPath)) {
+  metadataPath = join(process.cwd(), 'server', 'plugin-metadata.json');
+}
+
+const pluginMetadata: Record<string, Omit<Plugin, 'version'>> = JSON.parse(readFileSync(metadataPath, 'utf-8'));
+
+// Helper function to enrich plugin slugs with metadata
+function enrichPluginData(slugs: string[], versions: Map<string, string> = new Map()): Plugin[] {
+  return slugs.map(slug => {
+    const metadata = pluginMetadata[slug];
+    if (metadata) {
+      return {
+        ...metadata,
+        version: versions.get(slug) || undefined,
+      };
+    }
+    // Fallback for plugins without metadata
+    return {
+      slug,
+      name: slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+      description: 'WordPress plugin',
+      category: 'Other',
+      icon: 'puzzle',
+      color: '#6B7280',
+      version: versions.get(slug) || undefined,
+      dependencies: [],
+      parent: null,
+    };
+  });
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // WordPress detection endpoint
@@ -71,8 +107,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         let wordPressVersion = null;
         let theme = null;
         let pluginCount = null;
-        let plugins: string[] = [];
+        let plugins: Plugin[] = [];
         let technologies: string[] = [];
+        const pluginVersions = new Map<string, string>();
 
         // Check for WordPress indicators in headers (very specific)
         const generator = response.headers.get('x-generator') || response.headers.get('generator');
@@ -228,6 +265,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   // Try to extract version from the same line
                   const versionMatch = content.substring(pluginMatch.index, pluginMatch.index + 200).match(/\?ver=([0-9.]+)/);
                   if (versionMatch) {
+                    pluginVersions.set(pluginSlug, versionMatch[1]);
                     console.log(`Detected ${pluginSlug} version: ${versionMatch[1]}`);
                   }
                 }
@@ -408,9 +446,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
               
               // Convert to array and set plugin count
               if (detectedPlugins.size > 0) {
-                plugins = Array.from(detectedPlugins);
+                const pluginSlugs = Array.from(detectedPlugins);
+                plugins = enrichPluginData(pluginSlugs, pluginVersions);
                 pluginCount = `${detectedPlugins.size} detected`;
-                console.log(`Detected ${plugins.length} plugins: ${plugins.join(', ')}`);
+                console.log(`Detected ${plugins.length} plugins: ${pluginSlugs.join(', ')}`);
               }
               
               // If we have WordPress but no theme/plugin info, provide fallback

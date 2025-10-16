@@ -1,3 +1,40 @@
+import type { Plugin } from "@shared/schema";
+import { 
+  Layout, ShoppingCart, Mail, Search, TrendingUp, 
+  Zap, Shield, ShieldCheck, FileText, Image, Globe, Code, 
+  Rocket, Gauge, HardDrive, Lock, Smartphone, Copy, 
+  Edit, ArrowRight, Puzzle, CreditCard, FileInput, Database,
+  type LucideIcon
+} from "lucide-react";
+
+const iconMap: Record<string, LucideIcon> = {
+  'layout': Layout,
+  'shopping-cart': ShoppingCart,
+  'mail': Mail,
+  'search': Search,
+  'trending-up': TrendingUp,
+  'zap': Zap,
+  'shield': Shield,
+  'shield-check': ShieldCheck,
+  'file-text': FileText,
+  'image': Image,
+  'globe': Globe,
+  'code': Code,
+  'rocket': Rocket,
+  'gauge': Gauge,
+  'hard-drive': HardDrive,
+  'lock': Lock,
+  'smartphone': Smartphone,
+  'copy': Copy,
+  'edit': Edit,
+  'arrow-right': ArrowRight,
+  'puzzle': Puzzle,
+  'credit-card': CreditCard,
+  'file-input': FileInput,
+  'database': Database,
+  'slider': Image,
+};
+
 export interface DetectionResult {
   id: string;
   domain: string;
@@ -6,7 +43,7 @@ export interface DetectionResult {
   wordPressVersion?: string | null;
   theme?: string | null;
   pluginCount?: string | null;
-  plugins?: string[];
+  plugins?: Plugin[];
   technologies?: string[];
   error?: string;
   createdAt: string;
@@ -114,15 +151,87 @@ export default function ResultsDisplay({ result, isLoading }: ResultsDisplayProp
                   )}
                   {result.pluginCount && (
                     <div>
-                      <span className="font-medium text-blue-800" data-testid="text-plugins">
-                        Plugins: {result.pluginCount}
-                      </span>
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="font-medium text-blue-800" data-testid="text-plugins">
+                          Plugins
+                        </span>
+                        <span className="text-sm text-blue-600 bg-blue-100 px-2 py-1 rounded">
+                          {result.pluginCount}
+                        </span>
+                      </div>
                       {result.plugins && result.plugins.length > 0 && (
-                        <ul className="mt-2 space-y-1 text-sm text-blue-700" data-testid="list-plugins">
-                          {result.plugins.sort().map((plugin, index) => (
-                            <li key={index} className="pl-4">• {plugin}</li>
-                          ))}
-                        </ul>
+                        <div className="space-y-2" data-testid="list-plugins">
+                          {(() => {
+                            // Organize plugins into parent-child relationships
+                            const parentPlugins = result.plugins.filter(p => !p.parent);
+                            const childPlugins = result.plugins.filter(p => p.parent);
+                            const pluginMap = new Map(result.plugins.map(p => [p.slug, p]));
+                            
+                            // Sort parent plugins alphabetically
+                            const sortedParents = parentPlugins.sort((a, b) => a.name.localeCompare(b.name));
+                            
+                            // Render plugins with nesting
+                            const renderPlugin = (plugin: Plugin, isChild = false) => (
+                              <div 
+                                key={plugin.slug} 
+                                className={`flex items-start gap-3 p-3 bg-gradient-to-r from-white to-blue-50/30 rounded-lg border border-blue-100/50 hover:border-blue-200 transition-colors ${isChild ? 'ml-8 border-l-4' : ''}`}
+                                style={isChild ? { borderLeftColor: plugin.color } : {}}
+                                data-testid={`plugin-${plugin.slug}`}
+                              >
+                                <div 
+                                  className="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center text-white font-semibold"
+                                  style={{ backgroundColor: plugin.color }}
+                                >
+                                  {(() => {
+                                    const IconComponent = iconMap[plugin.icon] || Puzzle;
+                                    return <IconComponent className="w-5 h-5" data-icon={plugin.icon} />;
+                                  })()}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-start justify-between gap-2">
+                                    <div className="flex-1">
+                                      <h4 className="font-semibold text-blue-900 text-sm" data-testid={`text-plugin-name-${plugin.slug}`}>
+                                        {plugin.name}
+                                      </h4>
+                                      <p className="text-xs text-blue-700/80 mt-0.5" data-testid={`text-plugin-description-${plugin.slug}`}>
+                                        {plugin.description}
+                                      </p>
+                                    </div>
+                                    <div className="flex flex-col items-end gap-1">
+                                      <span 
+                                        className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium whitespace-nowrap"
+                                        data-testid={`text-plugin-category-${plugin.slug}`}
+                                      >
+                                        {plugin.category}
+                                      </span>
+                                      {plugin.version && (
+                                        <span 
+                                          className="text-xs text-blue-600 font-mono"
+                                          data-testid={`text-plugin-version-${plugin.slug}`}
+                                        >
+                                          v{plugin.version}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                            
+                            return sortedParents.flatMap(parent => {
+                              const children = childPlugins.filter(child => child.parent === parent.slug);
+                              return [
+                                renderPlugin(parent, false),
+                                ...children.map(child => renderPlugin(child, true))
+                              ];
+                            }).concat(
+                              // Add any orphaned child plugins (whose parent wasn't detected)
+                              childPlugins
+                                .filter(child => !pluginMap.has(child.parent || ''))
+                                .map(child => renderPlugin(child, false))
+                            );
+                          })()}
+                        </div>
                       )}
                     </div>
                   )}

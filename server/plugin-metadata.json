@@ -1,0 +1,342 @@
+{
+  "elementor": {
+    "name": "Elementor",
+    "slug": "elementor",
+    "description": "Drag-and-drop page builder for creating stunning websites",
+    "category": "Page Builder",
+    "icon": "layout",
+    "color": "#92003B",
+    "dependencies": [],
+    "parent": null
+  },
+  "elementor-pro": {
+    "name": "Elementor Pro",
+    "slug": "elementor-pro",
+    "description": "Advanced features and widgets for Elementor page builder",
+    "category": "Page Builder",
+    "icon": "layout",
+    "color": "#92003B",
+    "dependencies": ["elementor"],
+    "parent": "elementor"
+  },
+  "woocommerce": {
+    "name": "WooCommerce",
+    "slug": "woocommerce",
+    "description": "The world's most popular open-source eCommerce solution",
+    "category": "eCommerce",
+    "icon": "shopping-cart",
+    "color": "#96588A",
+    "dependencies": [],
+    "parent": null
+  },
+  "woocommerce-gateway-stripe": {
+    "name": "WooCommerce Stripe Gateway",
+    "slug": "woocommerce-gateway-stripe",
+    "description": "Accept credit card payments via Stripe in WooCommerce",
+    "category": "eCommerce",
+    "icon": "credit-card",
+    "color": "#96588A",
+    "dependencies": ["woocommerce"],
+    "parent": "woocommerce"
+  },
+  "contact-form-7": {
+    "name": "Contact Form 7",
+    "slug": "contact-form-7",
+    "description": "Just another contact form plugin. Simple but flexible",
+    "category": "Forms",
+    "icon": "mail",
+    "color": "#3B82F6",
+    "dependencies": [],
+    "parent": null
+  },
+  "wordpress-seo": {
+    "name": "Yoast SEO",
+    "slug": "wordpress-seo",
+    "description": "Improve your WordPress SEO rankings and website visibility",
+    "category": "SEO",
+    "icon": "search",
+    "color": "#A4286A",
+    "dependencies": [],
+    "parent": null
+  },
+  "seo-by-rank-math": {
+    "name": "Rank Math SEO",
+    "slug": "seo-by-rank-math",
+    "description": "SEO plugin with advanced features for better rankings",
+    "category": "SEO",
+    "icon": "trending-up",
+    "color": "#0066CC",
+    "dependencies": [],
+    "parent": null
+  },
+  "all-in-one-seo-pack": {
+    "name": "All in One SEO",
+    "slug": "all-in-one-seo-pack",
+    "description": "Original WordPress SEO plugin and toolkit",
+    "category": "SEO",
+    "icon": "trending-up",
+    "color": "#00A32A",
+    "dependencies": [],
+    "parent": null
+  },
+  "divi": {
+    "name": "Divi Builder",
+    "slug": "divi",
+    "description": "Powerful visual page builder by Elegant Themes",
+    "category": "Page Builder",
+    "icon": "layout",
+    "color": "#6C2EB9",
+    "dependencies": [],
+    "parent": null
+  },
+  "js_composer": {
+    "name": "WPBakery Page Builder",
+    "slug": "js_composer",
+    "description": "Drag and drop page builder for WordPress",
+    "category": "Page Builder",
+    "icon": "layout",
+    "color": "#4A90E2",
+    "dependencies": [],
+    "parent": null
+  },
+  "jetpack": {
+    "name": "Jetpack",
+    "slug": "jetpack",
+    "description": "Security, performance, and site management tools from WordPress.com",
+    "category": "Performance",
+    "icon": "zap",
+    "color": "#00BE28",
+    "dependencies": [],
+    "parent": null
+  },
+  "wordfence": {
+    "name": "Wordfence Security",
+    "slug": "wordfence",
+    "description": "WordPress firewall & security scanner with malware detection",
+    "category": "Security",
+    "icon": "shield",
+    "color": "#00A859",
+    "dependencies": [],
+    "parent": null
+  },
+  "akismet": {
+    "name": "Akismet Anti-Spam",
+    "slug": "akismet",
+    "description": "Spam protection for your WordPress site",
+    "category": "Security",
+    "icon": "shield-check",
+    "color": "#1E73BE",
+    "dependencies": [],
+    "parent": null
+  },
+  "gravityforms": {
+    "name": "Gravity Forms",
+    "slug": "gravityforms",
+    "description": "Advanced form builder for WordPress with powerful features",
+    "category": "Forms",
+    "icon": "file-text",
+    "color": "#C8432C",
+    "dependencies": [],
+    "parent": null
+  },
+  "revslider": {
+    "name": "Revolution Slider",
+    "slug": "revslider",
+    "description": "Premium slider plugin for creating stunning visual content",
+    "category": "Media",
+    "icon": "image",
+    "color": "#E74C3C",
+    "dependencies": [],
+    "parent": null
+  },
+  "sitepress-multilingual-cms": {
+    "name": "WPML",
+    "slug": "sitepress-multilingual-cms",
+    "description": "Make your site multilingual with WPML translation plugin",
+    "category": "Localization",
+    "icon": "globe",
+    "color": "#7F54B3",
+    "dependencies": [],
+    "parent": null
+  },
+  "advanced-custom-fields": {
+    "name": "Advanced Custom Fields",
+    "slug": "advanced-custom-fields",
+    "description": "Customize WordPress with powerful, professional and intuitive fields",
+    "category": "Developer Tools",
+    "icon": "code",
+    "color": "#0073AA",
+    "dependencies": [],
+    "parent": null
+  },
+  "advanced-custom-fields-pro": {
+    "name": "Advanced Custom Fields Pro",
+    "slug": "advanced-custom-fields-pro",
+    "description": "Premium version with advanced field types and features",
+    "category": "Developer Tools",
+    "icon": "code",
+    "color": "#0073AA",
+    "dependencies": ["advanced-custom-fields"],
+    "parent": "advanced-custom-fields"
+  },
+  "wp-rocket": {
+    "name": "WP Rocket",
+    "slug": "wp-rocket",
+    "description": "Performance optimization plugin for faster WordPress sites",
+    "category": "Performance",
+    "icon": "rocket",
+    "color": "#F56640",
+    "dependencies": [],
+    "parent": null
+  },
+  "autoptimize": {
+    "name": "Autoptimize",
+    "slug": "autoptimize",
+    "description": "Optimize CSS, JS and HTML for faster page loads",
+    "category": "Performance",
+    "icon": "gauge",
+    "color": "#DD3333",
+    "dependencies": [],
+    "parent": null
+  },
+  "wp-mail-smtp": {
+    "name": "WP Mail SMTP",
+    "slug": "wp-mail-smtp",
+    "description": "Fix WordPress email delivery with SMTP configuration",
+    "category": "Email",
+    "icon": "mail",
+    "color": "#E27730",
+    "dependencies": [],
+    "parent": null
+  },
+  "wpforms": {
+    "name": "WPForms",
+    "slug": "wpforms",
+    "description": "Beginner-friendly drag & drop WordPress form builder",
+    "category": "Forms",
+    "icon": "file-input",
+    "color": "#E27730",
+    "dependencies": [],
+    "parent": null
+  },
+  "wpforms-lite": {
+    "name": "WPForms Lite",
+    "slug": "wpforms-lite",
+    "description": "Beginner-friendly drag & drop WordPress form builder",
+    "category": "Forms",
+    "icon": "file-input",
+    "color": "#E27730",
+    "dependencies": [],
+    "parent": null
+  },
+  "wp-super-cache": {
+    "name": "WP Super Cache",
+    "slug": "wp-super-cache",
+    "description": "Fast static page caching plugin for WordPress",
+    "category": "Performance",
+    "icon": "database",
+    "color": "#21759B",
+    "dependencies": [],
+    "parent": null
+  },
+  "w3-total-cache": {
+    "name": "W3 Total Cache",
+    "slug": "w3-total-cache",
+    "description": "Comprehensive caching and performance optimization plugin",
+    "category": "Performance",
+    "icon": "database",
+    "color": "#5F9EA0",
+    "dependencies": [],
+    "parent": null
+  },
+  "redirection": {
+    "name": "Redirection",
+    "slug": "redirection",
+    "description": "Manage 301 redirections and track 404 errors",
+    "category": "SEO",
+    "icon": "arrow-right",
+    "color": "#9B59B6",
+    "dependencies": [],
+    "parent": null
+  },
+  "duplicate-post": {
+    "name": "Duplicate Post",
+    "slug": "duplicate-post",
+    "description": "Clone posts and pages quickly and easily",
+    "category": "Utilities",
+    "icon": "copy",
+    "color": "#0073AA",
+    "dependencies": [],
+    "parent": null
+  },
+  "classic-editor": {
+    "name": "Classic Editor",
+    "slug": "classic-editor",
+    "description": "Restore the classic WordPress editor (pre-Gutenberg)",
+    "category": "Editor",
+    "icon": "edit",
+    "color": "#135E96",
+    "dependencies": [],
+    "parent": null
+  },
+  "updraftplus": {
+    "name": "UpdraftPlus",
+    "slug": "updraftplus",
+    "description": "Backup and restoration plugin for WordPress",
+    "category": "Backup",
+    "icon": "hard-drive",
+    "color": "#DF6926",
+    "dependencies": [],
+    "parent": null
+  },
+  "really-simple-ssl": {
+    "name": "Really Simple SSL",
+    "slug": "really-simple-ssl",
+    "description": "Automatically configure SSL and fix mixed content",
+    "category": "Security",
+    "icon": "lock",
+    "color": "#2E7D32",
+    "dependencies": [],
+    "parent": null
+  },
+  "smush": {
+    "name": "Smush",
+    "slug": "smush",
+    "description": "Image optimization and compression plugin",
+    "category": "Media",
+    "icon": "image",
+    "color": "#8D6E63",
+    "dependencies": [],
+    "parent": null
+  },
+  "amp": {
+    "name": "AMP",
+    "slug": "amp",
+    "description": "Enable Accelerated Mobile Pages for faster mobile load",
+    "category": "Performance",
+    "icon": "smartphone",
+    "color": "#0379C4",
+    "dependencies": [],
+    "parent": null
+  },
+  "slick-slider": {
+    "name": "Slick Slider",
+    "slug": "slick-slider",
+    "description": "Responsive carousel slider for WordPress",
+    "category": "Media",
+    "icon": "slider",
+    "color": "#3498DB",
+    "dependencies": [],
+    "parent": null
+  },
+  "owl-carousel": {
+    "name": "Owl Carousel",
+    "slug": "owl-carousel",
+    "description": "Touch-enabled jQuery carousel slider",
+    "category": "Media",
+    "icon": "slider",
+    "color": "#E67E22",
+    "dependencies": [],
+    "parent": null
+  }
+}
