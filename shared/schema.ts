@@ -17,6 +17,7 @@ export const detectionRequests = pgTable("detection_requests", {
   wordPressVersion: text("wordpress_version"),
   theme: text("theme"),
   pluginCount: text("plugin_count"),
+  plugins: text("plugins").array(),
   technologies: text("technologies").array(),
   error: text("error"),
   createdAt: timestamp("created_at").defaultNow(),

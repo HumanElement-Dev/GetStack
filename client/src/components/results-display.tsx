@@ -6,6 +6,7 @@ export interface DetectionResult {
   wordPressVersion?: string | null;
   theme?: string | null;
   pluginCount?: string | null;
+  plugins?: string[];
   technologies?: string[];
   error?: string;
   createdAt: string;
@@ -104,19 +105,27 @@ export default function ResultsDisplay({ result, isLoading }: ResultsDisplayProp
                 <h3 className="text-lg font-semibold text-blue-800 mb-2">
                   Theme & Plugin Details
                 </h3>
-                <div className="bg-white rounded-lg p-4 border border-blue-200">
-                  <ul className="space-y-2 text-sm text-blue-700">
-                    {result.theme && (
-                      <li data-testid="text-theme">
-                        <span className="font-medium">Active Theme:</span> {result.theme}
-                      </li>
-                    )}
-                    {result.pluginCount && (
-                      <li data-testid="text-plugins">
-                        <span className="font-medium">Plugins:</span> {result.pluginCount}
-                      </li>
-                    )}
-                  </ul>
+                <div className="bg-white rounded-lg p-4 border border-blue-200 space-y-4">
+                  {result.theme && (
+                    <div>
+                      <span className="font-medium text-blue-800">Active Theme:</span>
+                      <p className="text-sm text-blue-700 mt-1" data-testid="text-theme">{result.theme}</p>
+                    </div>
+                  )}
+                  {result.pluginCount && (
+                    <div>
+                      <span className="font-medium text-blue-800" data-testid="text-plugins">
+                        Plugins: {result.pluginCount}
+                      </span>
+                      {result.plugins && result.plugins.length > 0 && (
+                        <ul className="mt-2 space-y-1 text-sm text-blue-700" data-testid="list-plugins">
+                          {result.plugins.sort().map((plugin, index) => (
+                            <li key={index} className="pl-4">• {plugin}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

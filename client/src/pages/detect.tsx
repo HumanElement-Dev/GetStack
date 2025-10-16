@@ -15,8 +15,8 @@ export default function Detect() {
       
       <main className="flex-1 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl mx-auto">
-          {/* Hero Section */}
-          <div className={`text-center mb-12 transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
+          {/* Hero Section - fades out when results appear */}
+          <div className={`text-center mb-12 transition-all duration-500 ${result ? 'opacity-0 h-0 mb-0 overflow-hidden' : 'opacity-100'}`}>
             <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-4">
               Is this website running WordPress?
             </h1>
@@ -25,8 +25,8 @@ export default function Detect() {
             </p>
           </div>
 
-          {/* Detection Form */}
-          <div className={`transition-transform duration-300 ${isLoading ? '-translate-y-8' : 'translate-y-0'}`}>
+          {/* Detection Form - moves to top when results appear */}
+          <div className={`transition-all duration-300 ${result ? 'mb-8' : 'mb-12'}`}>
             <DetectionForm 
               onResult={setResult} 
               isLoading={isLoading} 
@@ -37,8 +37,8 @@ export default function Detect() {
           {/* Results Display */}
           <ResultsDisplay result={result} isLoading={isLoading} />
 
-          {/* Feature Section */}
-          <FeatureSection />
+          {/* Feature Section - only show when no results */}
+          {!result && <FeatureSection />}
         </div>
       </main>
 

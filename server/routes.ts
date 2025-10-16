@@ -51,6 +51,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         let wordPressVersion = null;
         let theme = null;
         let pluginCount = null;
+        let plugins: string[] = [];
         let technologies: string[] = [];
 
         // Check for WordPress indicators in headers (very specific)
@@ -176,28 +177,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 }
               }
 
-              // Count plugins (rough estimate) - improved detection
+              // Extract all plugins - improved detection
               const pluginMatches = content.match(/wp-content\/plugins\/[^\/\?"'\s]+/gi);
+              const detectedPlugins = new Set<string>();
+              
               if (pluginMatches && pluginMatches.length > 0) {
-                const uniquePlugins = new Set(pluginMatches.map(match => 
-                  match.match(/wp-content\/plugins\/([^\/\?"'\s]+)/i)?.[1]
-                ).filter(Boolean));
-                if (uniquePlugins.size > 0) {
-                  pluginCount = `${uniquePlugins.size} detected`;
-                }
+                pluginMatches.forEach(match => {
+                  const pluginSlug = match.match(/wp-content\/plugins\/([^\/\?"'\s]+)/i)?.[1];
+                  if (pluginSlug) {
+                    detectedPlugins.add(pluginSlug);
+                  }
+                });
               }
               
               // Alternative plugin detection via JS files
-              if (!pluginCount) {
-                const jsPluginMatches = content.match(/plugins\/([^\/\?"'\s]+)\/[^\/\?"'\s]*\.js/gi);
-                if (jsPluginMatches && jsPluginMatches.length > 0) {
-                  const uniqueJsPlugins = new Set(jsPluginMatches.map(match => 
-                    match.match(/plugins\/([^\/\?"'\s]+)\//i)?.[1]
-                  ).filter(Boolean));
-                  if (uniqueJsPlugins.size > 0) {
-                    pluginCount = `${uniqueJsPlugins.size} detected`;
+              const jsPluginMatches = content.match(/plugins\/([^\/\?"'\s]+)\/[^\/\?"'\s]*\.js/gi);
+              if (jsPluginMatches && jsPluginMatches.length > 0) {
+                jsPluginMatches.forEach(match => {
+                  const pluginSlug = match.match(/plugins\/([^\/\?"'\s]+)\//i)?.[1];
+                  if (pluginSlug) {
+                    detectedPlugins.add(pluginSlug);
                   }
-                }
+                });
+              }
+              
+              // Convert to array and set plugin count
+              if (detectedPlugins.size > 0) {
+                plugins = Array.from(detectedPlugins);
+                pluginCount = `${detectedPlugins.size} detected`;
               }
               
               // If we have WordPress but no theme/plugin info, provide fallback
@@ -337,6 +344,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           wordPressVersion,
           theme,
           pluginCount,
+          plugins,
           technologies,
           error: null,
         });
@@ -349,6 +357,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           wordPressVersion,
           theme,
           pluginCount,
+          plugins,
           technologies,
           createdAt: detectionRequest.createdAt,
         });
@@ -365,6 +374,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           wordPressVersion: null,
           theme: null,
           pluginCount: null,
+          plugins: [],
           technologies: [],
           error: errorMessage,
         });

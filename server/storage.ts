@@ -45,6 +45,7 @@ export class MemStorage implements IStorage {
       wordPressVersion: insertRequest.wordPressVersion ?? null,
       theme: insertRequest.theme ?? null,
       pluginCount: insertRequest.pluginCount ?? null,
+      plugins: insertRequest.plugins ?? null,
       technologies: insertRequest.technologies ?? null,
       error: insertRequest.error ?? null,
       id,
