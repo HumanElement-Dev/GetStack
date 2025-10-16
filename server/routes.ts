@@ -199,7 +199,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 'wp-edit-widgets',
                 'wp-format-library',
                 'wp-list-reusable-blocks',
-                'wp-widgets-customizer'
+                'wp-widgets-customizer',
+                'batch' // Common false positive - WordPress core batch processing
               ]);
               
               // Method 1: Path detection - detect from actual /wp-content/plugins/FOLDER-NAME/ paths
@@ -258,7 +259,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               
               // Method 6: CSS Class/ID Pattern Detection
               // Scan for known CSS class patterns used by popular plugins
-              for (const [key, sig] of Object.entries(pluginSignatures.cssClassPatterns)) {
+              for (const [key, sig] of Object.entries(pluginSignatures.cssClassPatterns) as [string, { patterns: string[], name: string }][]) {
                 for (const pattern of sig.patterns) {
                   const classRegex = new RegExp(`class="[^"]*${pattern}[^"]*"`, 'i');
                   if (classRegex.test(content)) {
@@ -271,7 +272,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               
               // Method 7: Script/Style Handle Detection
               // Check for known script/style filenames and handles within script/link tags only
-              for (const [key, sig] of Object.entries(pluginSignatures.scriptPatterns)) {
+              for (const [key, sig] of Object.entries(pluginSignatures.scriptPatterns) as [string, { patterns: string[], name: string }][]) {
                 for (const pattern of sig.patterns) {
                   // Only match within script or link tags to avoid false positives from body text
                   const scriptRegex = new RegExp(`<script[^>]*src=["'][^"']*${pattern}[^"']*["']`, 'i');
@@ -287,7 +288,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               
               // Method 8: Meta and JSON-LD Detection
               // Parse meta tags and structured data for plugin references
-              for (const [key, sig] of Object.entries(pluginSignatures.metaPatterns)) {
+              for (const [key, sig] of Object.entries(pluginSignatures.metaPatterns) as [string, { patterns: string[], name: string }][]) {
                 for (const pattern of sig.patterns) {
                   const metaRegex = new RegExp(pattern, 'i');
                   if (metaRegex.test(content)) {
@@ -316,7 +317,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     const apiString = JSON.stringify(apiData);
                     
                     // Check for known plugin REST endpoints
-                    for (const [key, sig] of Object.entries(pluginSignatures.restEndpoints)) {
+                    for (const [key, sig] of Object.entries(pluginSignatures.restEndpoints) as [string, { endpoint: string, name: string }][]) {
                       if (apiString.includes(sig.endpoint)) {
                         detectedPlugins.add(sig.name);
                         console.log(`Detected ${sig.name} via REST endpoint: ${sig.endpoint}`);
