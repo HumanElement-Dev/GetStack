@@ -40,6 +40,20 @@ The core functionality analyzes websites through multiple detection methods:
 - **Timeout Handling**: 10-second request timeout for reliable performance
 - **Error Handling**: Comprehensive error reporting for failed analyses
 
+### Plugin Detection Approach & Limitations
+The application detects WordPress plugins using strict pattern matching to ensure accuracy:
+- **Primary Method**: Scans HTML source for `/wp-content/plugins/FOLDER-NAME/` paths
+- **Directory Listing**: Attempts to access `/wp-content/plugins/` (rarely available due to security)
+- **REST API Check**: Queries WordPress REST API for plugin namespaces
+- **Core Filtering**: Excludes WordPress core components (wp-block-editor, wp-site-health, etc.)
+
+**Known Limitations:**
+- Only detects plugins that load frontend assets (JS, CSS, images)
+- Backend-only plugins are invisible (security, admin tools, email, backup plugins)
+- Asset optimization plugins (like Autoptimize) can hide plugin paths by bundling files
+- Average detection rate: ~40-50% of installed plugins on typical WordPress sites
+- Complete plugin detection requires WordPress admin access or third-party APIs (e.g., WPScan)
+
 ## Development and Deployment
 The application supports both development and production environments:
 - **Development**: Vite dev server with hot module replacement
