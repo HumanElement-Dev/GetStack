@@ -41,12 +41,19 @@ The core functionality analyzes websites through multiple detection methods:
 - **Error Handling**: Comprehensive error reporting for failed analyses
 
 ### Plugin Detection Approach & Limitations
-The application detects WordPress plugins using strict pattern matching to ensure accuracy:
-- **Primary Method**: Scans HTML source for `/wp-content/plugins/FOLDER-NAME/` paths
-- **Directory Listing**: Attempts to access `/wp-content/plugins/` (rarely available due to security)
-- **REST API Check**: Queries WordPress REST API for plugin namespaces
-- **WPScan Validation**: If `WPSCAN_API_TOKEN` is configured, validates detected plugins against WPScan vulnerability database
-- **Core Filtering**: Excludes WordPress core components (wp-block-editor, wp-site-health, etc.)
+The application uses a comprehensive multi-method detection system to identify WordPress plugins:
+
+**Detection Methods:**
+1. **Path Detection**: Scans HTML for `/wp-content/plugins/FOLDER-NAME/` paths with version extraction from `?ver=` query strings
+2. **Directory Listing**: Attempts to access `/wp-content/plugins/` (rarely available due to security)
+3. **CSS Class/ID Patterns**: Detects plugins via known CSS classes (elementor-*, woocommerce, etc.) using signature database
+4. **Script/Style Handles**: Identifies plugins from script/link asset URLs (elementor-frontend.min.js, woocommerce.min.js)
+5. **Meta/JSON-LD Parsing**: Extracts plugin references from structured data and meta tags (Yoast, RankMath)
+6. **REST Endpoint Detection**: Checks for known plugin REST namespaces (wc/, yoast/, jetpack/, contact-form-7/)
+7. **WPScan Validation**: If `WPSCAN_API_TOKEN` is configured, validates detected plugins against WPScan vulnerability database
+8. **Core Filtering**: Excludes WordPress core components (wp-block-editor, wp-site-health, etc.)
+
+**Signature Database:** `server/plugin-signatures.json` contains fingerprints for 15+ popular plugins with CSS classes, script patterns, REST endpoints, and meta patterns for enhanced detection accuracy.
 
 **WPScan API Integration:**
 - Optional enhancement requiring free API token from https://wpscan.com/register
