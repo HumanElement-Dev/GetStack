@@ -3,14 +3,25 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { detectionRequestSchema } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
-import { readFileSync } from "fs";
+import { readFileSync, existsSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 
 // Load plugin signatures once at startup
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const signaturesPath = join(__dirname, 'plugin-signatures.json');
+
+// Try multiple paths for plugin-signatures.json to support both dev and production
+let signaturesPath = join(__dirname, 'plugin-signatures.json');
+if (!existsSync(signaturesPath)) {
+  // Fallback to source location if not found in dist
+  signaturesPath = join(__dirname, '..', 'server', 'plugin-signatures.json');
+}
+if (!existsSync(signaturesPath)) {
+  // Last fallback for production build without copy
+  signaturesPath = join(process.cwd(), 'server', 'plugin-signatures.json');
+}
+
 const pluginSignatures = JSON.parse(readFileSync(signaturesPath, 'utf-8'));
 
 export async function registerRoutes(app: Express): Promise<Server> {
