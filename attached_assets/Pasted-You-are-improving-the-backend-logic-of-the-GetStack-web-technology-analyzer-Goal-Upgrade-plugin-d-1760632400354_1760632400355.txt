@@ -1,0 +1,53 @@
+You are improving the backend logic of the GetStack web technology analyzer.
+
+Goal:
+Upgrade plugin detection for WordPress sites, WITHOUT changing the UI or output structure.
+
+Context:
+GetStack already detects some plugins by scanning a website’s HTML and asset URLs, but we want more reliable and extensive results.
+
+---
+
+TASK DETAILS:
+
+1. Keep the UI and data schema exactly as they are.  
+   You may modify or extend internal detection functions, but must preserve the JSON output shape currently used by the app.
+
+2. Expand plugin detection by adding additional **methods** — not just more plugin names.
+
+---
+
+### DETECTION METHODS TO IMPLEMENT
+
+#### (A) Path detection
+- Continue scanning for `/wp-content/plugins/<plugin-slug>/` in:
+  - `<link>` tags
+  - `<script>` tags
+  - Inline JS or HTML attributes
+- Capture version numbers from query strings (e.g. `?ver=1.2.3`).
+
+#### (B) Classname / ID detection
+- Check `<body>`, `<div>`, and `<section>` elements for known CSS classnames or IDs used by popular plugins.
+  Examples:
+  - `elementor-page`, `elementor-section`, `et_pb_`, `vc_row`, `woocommerce`, `wpcf7`, `rank-math-schema`
+- Maintain a dictionary mapping of class patterns → plugin names.
+
+#### (C) Script and style handles
+- Inspect filenames and inline script identifiers:
+  - e.g., `elementor-frontend.min.js`, `woocommerce.min.js`, `yoast-schema-graph`
+- Use substring or regex matching for known patterns.
+
+#### (D) Meta / JSON-LD injection
+- Parse `<meta>` and `<script type="application/ld+json">` tags for structured data that references plugin origins.
+  - e.g., `"@id":"rank-math-schema"`, `"yoast-schema-graph"`.
+
+#### (E) REST endpoints
+- Fetch `/wp-json/` and check for known plugin REST namespaces:
+  - WooCommerce → `wc/`
+  - Yoast → `yoast/`
+  - Contact Form 7 → `contact-form-7/`
+  - Jetpack → `jetpack/`
+- Append any confirmed matches to the detected plugin list with `confidence: 1.0`.
+
+#### (F) Signature database
+- Create or extend a `signatures.json` file with known fingerprints:
