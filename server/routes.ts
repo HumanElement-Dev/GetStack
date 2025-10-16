@@ -180,12 +180,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
               // Extract all plugins - comprehensive detection
               const detectedPlugins = new Set<string>();
               
+              // WordPress core components to exclude (only actual core, not plugins)
+              const coreComponents = new Set([
+                'wp-site-health',
+                'wp-block-editor',
+                'wp-block-library',
+                'wp-edit-blocks',
+                'wp-edit-post',
+                'wp-edit-widgets',
+                'wp-format-library',
+                'wp-list-reusable-blocks',
+                'wp-widgets-customizer'
+              ]);
+              
               // Method 1: Direct wp-content/plugins/ references (JS, CSS, images, etc.)
               const allPluginMatches = content.match(/wp-content\/plugins\/([^\/\?"'\s<>]+)/gi);
               if (allPluginMatches) {
                 allPluginMatches.forEach(match => {
                   const pluginSlug = match.match(/wp-content\/plugins\/([^\/\?"'\s<>]+)/i)?.[1];
-                  if (pluginSlug && pluginSlug.length > 0) {
+                  if (pluginSlug && pluginSlug.length > 0 && !coreComponents.has(pluginSlug)) {
                     detectedPlugins.add(pluginSlug);
                   }
                 });
@@ -205,7 +218,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                       const pluginPathPattern = new RegExp(`plugins\\/([^\\/\\?"'\\s<>]+)`, 'i');
                       const nearbyContent = content.substring(Math.max(0, content.indexOf(match) - 500), content.indexOf(match) + 500);
                       const pathMatch = nearbyContent.match(pluginPathPattern);
-                      if (pathMatch && pathMatch[1]) {
+                      if (pathMatch && pathMatch[1] && !coreComponents.has(pathMatch[1])) {
                         detectedPlugins.add(pathMatch[1]);
                       }
                     }
@@ -218,7 +231,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               if (pluginDataMatches) {
                 pluginDataMatches.forEach(match => {
                   const pluginMatch = match.match(/plugins\/([^\/\?"'\s<>]+)/i);
-                  if (pluginMatch && pluginMatch[1]) {
+                  if (pluginMatch && pluginMatch[1] && !coreComponents.has(pluginMatch[1])) {
                     detectedPlugins.add(pluginMatch[1]);
                   }
                 });
@@ -229,7 +242,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               if (assetMatches) {
                 assetMatches.forEach(match => {
                   const pluginMatch = match.match(/\/plugins\/([^\/\?"'\s<>]+)/i);
-                  if (pluginMatch && pluginMatch[1]) {
+                  if (pluginMatch && pluginMatch[1] && !coreComponents.has(pluginMatch[1])) {
                     detectedPlugins.add(pluginMatch[1]);
                   }
                 });
@@ -257,7 +270,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     if (pluginApiMatches) {
                       pluginApiMatches.forEach(match => {
                         const pluginMatch = match.match(/\/wp-json\/([a-z0-9-_]+)\/v\d+/i);
-                        if (pluginMatch && pluginMatch[1] && pluginMatch[1] !== 'wp') {
+                        if (pluginMatch && pluginMatch[1] && pluginMatch[1] !== 'wp' && !coreComponents.has(pluginMatch[1])) {
                           detectedPlugins.add(pluginMatch[1]);
                         }
                       });
