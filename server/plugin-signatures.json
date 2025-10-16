@@ -1,0 +1,126 @@
+{
+  "cssClassPatterns": {
+    "elementor": {
+      "patterns": ["elementor-page", "elementor-section", "elementor-widget", "elementor-element"],
+      "name": "elementor"
+    },
+    "elementor-pro": {
+      "patterns": ["elementor-pro"],
+      "name": "elementor-pro"
+    },
+    "woocommerce": {
+      "patterns": ["woocommerce", "wc-", "product-type-", "cart-empty", "woocommerce-page"],
+      "name": "woocommerce"
+    },
+    "contact-form-7": {
+      "patterns": ["wpcf7", "wpcf7-form"],
+      "name": "contact-form-7"
+    },
+    "yoast-seo": {
+      "patterns": ["yoast", "yoast-schema-graph"],
+      "name": "wordpress-seo"
+    },
+    "rank-math": {
+      "patterns": ["rank-math", "rank-math-schema"],
+      "name": "seo-by-rank-math"
+    },
+    "divi": {
+      "patterns": ["et_pb_", "et-db", "et_divi"],
+      "name": "divi"
+    },
+    "wpbakery": {
+      "patterns": ["vc_row", "vc_column", "wpb_"],
+      "name": "js_composer"
+    },
+    "jetpack": {
+      "patterns": ["jetpack", "jp-"],
+      "name": "jetpack"
+    },
+    "wordfence": {
+      "patterns": ["wordfence", "wf-"],
+      "name": "wordfence"
+    },
+    "akismet": {
+      "patterns": ["akismet"],
+      "name": "akismet"
+    },
+    "gravityforms": {
+      "patterns": ["gform", "gfield", "gravity-form"],
+      "name": "gravityforms"
+    },
+    "slider-revolution": {
+      "patterns": ["rev_slider", "revslider", "tp-caption"],
+      "name": "revslider"
+    },
+    "wpml": {
+      "patterns": ["wpml-", "icl_"],
+      "name": "sitepress-multilingual-cms"
+    }
+  },
+  "scriptPatterns": {
+    "elementor": {
+      "patterns": ["elementor-frontend", "elementor-webpack"],
+      "name": "elementor"
+    },
+    "woocommerce": {
+      "patterns": ["woocommerce", "wc-add-to-cart", "wc-cart-fragments"],
+      "name": "woocommerce"
+    },
+    "contact-form-7": {
+      "patterns": ["wpcf7", "contact-form-7"],
+      "name": "contact-form-7"
+    },
+    "yoast": {
+      "patterns": ["yoast", "wp-seo"],
+      "name": "wordpress-seo"
+    },
+    "jetpack": {
+      "patterns": ["jetpack", "jp-"],
+      "name": "jetpack"
+    },
+    "slick-slider": {
+      "patterns": ["slick.min.js", "slick-slider"],
+      "name": "slick-slider"
+    },
+    "owl-carousel": {
+      "patterns": ["owl.carousel"],
+      "name": "owl-carousel"
+    }
+  },
+  "restEndpoints": {
+    "woocommerce": {
+      "endpoint": "wc/",
+      "name": "woocommerce"
+    },
+    "yoast": {
+      "endpoint": "yoast/",
+      "name": "wordpress-seo"
+    },
+    "contact-form-7": {
+      "endpoint": "contact-form-7/",
+      "name": "contact-form-7"
+    },
+    "jetpack": {
+      "endpoint": "jetpack/",
+      "name": "jetpack"
+    },
+    "woocommerce-stripe": {
+      "endpoint": "wc-stripe/",
+      "name": "woocommerce-gateway-stripe"
+    }
+  },
+  "metaPatterns": {
+    "yoast": {
+      "patterns": ["yoast", "yoast-schema-graph", "Yoast SEO"],
+      "name": "wordpress-seo"
+    },
+    "rank-math": {
+      "patterns": ["rank-math", "rank-math-schema"],
+      "name": "seo-by-rank-math"
+    },
+    "aioseo": {
+      "patterns": ["aioseo", "All in One SEO"],
+      "name": "all-in-one-seo-pack"
+    }
+  }
+}

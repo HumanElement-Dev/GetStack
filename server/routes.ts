@@ -3,6 +3,15 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { detectionRequestSchema } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
+import { readFileSync } from "fs";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
+
+// Load plugin signatures once at startup
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const signaturesPath = join(__dirname, 'plugin-signatures.json');
+const pluginSignatures = JSON.parse(readFileSync(signaturesPath, 'utf-8'));
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // WordPress detection endpoint
@@ -193,8 +202,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 'wp-widgets-customizer'
               ]);
               
-              // STRICT Method: Only detect from actual /wp-content/plugins/FOLDER-NAME/ paths
+              // Method 1: Path detection - detect from actual /wp-content/plugins/FOLDER-NAME/ paths
               // This is the most reliable method - plugins must load at least one asset to be detected
+              // Also capture version numbers from query strings (?ver=1.2.3)
               const pluginPathPattern = /wp-content\/plugins\/([a-z0-9_-]+)(?:\/|\\)/gi;
               let pluginMatch;
               
@@ -202,10 +212,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 const pluginSlug = pluginMatch[1];
                 if (pluginSlug && !coreComponents.has(pluginSlug)) {
                   detectedPlugins.add(pluginSlug);
+                  
+                  // Try to extract version from the same line
+                  const versionMatch = content.substring(pluginMatch.index, pluginMatch.index + 200).match(/\?ver=([0-9.]+)/);
+                  if (versionMatch) {
+                    console.log(`Detected ${pluginSlug} version: ${versionMatch[1]}`);
+                  }
                 }
               }
               
-              // Method 5: Try to get plugin directory listing (rarely works due to security)
+              // Method 2: Try to get plugin directory listing (rarely works due to security)
               try {
                 const pluginsUrl = new URL('/wp-content/plugins/', urlToCheck).href;
                 const pluginsDirResponse = await fetch(pluginsUrl, {
@@ -240,7 +256,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 console.log('Plugin directory check failed (expected for most sites)');
               }
               
-              // Method 6: Try to get plugin info from WordPress REST API
+              // Method 6: CSS Class/ID Pattern Detection
+              // Scan for known CSS class patterns used by popular plugins
+              for (const [key, sig] of Object.entries(pluginSignatures.cssClassPatterns)) {
+                for (const pattern of sig.patterns) {
+                  const classRegex = new RegExp(`class="[^"]*${pattern}[^"]*"`, 'i');
+                  if (classRegex.test(content)) {
+                    detectedPlugins.add(sig.name);
+                    console.log(`Detected ${sig.name} via CSS class: ${pattern}`);
+                    break;
+                  }
+                }
+              }
+              
+              // Method 7: Script/Style Handle Detection
+              // Check for known script/style filenames and handles within script/link tags only
+              for (const [key, sig] of Object.entries(pluginSignatures.scriptPatterns)) {
+                for (const pattern of sig.patterns) {
+                  // Only match within script or link tags to avoid false positives from body text
+                  const scriptRegex = new RegExp(`<script[^>]*src=["'][^"']*${pattern}[^"']*["']`, 'i');
+                  const linkRegex = new RegExp(`<link[^>]*href=["'][^"']*${pattern}[^"']*["']`, 'i');
+                  
+                  if (scriptRegex.test(content) || linkRegex.test(content)) {
+                    detectedPlugins.add(sig.name);
+                    console.log(`Detected ${sig.name} via script/style asset: ${pattern}`);
+                    break;
+                  }
+                }
+              }
+              
+              // Method 8: Meta and JSON-LD Detection
+              // Parse meta tags and structured data for plugin references
+              for (const [key, sig] of Object.entries(pluginSignatures.metaPatterns)) {
+                for (const pattern of sig.patterns) {
+                  const metaRegex = new RegExp(pattern, 'i');
+                  if (metaRegex.test(content)) {
+                    detectedPlugins.add(sig.name);
+                    console.log(`Detected ${sig.name} via meta/JSON-LD: ${pattern}`);
+                    break;
+                  }
+                }
+              }
+              
+              // Method 9: WordPress REST API - Custom plugin endpoints
               try {
                 const apiUrl = new URL('/wp-json/', urlToCheck).href;
                 const apiResponse = await fetch(apiUrl, {
@@ -254,10 +312,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 if (apiResponse.ok) {
                   const apiData = await apiResponse.json();
                   
-                  // Look for plugin namespaces in the API routes
                   if (apiData && typeof apiData === 'object') {
                     const apiString = JSON.stringify(apiData);
-                    // Many plugins register custom REST API routes with their plugin slug
+                    
+                    // Check for known plugin REST endpoints
+                    for (const [key, sig] of Object.entries(pluginSignatures.restEndpoints)) {
+                      if (apiString.includes(sig.endpoint)) {
+                        detectedPlugins.add(sig.name);
+                        console.log(`Detected ${sig.name} via REST endpoint: ${sig.endpoint}`);
+                      }
+                    }
+                    
+                    // Also look for custom plugin namespaces
                     const pluginApiMatches = apiString.match(/\/wp-json\/([a-z0-9-_]+)\/v\d+/gi);
                     if (pluginApiMatches) {
                       pluginApiMatches.forEach(match => {
@@ -274,7 +340,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 console.log('REST API check skipped or unavailable');
               }
               
-              // Method 7: WPScan API - Enhanced plugin detection (if API token available)
+              // Method 10: WPScan API - Enhanced plugin detection (if API token available)
               // Note: WPScan CLI tool can enumerate plugins, but the API only provides vulnerability lookups
               // We use this to validate and get additional info about already-detected plugins
               const wpscanToken = process.env.WPSCAN_API_TOKEN;
