@@ -45,14 +45,23 @@ The application detects WordPress plugins using strict pattern matching to ensur
 - **Primary Method**: Scans HTML source for `/wp-content/plugins/FOLDER-NAME/` paths
 - **Directory Listing**: Attempts to access `/wp-content/plugins/` (rarely available due to security)
 - **REST API Check**: Queries WordPress REST API for plugin namespaces
+- **WPScan Validation**: If `WPSCAN_API_TOKEN` is configured, validates detected plugins against WPScan vulnerability database
 - **Core Filtering**: Excludes WordPress core components (wp-block-editor, wp-site-health, etc.)
+
+**WPScan API Integration:**
+- Optional enhancement requiring free API token from https://wpscan.com/register
+- Free tier: 25 API requests per day
+- Used for validation only - confirms detected plugins exist in WPScan database
+- All plugins are preserved regardless of WPScan response (handles 404, auth errors, rate limits gracefully)
+- Does not change WordPress/Wix detection logic - only enhances plugin confidence
 
 **Known Limitations:**
 - Only detects plugins that load frontend assets (JS, CSS, images)
 - Backend-only plugins are invisible (security, admin tools, email, backup plugins)
 - Asset optimization plugins (like Autoptimize) can hide plugin paths by bundling files
 - Average detection rate: ~40-50% of installed plugins on typical WordPress sites
-- Complete plugin detection requires WordPress admin access or third-party APIs (e.g., WPScan)
+- WPScan API provides vulnerability lookups, not plugin enumeration
+- Complete plugin detection requires WordPress admin access or scanner tools
 
 ## Development and Deployment
 The application supports both development and production environments:
