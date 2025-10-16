@@ -177,7 +177,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 }
               }
 
-              // Extract all plugins - comprehensive detection
+              // Extract all plugins - strict detection to avoid false positives
               const detectedPlugins = new Set<string>();
               
               // WordPress core components to exclude (only actual core, not plugins)
@@ -193,59 +193,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 'wp-widgets-customizer'
               ]);
               
-              // Method 1: Direct wp-content/plugins/ references (JS, CSS, images, etc.)
-              const allPluginMatches = content.match(/wp-content\/plugins\/([^\/\?"'\s<>]+)/gi);
-              if (allPluginMatches) {
-                allPluginMatches.forEach(match => {
-                  const pluginSlug = match.match(/wp-content\/plugins\/([^\/\?"'\s<>]+)/i)?.[1];
-                  if (pluginSlug && pluginSlug.length > 0 && !coreComponents.has(pluginSlug)) {
-                    detectedPlugins.add(pluginSlug);
-                  }
-                });
-              }
+              // STRICT Method: Only detect from actual /wp-content/plugins/FOLDER-NAME/ paths
+              // This is the most reliable method - plugins must load at least one asset to be detected
+              const pluginPathPattern = /wp-content\/plugins\/([a-z0-9_-]+)(?:\/|\\)/gi;
+              let pluginMatch;
               
-              // Method 2: Look for plugin handles in script/style tags
-              // WordPress uses id attributes like 'plugin-name-js' or 'plugin-name-css'
-              const handleMatches = content.match(/id=['"]([^'"]+-(js|css|style|script))['"][^>]*>/gi);
-              if (handleMatches) {
-                handleMatches.forEach(match => {
-                  const handleMatch = match.match(/id=['"]([^'"]+)-(js|css|style|script)['"][^>]*>/i);
-                  if (handleMatch && handleMatch[1]) {
-                    const handle = handleMatch[1];
-                    // Common WordPress plugin patterns in handles
-                    if (handle.includes('plugin') || handle.includes('wp-') || handle.length > 3) {
-                      // Check if there's a corresponding plugins path nearby
-                      const pluginPathPattern = new RegExp(`plugins\\/([^\\/\\?"'\\s<>]+)`, 'i');
-                      const nearbyContent = content.substring(Math.max(0, content.indexOf(match) - 500), content.indexOf(match) + 500);
-                      const pathMatch = nearbyContent.match(pluginPathPattern);
-                      if (pathMatch && pathMatch[1] && !coreComponents.has(pathMatch[1])) {
-                        detectedPlugins.add(pathMatch[1]);
-                      }
-                    }
-                  }
-                });
-              }
-              
-              // Method 3: Look for inline scripts with plugin data
-              const pluginDataMatches = content.match(/var\s+\w+\s*=\s*{[^}]*plugins\/([^\/\?"'\s<>]+)/gi);
-              if (pluginDataMatches) {
-                pluginDataMatches.forEach(match => {
-                  const pluginMatch = match.match(/plugins\/([^\/\?"'\s<>]+)/i);
-                  if (pluginMatch && pluginMatch[1] && !coreComponents.has(pluginMatch[1])) {
-                    detectedPlugins.add(pluginMatch[1]);
-                  }
-                });
-              }
-              
-              // Method 4: Look for CSS/JS files from plugins (alternative patterns)
-              const assetMatches = content.match(/['"](https?:)?\/\/[^'"]*\/plugins\/([^\/\?"'\s<>]+)/gi);
-              if (assetMatches) {
-                assetMatches.forEach(match => {
-                  const pluginMatch = match.match(/\/plugins\/([^\/\?"'\s<>]+)/i);
-                  if (pluginMatch && pluginMatch[1] && !coreComponents.has(pluginMatch[1])) {
-                    detectedPlugins.add(pluginMatch[1]);
-                  }
-                });
+              while ((pluginMatch = pluginPathPattern.exec(content)) !== null) {
+                const pluginSlug = pluginMatch[1];
+                if (pluginSlug && !coreComponents.has(pluginSlug)) {
+                  detectedPlugins.add(pluginSlug);
+                }
               }
               
               // Method 5: Try to get plugin directory listing (rarely works due to security)
