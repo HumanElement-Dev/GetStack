@@ -103,6 +103,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         let isWordPress = false;
         let isWix = false;
+        let isShopify = false;
         let cmsType = null;
         let wordPressVersion = null;
         let theme = null;
@@ -569,6 +570,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
               console.log(`=====================================\n`);
             }
 
+            // Shopify Detection - only check if WordPress and Wix were not detected
+            if (!isWordPress && !isWix) {
+              let shopifyScore = 0;
+              const shopifyIndicators = [];
+
+              // Check for Shopify-specific headers first (most reliable)
+              const shopId = fullResponse.headers.get('X-ShopId');
+              const shopifyStage = fullResponse.headers.get('X-Shopify-Stage');
+              const shopifyApiCallLimit = fullResponse.headers.get('X-Shopify-Shop-Api-Call-Limit');
+              
+              if (shopId || shopifyStage || shopifyApiCallLimit) {
+                shopifyScore += 5;
+                shopifyIndicators.push('Shopify headers detected');
+              }
+
+              // Shopify CDN detection (very strong indicator)
+              if (/cdn\.shopify\.com/i.test(content)) {
+                shopifyScore += 4;
+                shopifyIndicators.push('Shopify CDN');
+              }
+
+              // myshopify.com domain references
+              if (/\.myshopify\.com/i.test(content)) {
+                shopifyScore += 4;
+                shopifyIndicators.push('myshopify.com domain');
+              }
+
+              // Shopify JavaScript objects and functions
+              if (/Shopify\.theme/i.test(content) || /Shopify\.routes/i.test(content)) {
+                shopifyScore += 3;
+                shopifyIndicators.push('Shopify JavaScript API');
+              }
+
+              if (/shopify-features/i.test(content)) {
+                shopifyScore += 3;
+                shopifyIndicators.push('Shopify features');
+              }
+
+              // Shopify checkout references
+              if (/shopify\.checkout/i.test(content) || /\/checkout\.shopify\.com/i.test(content)) {
+                shopifyScore += 3;
+                shopifyIndicators.push('Shopify checkout');
+              }
+
+              // Shopify theme engine
+              if (/Shopify\.Checkout/i.test(content) || /shopify_pay/i.test(content)) {
+                shopifyScore += 2;
+                shopifyIndicators.push('Shopify payment system');
+              }
+
+              // Shopify analytics
+              if (/_shopify_s|_shopify_y|_shopify_sa_p|_shopify_sa_t/i.test(content)) {
+                shopifyScore += 2;
+                shopifyIndicators.push('Shopify analytics cookies');
+              }
+
+              // Require score >= 4 and at least 1 indicator for Shopify detection
+              if (shopifyScore >= 4 && shopifyIndicators.length >= 1) {
+                isShopify = true;
+              }
+
+              console.log(`\n=== Shopify Detection for ${normalizedDomain} ===`);
+              console.log(`Score: ${shopifyScore}`);
+              console.log(`Indicators found: [${shopifyIndicators.join(', ')}]`);
+              console.log(`Detection result: ${isShopify ? 'Shopify' : 'Not Shopify'}`);
+              console.log(`Requirements: Score >= 4 AND >= 1 indicator`);
+              console.log(`=====================================\n`);
+            }
+
           } catch (contentError) {
             console.error('Error fetching content:', contentError);
           }
@@ -579,6 +649,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           cmsType = 'wordpress';
         } else if (isWix) {
           cmsType = 'wix';
+        } else if (isShopify) {
+          cmsType = 'shopify';
         }
 
         // Store the detection result
