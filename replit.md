@@ -1,6 +1,6 @@
 # Overview
 
-GetStack is a WordPress detection tool that allows users to analyze websites to determine if they're running WordPress. The application provides detailed insights about WordPress installations, including version detection, theme identification, and technology stack analysis. Built as a full-stack web application, it features a modern React frontend with a clean, professional interface and an Express.js backend that handles website analysis requests.
+GetStack is a website platform detection tool that allows users to analyze websites to determine their underlying technology stack. The application detects WordPress, Wix, and Shopify platforms, and provides detailed insights including version detection, theme identification, plugin analysis (for WordPress), and general technology stack detection. Built as a full-stack web application, it features a modern React frontend with a clean, professional interface and an Express.js backend that handles website analysis requests.
 
 # User Preferences
 
@@ -32,13 +32,33 @@ The application uses a flexible storage approach:
 - **Schema Management**: Drizzle Kit for database migrations and schema management
 - **Fallback Storage**: In-memory storage implementation for development/testing
 
-## WordPress Detection Logic
-The core functionality analyzes websites through multiple detection methods:
-- **HTTP Analysis**: Examines HTTP headers for WordPress indicators
-- **Content Inspection**: Looks for WordPress-specific patterns and signatures
-- **Technology Detection**: Identifies additional technologies in use
+## Platform Detection Logic
+The core functionality analyzes websites to detect WordPress, Wix, and Shopify through multiple detection methods:
+
+### WordPress Detection
+- **HTTP Headers**: Examines `X-Generator`, `X-Powered-By` headers for WordPress signatures
+- **Meta Tags**: Looks for WordPress generator meta tags with version information
+- **Content Patterns**: Identifies `/wp-content/`, `/wp-includes/`, and WordPress REST API endpoints
+- **Score-based System**: Requires minimum score of 4 and at least 1 strong indicator for positive detection
+
+### Wix Detection
+- **HTTP Headers**: Checks for `X-Wix-Request-Id`, `X-Wix-Instance` headers
+- **CDN Patterns**: Detects `static.wixstatic.com` and `parastorage.com` resources
+- **JavaScript**: Identifies Wix-specific scripts like `wix-thunderbolt` and `clientSideRender.min.js`
+- **Cookies**: Looks for `_wix_browser_sess` and other Wix session identifiers
+
+### Shopify Detection
+- **HTTP Headers**: Checks for `X-ShopId`, `X-Shopify-Stage`, `X-Shopify-Shop-Api-Call-Limit`
+- **CDN Patterns**: Detects `cdn.shopify.com` resources
+- **Domain References**: Identifies `myshopify.com` references in content
+- **JavaScript API**: Looks for `Shopify.theme`, `Shopify.routes`, and `Shopify.Checkout` objects
+- **Analytics**: Detects Shopify-specific cookies (`_shopify_s`, `_shopify_y`, etc.)
+
+**General Features:**
+- **Technology Detection**: Identifies additional technologies in use (React, Vue, Next.js, etc.)
 - **Timeout Handling**: 10-second request timeout for reliable performance
 - **Error Handling**: Comprehensive error reporting for failed analyses
+- **SSRF Protection**: Blocks private IP ranges to prevent server-side request forgery
 
 ### Plugin Detection Approach & Limitations
 The application uses a comprehensive multi-method detection system to identify WordPress plugins:
