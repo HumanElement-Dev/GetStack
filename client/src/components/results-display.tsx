@@ -273,26 +273,55 @@ export default function ResultsDisplay({ result, isLoading }: ResultsDisplayProp
     );
   }
 
-  // WordPress not detected
+  // Shopify detected
+  if (result.cmsType === 'shopify') {
+    return (
+      <div className="space-y-6">
+        {/* Shopify Confirmation Card */}
+        <div className="bg-green-50 border border-green-200 rounded-xl p-6" data-testid="shopify-detected">
+          <div className="flex items-start space-x-4">
+            <div className="flex-shrink-0">
+              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                <i className="fab fa-shopify text-green-600 text-lg"></i>
+              </div>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-green-800 mb-2">
+                This website is running Shopify
+              </h3>
+              <p className="text-green-700 mb-4" data-testid="text-domain">
+                <span className="font-medium">{result.domain}</span> is powered by Shopify
+              </p>
+              <div className="bg-white rounded-lg p-4 border border-green-200">
+                <p className="text-sm text-green-700">Shopify eCommerce platform detected</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Platform not recognized
   return (
-    <div className="bg-red-50 border border-red-200 rounded-xl p-6 mb-8" data-testid="wordpress-not-detected">
+    <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 mb-8" data-testid="platform-not-detected">
       <div className="flex items-start space-x-4">
         <div className="flex-shrink-0">
-          <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-            <i className="fas fa-times text-red-600 text-lg"></i>
+          <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
+            <i className="fas fa-question text-amber-600 text-lg"></i>
           </div>
         </div>
         <div className="flex-1">
-          <h3 className="text-lg font-semibold text-red-800 mb-2">
-            WordPress Not Detected
+          <h3 className="text-lg font-semibold text-amber-800 mb-2">
+            Platform Not Recognized
           </h3>
-          <p className="text-red-700 mb-4" data-testid="text-domain">
-            <span className="font-medium">{result.domain}</span> does not appear to be running WordPress
+          <p className="text-amber-700 mb-4" data-testid="text-domain">
+            <span className="font-medium">{result.domain}</span> does not appear to be running WordPress, Wix, or Shopify
           </p>
           {result.technologies && result.technologies.length > 0 && (
-            <div className="bg-white rounded-lg p-4 border border-red-200">
-              <h4 className="font-medium text-red-800 mb-2">Detected Technologies:</h4>
-              <ul className="space-y-1 text-sm text-red-700" data-testid="list-technologies">
+            <div className="bg-white rounded-lg p-4 border border-amber-200">
+              <h4 className="font-medium text-amber-800 mb-2">Detected Technologies:</h4>
+              <ul className="space-y-1 text-sm text-amber-700" data-testid="list-technologies">
                 {result.technologies.map((tech, index) => (
                   <li key={index}>• {tech}</li>
                 ))}
