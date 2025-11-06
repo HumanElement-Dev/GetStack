@@ -10,21 +10,9 @@ export default function Sidebar() {
   ];
 
   return (
-    <aside className="w-64 bg-card border-r border-border flex flex-col h-screen sticky top-0">
-      {/* Branding */}
-      <div className="p-6">
-        <Link href="/" data-testid="link-sidebar-home">
-          <div className="flex items-center space-x-3 cursor-pointer hover:opacity-80 transition-opacity">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center">
-              <i className="fas fa-layer-group text-xl text-primary"></i>
-            </div>
-            <span className="text-xl font-semibold text-foreground">GetStack</span>
-          </div>
-        </Link>
-      </div>
-
+    <aside className="w-64 bg-card border-r border-border flex flex-col min-h-full">
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-2">
+      <nav className="flex-1 p-4 pt-6 space-y-2">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = location === item.path;

@@ -1,4 +1,5 @@
 import DashboardHeader from "@/components/dashboard-header";
+import Sidebar from "@/components/sidebar";
 import ResultsDisplay, { type DetectionResult } from "@/components/results-display";
 import { useState } from "react";
 
@@ -8,18 +9,24 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Dashboard Header with search integrated */}
+      {/* Full-width Dashboard Header */}
       <DashboardHeader 
         onResult={setResult} 
         isLoading={isLoading} 
         setIsLoading={setIsLoading}
       />
 
-      {/* Content Area */}
-      <main className="flex-1 p-8">
-        {/* Results Display */}
-        <ResultsDisplay result={result} isLoading={isLoading} />
-      </main>
+      {/* Content Area with Sidebar */}
+      <div className="flex flex-1">
+        {/* Sidebar */}
+        <Sidebar />
+
+        {/* Main Content */}
+        <main className="flex-1 p-8">
+          {/* Results Display */}
+          <ResultsDisplay result={result} isLoading={isLoading} />
+        </main>
+      </div>
     </div>
   );
 }
