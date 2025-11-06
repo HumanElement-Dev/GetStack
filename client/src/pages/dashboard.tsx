@@ -20,9 +20,9 @@ export default function Dashboard() {
 
         {/* Content Area */}
         <main className="flex-1 p-8">
-          <div className="max-w-4xl mx-auto space-y-8">
-            {/* Detection Form */}
-            <div className={`transition-transform duration-300 ${isLoading ? '-translate-y-4' : 'translate-y-0'}`}>
+          <div className={`space-y-8 transition-all duration-500 ${result ? 'max-w-full' : 'max-w-4xl mx-auto'}`}>
+            {/* Detection Form - fade out completely when results appear */}
+            <div className={`transition-all duration-500 ${result ? 'opacity-0 h-0 overflow-hidden' : 'opacity-100'}`}>
               <DetectionForm 
                 onResult={setResult} 
                 isLoading={isLoading} 
