@@ -106,11 +106,11 @@ export default function ResultsDisplay({ result, isLoading }: ResultsDisplayProp
               </div>
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-green-800 mb-2">
-                This website is running WordPress
+              <h3 className="text-2xl font-bold text-green-800 mb-2" data-testid="text-domain">
+                {result.domain}
               </h3>
-              <p className="text-green-700 mb-4" data-testid="text-domain">
-                <span className="font-medium">{result.domain}</span> is powered by WordPress
+              <p className="text-green-700 mb-4">
+                This website is running <span className="font-semibold">WordPress</span>
               </p>
               {result.wordPressVersion && (
                 <div className="bg-white rounded-lg p-4 border border-green-200">
@@ -257,11 +257,11 @@ export default function ResultsDisplay({ result, isLoading }: ResultsDisplayProp
               </div>
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-green-800 mb-2">
-                This website is running Wix
+              <h3 className="text-2xl font-bold text-green-800 mb-2" data-testid="text-domain">
+                {result.domain}
               </h3>
-              <p className="text-green-700 mb-4" data-testid="text-domain">
-                <span className="font-medium">{result.domain}</span> is powered by Wix
+              <p className="text-green-700 mb-4">
+                This website is running <span className="font-semibold">Wix</span>
               </p>
               <div className="bg-white rounded-lg p-4 border border-green-200">
                 <p className="text-sm text-green-700">Wix website builder detected</p>
@@ -286,11 +286,11 @@ export default function ResultsDisplay({ result, isLoading }: ResultsDisplayProp
               </div>
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-green-800 mb-2">
-                This website is running Shopify
+              <h3 className="text-2xl font-bold text-green-800 mb-2" data-testid="text-domain">
+                {result.domain}
               </h3>
-              <p className="text-green-700 mb-4" data-testid="text-domain">
-                <span className="font-medium">{result.domain}</span> is powered by Shopify
+              <p className="text-green-700 mb-4">
+                This website is running <span className="font-semibold">Shopify</span>
               </p>
               <div className="bg-white rounded-lg p-4 border border-green-200">
                 <p className="text-sm text-green-700">Shopify eCommerce platform detected</p>
