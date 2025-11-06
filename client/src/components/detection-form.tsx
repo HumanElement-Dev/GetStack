@@ -189,7 +189,7 @@ export default function DetectionForm({ onResult, isLoading, setIsLoading, inlin
             disabled={isLoading}
             data-testid="button-detect"
           >
-            <span>{isLoading ? "Analyzing..." : "Check WordPress"}</span>
+            <span>{isLoading ? "Analyzing..." : "Check Website"}</span>
             <i className="fas fa-search text-sm"></i>
           </Button>
         </form>
