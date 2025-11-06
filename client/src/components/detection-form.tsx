@@ -8,15 +8,17 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import type { DetectionResult } from "@/pages/home";
+import type { DetectionResult } from "@/components/results-display";
+import { Search } from "lucide-react";
 
 interface DetectionFormProps {
   onResult: (result: DetectionResult | null) => void;
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
+  inline?: boolean;
 }
 
-export default function DetectionForm({ onResult, isLoading, setIsLoading }: DetectionFormProps) {
+export default function DetectionForm({ onResult, isLoading, setIsLoading, inline = false }: DetectionFormProps) {
   const { toast } = useToast();
   const [inputIcon, setInputIcon] = useState("fas fa-globe");
 
@@ -101,6 +103,49 @@ export default function DetectionForm({ onResult, isLoading, setIsLoading }: Det
       setInputIcon("fas fa-globe text-muted-foreground");
     }
   };
+
+  if (inline) {
+    return (
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="flex gap-2">
+          <FormField
+            control={form.control}
+            name="domain"
+            render={({ field }) => (
+              <FormItem className="flex-1 mb-0">
+                <FormControl>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      {...field}
+                      type="text"
+                      placeholder="Enter website URL to analyze..."
+                      className="pl-10 bg-background"
+                      data-testid="input-domain"
+                      onChange={(e) => {
+                        field.onChange(e);
+                        handleInputChange(e.target.value);
+                      }}
+                    />
+                  </div>
+                </FormControl>
+                <FormMessage className="absolute" />
+              </FormItem>
+            )}
+          />
+
+          <Button 
+            type="submit" 
+            className="bg-primary hover:bg-blue-600 disabled:bg-muted disabled:text-muted-foreground text-primary-foreground px-6 rounded-lg font-medium transition-colors duration-200"
+            disabled={isLoading}
+            data-testid="button-detect"
+          >
+            {isLoading ? "Analyzing..." : "Analyze"}
+          </Button>
+        </form>
+      </Form>
+    );
+  }
 
   return (
     <div className="bg-card border border-border rounded-xl shadow-sm p-8 mb-8">
