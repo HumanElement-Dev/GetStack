@@ -106,11 +106,11 @@ export default function ResultsDisplay({ result, isLoading }: ResultsDisplayProp
               </div>
             </div>
             <div className="flex-1">
-              <p className="text-3xl font-bold text-green-900 mb-2" data-testid="text-domain">
-                {result.domain}
-              </p>
-              <p className="text-base text-green-700 mb-4">
-                This website is running <span className="font-semibold">WordPress</span>
+              <h3 className="text-lg font-semibold text-green-800 mb-2">
+                This website is running WordPress
+              </h3>
+              <p className="text-green-700 mb-4" data-testid="text-domain">
+                <span className="font-medium">{result.domain}</span> is powered by WordPress
               </p>
               {result.wordPressVersion && (
                 <div className="bg-white rounded-lg p-4 border border-green-200">
@@ -257,11 +257,11 @@ export default function ResultsDisplay({ result, isLoading }: ResultsDisplayProp
               </div>
             </div>
             <div className="flex-1">
-              <p className="text-3xl font-bold text-green-900 mb-2" data-testid="text-domain">
-                {result.domain}
-              </p>
-              <p className="text-base text-green-700 mb-4">
-                This website is running <span className="font-semibold">Wix</span>
+              <h3 className="text-lg font-semibold text-green-800 mb-2">
+                This website is running Wix
+              </h3>
+              <p className="text-green-700 mb-4" data-testid="text-domain">
+                <span className="font-medium">{result.domain}</span> is powered by Wix
               </p>
               <div className="bg-white rounded-lg p-4 border border-green-200">
                 <p className="text-sm text-green-700">Wix website builder detected</p>
@@ -286,11 +286,11 @@ export default function ResultsDisplay({ result, isLoading }: ResultsDisplayProp
               </div>
             </div>
             <div className="flex-1">
-              <p className="text-3xl font-bold text-green-900 mb-2" data-testid="text-domain">
-                {result.domain}
-              </p>
-              <p className="text-base text-green-700 mb-4">
-                This website is running <span className="font-semibold">Shopify</span>
+              <h3 className="text-lg font-semibold text-green-800 mb-2">
+                This website is running Shopify
+              </h3>
+              <p className="text-green-700 mb-4" data-testid="text-domain">
+                <span className="font-medium">{result.domain}</span> is powered by Shopify
               </p>
               <div className="bg-white rounded-lg p-4 border border-green-200">
                 <p className="text-sm text-green-700">Shopify eCommerce platform detected</p>
@@ -312,11 +312,11 @@ export default function ResultsDisplay({ result, isLoading }: ResultsDisplayProp
           </div>
         </div>
         <div className="flex-1">
-          <p className="text-3xl font-bold text-amber-900 mb-2" data-testid="text-domain">
-            {result.domain}
-          </p>
-          <p className="text-base text-amber-700 mb-4">
-            Platform not recognized - does not appear to be running WordPress, Wix, or Shopify
+          <h3 className="text-lg font-semibold text-amber-800 mb-2">
+            Platform Not Recognized
+          </h3>
+          <p className="text-amber-700 mb-4" data-testid="text-domain">
+            <span className="font-medium">{result.domain}</span> does not appear to be running WordPress, Wix, or Shopify
           </p>
           {result.technologies && result.technologies.length > 0 && (
             <div className="bg-white rounded-lg p-4 border border-amber-200">
