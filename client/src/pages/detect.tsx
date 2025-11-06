@@ -14,7 +14,7 @@ export default function Detect() {
       <Header />
       
       <main className="flex-1 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-2xl mx-auto">
+        <div className={`transition-all duration-500 ${result ? 'max-w-6xl' : 'max-w-2xl'} mx-auto`}>
           {/* Hero Section - fades out when results appear */}
           <div className={`text-center mb-12 transition-all duration-500 ${result ? 'opacity-0 h-0 mb-0 overflow-hidden' : 'opacity-100'}`}>
             <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-4">
@@ -25,8 +25,8 @@ export default function Detect() {
             </p>
           </div>
 
-          {/* Detection Form - moves to top when results appear */}
-          <div className={`transition-all duration-300 ${result ? 'mb-8' : 'mb-12'}`}>
+          {/* Detection Form - fades out completely when results appear */}
+          <div className={`transition-all duration-500 ${result ? 'opacity-0 h-0 mb-0 overflow-hidden' : 'opacity-100 mb-12'}`}>
             <DetectionForm 
               onResult={setResult} 
               isLoading={isLoading} 
