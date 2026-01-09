@@ -107,7 +107,7 @@ export default function DetectionForm({ onResult, isLoading, setIsLoading, inlin
   if (inline) {
     return (
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="flex gap-2">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col sm:flex-row gap-2">
           <FormField
             control={form.control}
             name="domain"
@@ -129,14 +129,14 @@ export default function DetectionForm({ onResult, isLoading, setIsLoading, inlin
                     />
                   </div>
                 </FormControl>
-                <FormMessage className="absolute" />
+                <FormMessage className="text-xs mt-1" />
               </FormItem>
             )}
           />
 
           <Button 
             type="submit" 
-            className="bg-primary hover:bg-blue-600 disabled:bg-muted disabled:text-muted-foreground text-primary-foreground px-6 rounded-lg font-medium transition-colors duration-200"
+            className="w-full sm:w-auto bg-primary hover:bg-blue-600 disabled:bg-muted disabled:text-muted-foreground text-primary-foreground px-6 rounded-lg font-medium transition-colors duration-200"
             disabled={isLoading}
             data-testid="button-detect"
           >

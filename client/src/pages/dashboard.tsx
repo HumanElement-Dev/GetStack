@@ -18,11 +18,13 @@ export default function Dashboard() {
 
       {/* Content Area with Sidebar */}
       <div className="flex flex-1">
-        {/* Sidebar */}
-        <Sidebar />
+        {/* Sidebar - hidden on mobile */}
+        <div className="hidden md:block">
+          <Sidebar />
+        </div>
 
         {/* Main Content */}
-        <main className="flex-1 p-8">
+        <main className="flex-1 p-4 md:p-8">
           {/* Results Display */}
           <ResultsDisplay result={result} isLoading={isLoading} />
         </main>
