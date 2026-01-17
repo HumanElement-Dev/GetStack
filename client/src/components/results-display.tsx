@@ -1,4 +1,4 @@
-import type { Plugin } from "@shared/schema";
+import type { Plugin, ThemeInfo } from "@shared/schema";
 import { 
   Layout, ShoppingCart, Mail, Search, TrendingUp, 
   Zap, Shield, ShieldCheck, FileText, Image, Globe, Code, 
@@ -42,6 +42,7 @@ export interface DetectionResult {
   isWordPress: boolean | null;
   wordPressVersion?: string | null;
   theme?: string | null;
+  themeInfo?: ThemeInfo | null;
   pluginCount?: string | null;
   plugins?: Plugin[];
   technologies?: string[];
@@ -129,26 +130,139 @@ export default function ResultsDisplay({ result, isLoading }: ResultsDisplayProp
           </div>
         </div>
 
-        {/* Theme & Plugin Details Card */}
-        {(result.theme || result.pluginCount) && (
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-6" data-testid="theme-plugin-details">
-            <div className="flex items-start space-x-4">
+        {/* Theme Details Card */}
+        {(result.theme || result.themeInfo) && (
+          <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 md:p-6" data-testid="theme-details">
+            <div className="flex flex-col sm:flex-row items-start gap-3 sm:space-x-4">
               <div className="flex-shrink-0">
-                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                  <i className="fas fa-layer-group text-blue-600 text-lg"></i>
+                <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                  <i className="fas fa-paint-brush text-purple-600 text-lg"></i>
                 </div>
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-blue-800 mb-2">
-                  Theme & Plugin Details
+                <h3 className="text-lg font-semibold text-purple-800 mb-3">
+                  Theme Details
                 </h3>
-                <div className="bg-white rounded-lg p-4 border border-blue-200 space-y-4">
-                  {result.theme && (
+                <div className="bg-white rounded-lg p-4 border border-purple-200 space-y-4">
+                  {result.themeInfo ? (
+                    <div className="space-y-3">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <h4 className="font-bold text-purple-900 text-lg" data-testid="text-theme-name">
+                            {result.themeInfo.name}
+                          </h4>
+                          {result.themeInfo.isChildTheme && (
+                            <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium">
+                              Child Theme
+                            </span>
+                          )}
+                        </div>
+                        {result.themeInfo.version && (
+                          <span className="text-sm text-purple-600 font-mono bg-purple-50 px-2 py-1 rounded" data-testid="text-theme-version">
+                            v{result.themeInfo.version}
+                          </span>
+                        )}
+                      </div>
+                      
+                      {result.themeInfo.description && (
+                        <p className="text-sm text-purple-700" data-testid="text-theme-description">
+                          {result.themeInfo.description}
+                        </p>
+                      )}
+                      
+                      {result.themeInfo.author && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="text-purple-600">By:</span>
+                          {result.themeInfo.authorUri ? (
+                            <a 
+                              href={result.themeInfo.authorUri} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-purple-800 font-medium hover:underline"
+                              data-testid="text-theme-author"
+                            >
+                              {result.themeInfo.author}
+                            </a>
+                          ) : (
+                            <span className="text-purple-800 font-medium" data-testid="text-theme-author">
+                              {result.themeInfo.author}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      
+                      {result.themeInfo.themeUri && (
+                        <a 
+                          href={result.themeInfo.themeUri} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-sm text-purple-600 hover:text-purple-800 hover:underline"
+                        >
+                          <Globe className="w-4 h-4" />
+                          View Theme Website
+                        </a>
+                      )}
+                      
+                      {result.themeInfo.tags && result.themeInfo.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mt-2">
+                          {result.themeInfo.tags.slice(0, 8).map((tag, index) => (
+                            <span key={index} className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded">
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      
+                      {/* Parent Theme Info */}
+                      {result.themeInfo.isChildTheme && result.themeInfo.parentThemeInfo && (
+                        <div className="mt-4 pt-3 border-t border-purple-200">
+                          <p className="text-xs text-purple-500 mb-2">Parent Theme</p>
+                          <div className="bg-purple-50 rounded-lg p-3">
+                            <div className="flex items-start justify-between gap-2">
+                              <h5 className="font-semibold text-purple-800" data-testid="text-parent-theme-name">
+                                {result.themeInfo.parentThemeInfo.name}
+                              </h5>
+                              {result.themeInfo.parentThemeInfo.version && (
+                                <span className="text-xs text-purple-600 font-mono">
+                                  v{result.themeInfo.parentThemeInfo.version}
+                                </span>
+                              )}
+                            </div>
+                            {result.themeInfo.parentThemeInfo.author && (
+                              <p className="text-xs text-purple-600 mt-1">
+                                By: {result.themeInfo.parentThemeInfo.author}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : result.theme && (
                     <div>
-                      <span className="font-medium text-blue-800">Active Theme:</span>
-                      <p className="text-sm text-blue-700 mt-1" data-testid="text-theme">{result.theme}</p>
+                      <span className="font-medium text-purple-800">Active Theme:</span>
+                      <p className="text-sm text-purple-700 mt-1" data-testid="text-theme">{result.theme}</p>
                     </div>
                   )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Plugin Details Card */}
+        {result.pluginCount && (
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 md:p-6" data-testid="plugin-details">
+            <div className="flex flex-col sm:flex-row items-start gap-3 sm:space-x-4">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Puzzle className="w-5 h-5 text-blue-600" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-blue-800 mb-3">
+                  Detected Plugins
+                </h3>
+                <div className="bg-white rounded-lg p-4 border border-blue-200 space-y-4">
                   {result.pluginCount && (
                     <div>
                       <div className="flex items-center justify-between mb-3">
@@ -196,6 +310,17 @@ export default function ResultsDisplay({ result, isLoading }: ResultsDisplayProp
                                       <p className="text-xs text-blue-700/80 mt-0.5" data-testid={`text-plugin-description-${plugin.slug}`}>
                                         {plugin.description}
                                       </p>
+                                      {plugin.wpOrgUrl && (
+                                        <a 
+                                          href={plugin.wpOrgUrl} 
+                                          target="_blank" 
+                                          rel="noopener noreferrer"
+                                          className="inline-flex items-center gap-1 text-xs text-blue-500 hover:text-blue-700 hover:underline mt-1"
+                                        >
+                                          <Globe className="w-3 h-3" />
+                                          View on WordPress.org
+                                        </a>
+                                      )}
                                     </div>
                                     <div className="flex flex-col items-end gap-1">
                                       <span 

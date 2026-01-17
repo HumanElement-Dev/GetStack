@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { detectionRequestSchema, type Plugin } from "@shared/schema";
+import { detectionRequestSchema, type Plugin, type ThemeInfo } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { readFileSync, existsSync } from "fs";
 import { fileURLToPath } from "url";
@@ -39,10 +39,12 @@ const pluginMetadata: Record<string, Omit<Plugin, 'version'>> = JSON.parse(readF
 function enrichPluginData(slugs: string[], versions: Map<string, string> = new Map()): Plugin[] {
   return slugs.map(slug => {
     const metadata = pluginMetadata[slug];
+    const wpOrgUrl = `https://wordpress.org/plugins/${slug}/`;
     if (metadata) {
       return {
         ...metadata,
         version: versions.get(slug) || undefined,
+        wpOrgUrl,
       };
     }
     // Fallback for plugins without metadata
@@ -56,8 +58,132 @@ function enrichPluginData(slugs: string[], versions: Map<string, string> = new M
       version: versions.get(slug) || undefined,
       dependencies: [],
       parent: null,
+      wpOrgUrl,
     };
   });
+}
+
+// Parse WordPress theme style.css header to extract metadata
+function parseThemeStyleCss(cssContent: string): Partial<ThemeInfo> {
+  const info: Partial<ThemeInfo> = {};
+  
+  // WordPress style.css header format:
+  // Theme Name: Theme Name
+  // Theme URI: https://example.com
+  // Author: Author Name
+  // Author URI: https://author.com
+  // Description: Theme description
+  // Version: 1.0.0
+  // Template: parent-theme-slug (for child themes)
+  // License: GPL v2 or later
+  // Tags: tag1, tag2, tag3
+  
+  const patterns: Record<string, keyof ThemeInfo> = {
+    'Theme Name': 'name',
+    'Theme URI': 'themeUri',
+    'Author': 'author',
+    'Author URI': 'authorUri',
+    'Description': 'description',
+    'Version': 'version',
+    'License': 'license',
+    'Template': 'parentTheme',
+  };
+  
+  for (const [cssKey, infoKey] of Object.entries(patterns)) {
+    const regex = new RegExp(`${cssKey}\\s*:\\s*(.+?)(?:\\r?\\n|$)`, 'i');
+    const match = cssContent.match(regex);
+    if (match && match[1]) {
+      const value = match[1].trim();
+      if (infoKey === 'parentTheme') {
+        info.isChildTheme = true;
+        info.parentTheme = value;
+      } else {
+        (info as any)[infoKey] = value;
+      }
+    }
+  }
+  
+  // Parse tags
+  const tagsMatch = cssContent.match(/Tags\s*:\s*(.+?)(?:\r?\n|$)/i);
+  if (tagsMatch && tagsMatch[1]) {
+    info.tags = tagsMatch[1].split(',').map(tag => tag.trim()).filter(Boolean);
+  }
+  
+  return info;
+}
+
+// Fetch and parse theme style.css
+async function fetchThemeInfo(baseUrl: string, themeSlug: string): Promise<ThemeInfo | null> {
+  try {
+    const styleCssUrl = `${baseUrl}/wp-content/themes/${themeSlug}/style.css`;
+    console.log(`Fetching theme style.css from: ${styleCssUrl}`);
+    
+    const response = await fetch(styleCssUrl, {
+      method: 'GET',
+      headers: {
+        'User-Agent': 'GetStack WordPress Detector/1.0',
+      },
+      signal: AbortSignal.timeout(5000),
+    });
+    
+    if (!response.ok) {
+      console.log(`Failed to fetch style.css: ${response.status}`);
+      return null;
+    }
+    
+    const cssContent = await response.text();
+    const themeInfo = parseThemeStyleCss(cssContent);
+    
+    if (!themeInfo.name) {
+      // If no theme name found in header, use the slug
+      themeInfo.name = themeSlug.split('-').map(word => 
+        word.charAt(0).toUpperCase() + word.slice(1)
+      ).join(' ');
+    }
+    
+    // Check for WordPress.org theme URL
+    // Popular free themes are on wordpress.org/themes/{slug}
+    themeInfo.wpOrgUrl = `https://wordpress.org/themes/${themeSlug}/`;
+    
+    // Try to get screenshot
+    themeInfo.screenshot = `${baseUrl}/wp-content/themes/${themeSlug}/screenshot.png`;
+    
+    // If it's a child theme, try to fetch parent theme info
+    if (themeInfo.isChildTheme && themeInfo.parentTheme) {
+      try {
+        const parentStyleUrl = `${baseUrl}/wp-content/themes/${themeInfo.parentTheme}/style.css`;
+        console.log(`Fetching parent theme from: ${parentStyleUrl}`);
+        
+        const parentResponse = await fetch(parentStyleUrl, {
+          method: 'GET',
+          headers: {
+            'User-Agent': 'GetStack WordPress Detector/1.0',
+          },
+          signal: AbortSignal.timeout(5000),
+        });
+        
+        if (parentResponse.ok) {
+          const parentCss = await parentResponse.text();
+          const parentInfo = parseThemeStyleCss(parentCss);
+          
+          themeInfo.parentThemeInfo = {
+            name: parentInfo.name || themeInfo.parentTheme,
+            themeUri: parentInfo.themeUri,
+            author: parentInfo.author,
+            authorUri: parentInfo.authorUri,
+            version: parentInfo.version,
+          };
+        }
+      } catch (parentError) {
+        console.log(`Failed to fetch parent theme info: ${parentError}`);
+      }
+    }
+    
+    return themeInfo as ThemeInfo;
+  } catch (error) {
+    console.log(`Error fetching theme info: ${error}`);
+    return null;
+  }
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -107,6 +233,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         let cmsType = null;
         let wordPressVersion = null;
         let theme = null;
+        let themeInfo: ThemeInfo | null = null;
         let pluginCount = null;
         let plugins: Plugin[] = [];
         let technologies: string[] = [];
@@ -232,6 +359,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 const styleThemeMatch = content.match(/themes\/([^\/\?"'\s]+)\/style\.css/i);
                 if (styleThemeMatch) {
                   theme = styleThemeMatch[1];
+                }
+              }
+              
+              // Fetch detailed theme info from style.css
+              if (theme) {
+                themeInfo = await fetchThemeInfo(urlToCheck, theme);
+                if (themeInfo) {
+                  console.log(`Theme info fetched: ${themeInfo.name} v${themeInfo.version || 'unknown'}`);
+                  if (themeInfo.isChildTheme && themeInfo.parentTheme) {
+                    console.log(`Child theme detected, parent: ${themeInfo.parentTheme}`);
+                  }
                 }
               }
 
@@ -660,6 +798,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           isWordPress,
           wordPressVersion,
           theme,
+          themeInfo,
           pluginCount,
           plugins,
           technologies,
@@ -673,6 +812,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           isWordPress,
           wordPressVersion,
           theme,
+          themeInfo,
           pluginCount,
           plugins,
           technologies,
@@ -690,6 +830,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           isWordPress: null,
           wordPressVersion: null,
           theme: null,
+          themeInfo: null,
           pluginCount: null,
           plugins: [],
           technologies: [],

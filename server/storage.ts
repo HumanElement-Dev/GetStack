@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type DetectionRequest, type InsertDetectionRequest } from "@shared/schema";
+import { type User, type InsertUser, type DetectionRequest, type InsertDetectionRequest, type ThemeInfo } from "@shared/schema";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
@@ -44,8 +44,9 @@ export class MemStorage implements IStorage {
       isWordPress: insertRequest.isWordPress ?? null,
       wordPressVersion: insertRequest.wordPressVersion ?? null,
       theme: insertRequest.theme ?? null,
+      themeInfo: (insertRequest.themeInfo ?? null) as ThemeInfo | null,
       pluginCount: insertRequest.pluginCount ?? null,
-      plugins: insertRequest.plugins ?? null,
+      plugins: (insertRequest.plugins ?? null) as DetectionRequest['plugins'],
       technologies: insertRequest.technologies ?? null,
       error: insertRequest.error ?? null,
       id,

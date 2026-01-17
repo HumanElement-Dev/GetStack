@@ -19,9 +19,34 @@ export const pluginSchema = z.object({
   version: z.string().optional(),
   dependencies: z.array(z.string()),
   parent: z.string().nullable(),
+  wpOrgUrl: z.string().optional(),
 });
 
 export type Plugin = z.infer<typeof pluginSchema>;
+
+export const themeInfoSchema = z.object({
+  name: z.string(),
+  themeUri: z.string().optional(),
+  description: z.string().optional(),
+  author: z.string().optional(),
+  authorUri: z.string().optional(),
+  version: z.string().optional(),
+  license: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+  isChildTheme: z.boolean().optional(),
+  parentTheme: z.string().optional(),
+  parentThemeInfo: z.object({
+    name: z.string(),
+    themeUri: z.string().optional(),
+    author: z.string().optional(),
+    authorUri: z.string().optional(),
+    version: z.string().optional(),
+  }).optional(),
+  screenshot: z.string().optional(),
+  wpOrgUrl: z.string().optional(),
+});
+
+export type ThemeInfo = z.infer<typeof themeInfoSchema>;
 
 export const detectionRequests = pgTable("detection_requests", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -30,6 +55,7 @@ export const detectionRequests = pgTable("detection_requests", {
   isWordPress: boolean("is_wordpress"), // keeping for backward compatibility
   wordPressVersion: text("wordpress_version"),
   theme: text("theme"),
+  themeInfo: jsonb("theme_info").$type<ThemeInfo>(),
   pluginCount: text("plugin_count"),
   plugins: jsonb("plugins").$type<Plugin[]>(),
   technologies: text("technologies").array(),
