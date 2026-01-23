@@ -200,7 +200,7 @@ export default function ResultsDisplay({ result, isLoading }: ResultsDisplayProp
                           <img 
                             src={result.themeInfo.screenshot} 
                             alt={`${result.themeInfo.name} theme screenshot`}
-                            className="w-full max-w-md h-auto object-cover rounded-lg border border-purple-200"
+                            className="w-full h-auto object-cover rounded-lg border border-purple-200"
                             onError={(e) => {
                               (e.target as HTMLImageElement).style.display = 'none';
                             }}
