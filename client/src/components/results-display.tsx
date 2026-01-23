@@ -146,7 +146,7 @@ export default function ResultsDisplay({ result, isLoading }: ResultsDisplayProp
                 <div className="bg-white rounded-lg p-4 border border-purple-200 space-y-4">
                   {result.themeInfo ? (
                     <div className="space-y-3">
-                      <div className="flex flex-col-reverse sm:flex-row items-start gap-4">
+                      <div className="flex flex-col sm:flex-row items-start gap-4">
                         <div className="flex-1">
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex-1">
@@ -193,19 +193,20 @@ export default function ResultsDisplay({ result, isLoading }: ResultsDisplayProp
                             </div>
                           )}
                         </div>
-                        {result.themeInfo.screenshot && (
-                          <div className="flex-shrink-0 order-first sm:order-last">
-                            <img 
-                              src={result.themeInfo.screenshot} 
-                              alt={`${result.themeInfo.name} theme screenshot`}
-                              className="w-32 h-24 md:w-40 md:h-28 object-cover rounded-lg border border-purple-200"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).style.display = 'none';
-                              }}
-                            />
-                          </div>
-                        )}
                       </div>
+                      
+                      {result.themeInfo.screenshot && (
+                        <div className="flex justify-center">
+                          <img 
+                            src={result.themeInfo.screenshot} 
+                            alt={`${result.themeInfo.name} theme screenshot`}
+                            className="w-full max-w-md h-auto object-cover rounded-lg border border-purple-200"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = 'none';
+                            }}
+                          />
+                        </div>
+                      )}
                       
                       {result.themeInfo.themeUri && (
                         <a 
