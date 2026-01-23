@@ -53,9 +53,10 @@ export interface DetectionResult {
 interface ResultsDisplayProps {
   result: DetectionResult | null;
   isLoading: boolean;
+  compact?: boolean;
 }
 
-export default function ResultsDisplay({ result, isLoading }: ResultsDisplayProps) {
+export default function ResultsDisplay({ result, isLoading, compact = false }: ResultsDisplayProps) {
   if (isLoading) {
     return (
       <div className="bg-card border border-border rounded-xl shadow-sm p-4 md:p-8 mb-4 md:mb-8" data-testid="loading-state">
@@ -200,7 +201,7 @@ export default function ResultsDisplay({ result, isLoading }: ResultsDisplayProp
                           <img 
                             src={result.themeInfo.screenshot} 
                             alt={`${result.themeInfo.name} theme screenshot`}
-                            className="w-full h-auto object-cover rounded-lg border border-purple-200"
+                            className={`${compact ? 'w-full max-w-sm' : 'w-full'} h-auto object-cover rounded-lg border border-purple-200`}
                             onError={(e) => {
                               (e.target as HTMLImageElement).style.display = 'none';
                             }}
