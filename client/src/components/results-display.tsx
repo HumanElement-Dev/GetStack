@@ -196,7 +196,7 @@ export default function ResultsDisplay({ result, isLoading }: ResultsDisplayProp
                       </div>
                       
                       {result.themeInfo.screenshot && (
-                        <div className="flex justify-center">
+                        <div className="flex justify-start">
                           <img 
                             src={result.themeInfo.screenshot} 
                             alt={`${result.themeInfo.name} theme screenshot`}
