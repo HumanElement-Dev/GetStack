@@ -1,15 +1,25 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Menu, LogIn, X, Home } from "lucide-react";
+import { Menu, LogIn, Home, User, LogOut, LayoutDashboard } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function Header() {
   const [location] = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const { user, isAuthenticated, isLoading, logout } = useAuth();
 
   const navItems = [
     { icon: Home, label: "Home", path: "/" },
   ];
+
+  const getInitials = (firstName?: string, lastName?: string) => {
+    const first = firstName?.charAt(0) || "";
+    const last = lastName?.charAt(0) || "";
+    return (first + last).toUpperCase() || "U";
+  };
 
   return (
     <header className="w-full border-b border-border bg-white/80 backdrop-blur-sm sticky top-0 z-50">
@@ -27,14 +37,46 @@ export default function Header() {
           
           {/* Mobile Navigation */}
           <div className="flex items-center space-x-2 md:hidden">
-            {/* Dashboard icon button */}
-            <Link 
-              href="/dashboard" 
-              className="p-2 rounded-lg bg-primary hover:bg-blue-600 text-primary-foreground transition-colors duration-200"
-              data-testid="button-dashboard-mobile"
-            >
-              <LogIn className="w-5 h-5" />
-            </Link>
+            {isAuthenticated && user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="focus:outline-none">
+                    <Avatar className="h-9 w-9 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all">
+                      <AvatarImage src={user.profileImageUrl || undefined} alt={user.firstName || "User"} />
+                      <AvatarFallback className="bg-primary text-primary-foreground text-sm">
+                        {getInitials(user.firstName || undefined, user.lastName || undefined)}
+                      </AvatarFallback>
+                    </Avatar>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <div className="px-3 py-2">
+                    <p className="font-medium">{user.firstName} {user.lastName}</p>
+                    <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+                  </div>
+                  <DropdownMenuSeparator />
+                  <Link href="/dashboard">
+                    <DropdownMenuItem className="cursor-pointer">
+                      <LayoutDashboard className="w-4 h-4 mr-2" />
+                      Dashboard
+                    </DropdownMenuItem>
+                  </Link>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="cursor-pointer text-destructive" onClick={() => logout()}>
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link 
+                href="/login" 
+                className="p-2 rounded-lg bg-primary hover:bg-blue-600 text-primary-foreground transition-colors duration-200"
+                data-testid="button-login-mobile"
+              >
+                <LogIn className="w-5 h-5" />
+              </Link>
+            )}
             
             {/* Hamburger menu */}
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -81,14 +123,23 @@ export default function Header() {
                     })}
                   </nav>
 
-                  {/* Dashboard button in mobile menu */}
+                  {/* Dashboard/Login button in mobile menu */}
                   <div className="p-4 border-t border-border">
-                    <Link href="/dashboard" onClick={() => setIsOpen(false)}>
-                      <div className="flex items-center justify-center space-x-2 w-full px-4 py-3 bg-primary hover:bg-blue-600 text-primary-foreground rounded-lg transition-colors cursor-pointer font-medium">
-                        <LogIn className="w-5 h-5" />
-                        <span>Go to Dashboard</span>
-                      </div>
-                    </Link>
+                    {isAuthenticated ? (
+                      <Link href="/dashboard" onClick={() => setIsOpen(false)}>
+                        <div className="flex items-center justify-center space-x-2 w-full px-4 py-3 bg-primary hover:bg-blue-600 text-primary-foreground rounded-lg transition-colors cursor-pointer font-medium">
+                          <LayoutDashboard className="w-5 h-5" />
+                          <span>Go to Dashboard</span>
+                        </div>
+                      </Link>
+                    ) : (
+                      <Link href="/login" onClick={() => setIsOpen(false)}>
+                        <div className="flex items-center justify-center space-x-2 w-full px-4 py-3 bg-primary hover:bg-blue-600 text-primary-foreground rounded-lg transition-colors cursor-pointer font-medium">
+                          <LogIn className="w-5 h-5" />
+                          <span>Sign In</span>
+                        </div>
+                      </Link>
+                    )}
                   </div>
                 </div>
               </SheetContent>
@@ -97,9 +148,42 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-3">
-            <Link href="/dashboard" className="bg-primary hover:bg-blue-600 text-primary-foreground px-4 py-2 rounded-lg transition-colors duration-200 font-medium text-sm" data-testid="button-dashboard">
-              Dashboard
-            </Link>
+            {isAuthenticated && user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center space-x-2 focus:outline-none">
+                    <Avatar className="h-9 w-9 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all">
+                      <AvatarImage src={user.profileImageUrl || undefined} alt={user.firstName || "User"} />
+                      <AvatarFallback className="bg-primary text-primary-foreground text-sm">
+                        {getInitials(user.firstName || undefined, user.lastName || undefined)}
+                      </AvatarFallback>
+                    </Avatar>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <div className="px-3 py-2">
+                    <p className="font-medium">{user.firstName} {user.lastName}</p>
+                    <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+                  </div>
+                  <DropdownMenuSeparator />
+                  <Link href="/dashboard">
+                    <DropdownMenuItem className="cursor-pointer">
+                      <LayoutDashboard className="w-4 h-4 mr-2" />
+                      Dashboard
+                    </DropdownMenuItem>
+                  </Link>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="cursor-pointer text-destructive" onClick={() => logout()}>
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link href="/login" className="bg-primary hover:bg-blue-600 text-primary-foreground px-4 py-2 rounded-lg transition-colors duration-200 font-medium text-sm" data-testid="button-login">
+                Sign In
+              </Link>
+            )}
           </div>
         </div>
       </div>
