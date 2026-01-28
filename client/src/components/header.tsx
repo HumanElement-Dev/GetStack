@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Menu, LogIn, X, Home, Wrench } from "lucide-react";
+import { Menu, LogIn, X, Home } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export default function Header() {
@@ -9,7 +9,6 @@ export default function Header() {
 
   const navItems = [
     { icon: Home, label: "Home", path: "/" },
-    { icon: Wrench, label: "Free Tool", path: "/detect" },
   ];
 
   return (
@@ -98,9 +97,6 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-3">
-            <Link href="/detect" className="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-lg transition-colors duration-200 font-medium text-sm" data-testid="button-free-tool">
-              Free Tool
-            </Link>
             <Link href="/dashboard" className="bg-primary hover:bg-blue-600 text-primary-foreground px-4 py-2 rounded-lg transition-colors duration-200 font-medium text-sm" data-testid="button-dashboard">
               Dashboard
             </Link>

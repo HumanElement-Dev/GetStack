@@ -1,9 +1,29 @@
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { Button } from "@/components/ui/button";
-import { Link } from "wouter";
+import { Input } from "@/components/ui/input";
+import { Link, useLocation } from "wouter";
+import { useState } from "react";
+import { Search } from "lucide-react";
 
 export default function Welcome() {
+  const [, setLocation] = useLocation();
+  const [website, setWebsite] = useState("");
+
+  const handleAnalyze = () => {
+    if (website.trim()) {
+      setLocation(`/detect?url=${encodeURIComponent(website.trim())}`);
+    } else {
+      setLocation("/detect");
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleAnalyze();
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground font-sans">
       <Header />
@@ -18,15 +38,26 @@ export default function Welcome() {
               Welcome to GetStack
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">The fastest way to detect what a website is built with. Analyze any domain to discover themes, plugins, versions, and more.</p>
-            <Link href="/dashboard">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-lg mx-auto">
+              <Input
+                type="text"
+                placeholder="Enter website URL..."
+                value={website}
+                onChange={(e) => setWebsite(e.target.value)}
+                onKeyDown={handleKeyDown}
+                className="flex-1 h-12 text-base"
+                data-testid="input-website"
+              />
               <Button 
                 size="lg" 
-                className="px-8 py-4 text-lg font-semibold"
-                data-testid="button-get-started"
+                className="h-12 px-6 text-base font-semibold w-full sm:w-auto"
+                onClick={handleAnalyze}
+                data-testid="button-analyze"
               >
-                Get Started
+                <Search className="w-4 h-4 mr-2" />
+                Analyze
               </Button>
-            </Link>
+            </div>
           </div>
 
           {/* Features Grid */}
