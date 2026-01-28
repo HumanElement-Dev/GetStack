@@ -180,9 +180,7 @@ export default function Header() {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Link href="/login" className="bg-primary hover:bg-blue-600 text-primary-foreground px-4 py-2 rounded-lg transition-colors duration-200 font-medium text-sm" data-testid="button-login">
-                Sign In
-              </Link>
+              <Link href="/login" className="bg-primary hover:bg-blue-600 text-primary-foreground px-4 py-2 rounded-lg transition-colors duration-200 font-medium text-sm" data-testid="button-login">Log In</Link>
             )}
           </div>
         </div>
