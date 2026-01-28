@@ -1,0 +1,47 @@
+Yes, use Replit Auth.
+
+Proceed with an implementation plan AND code changes (no further questions), with these requirements:
+
+NON-NEGOTIABLE SECURITY
+- Dashboard must be protected server-side (not just hidden in the React UI).
+- All dashboard-related API endpoints must require auth and return 401/403 if not logged in.
+- Use Replit Auth’s httpOnly cookie session. Do NOT store tokens in localStorage.
+- Prevent open redirects: only allow redirects to same-origin relative paths.
+- Add basic rate limiting on auth-adjacent endpoints if any exist on our side.
+
+STACK ASSUMPTIONS
+- Frontend: React + Tailwind UI
+- Backend: whichever Node server this Replit template uses (Express/Fastify/etc.) — detect and use what’s already present.
+- If a DB is required for Replit Auth persistence, use Replit’s recommended DB setup.
+  - Only use PostgreSQL if the official Replit Auth integration requires it; otherwise use the simplest supported option.
+  - Provide setup steps for Replit DB and required env vars.
+
+DELIVERABLES
+1) Show the current detected project structure and identify where the server lives.
+2) Implement login flow using Replit Auth and add a /login page with:
+   - “Continue with Google”
+   - “Continue with GitHub”
+   - email login option supported by Replit Auth
+3) Protected dashboard route:
+   - /dashboard should redirect to /login if unauthenticated (server-enforced).
+   - Client-side guard is optional but helpful for UX.
+4) Protected APIs:
+   - /api/me (returns user info when logged in)
+   - /api/pins (example protected resource)
+   - All /api/* should require auth by middleware (or at least all dashboard APIs).
+5) Tier system for future paid features:
+   - Create user_tiers table (or equivalent): user_id, tier (free|premium), status, current_period_end
+   - Add `requireTier("premium")` helper and show one example endpoint guarded by it.
+   - Add free-limit example: free users max 3 pins.
+6) Provide exact files/patches + run instructions.
+7) Provide a short test plan:
+   - logged out: cannot load /dashboard, cannot call /api/*
+   - logged in: can access
+   - cookie flags correct in production mode
+
+OUTPUT FORMAT
+- Give me a step-by-step implementation plan first.
+- Then provide file-by-file changes with full code blocks.
+- Then list env vars and Replit setup steps.
+
+Do not ask “does this sound good” — implement it.
