@@ -124,7 +124,7 @@ export default function Header() {
                   </nav>
 
                   {/* Dashboard/Login button in mobile menu */}
-                  <div className="p-4 border-t border-border">
+                  <div className="p-4 border-t border-border space-y-2">
                     {isAuthenticated ? (
                       <Link href="/dashboard" onClick={() => setIsOpen(false)}>
                         <div className="flex items-center justify-center space-x-2 w-full px-4 py-3 bg-primary hover:bg-blue-600 text-primary-foreground rounded-lg transition-colors cursor-pointer font-medium">
@@ -133,12 +133,19 @@ export default function Header() {
                         </div>
                       </Link>
                     ) : (
-                      <Link href="/login" onClick={() => setIsOpen(false)}>
-                        <div className="flex items-center justify-center space-x-2 w-full px-4 py-3 bg-primary hover:bg-blue-600 text-primary-foreground rounded-lg transition-colors cursor-pointer font-medium">
-                          <LogIn className="w-5 h-5" />
-                          <span>Sign In</span>
-                        </div>
-                      </Link>
+                      <>
+                        <Link href="/login" onClick={() => setIsOpen(false)}>
+                          <div className="flex items-center justify-center space-x-2 w-full px-4 py-3 border border-primary text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer font-medium">
+                            <LogIn className="w-5 h-5" />
+                            <span>Log In</span>
+                          </div>
+                        </Link>
+                        <a href="/api/login" className="block">
+                          <div className="flex items-center justify-center space-x-2 w-full px-4 py-3 bg-primary hover:bg-blue-600 text-primary-foreground rounded-lg transition-colors cursor-pointer font-medium">
+                            <span>Sign Up</span>
+                          </div>
+                        </a>
+                      </>
                     )}
                   </div>
                 </div>
@@ -180,7 +187,10 @@ export default function Header() {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Link href="/login" className="bg-primary hover:bg-blue-600 text-primary-foreground px-4 py-2 rounded-lg transition-colors duration-200 font-medium text-sm" data-testid="button-login">Log In</Link>
+              <>
+                <Link href="/login" className="border border-primary text-primary hover:bg-primary/10 px-4 py-2 rounded-lg transition-colors duration-200 font-medium text-sm" data-testid="button-login">Log In</Link>
+                <a href="/api/login" className="bg-primary hover:bg-blue-600 text-primary-foreground px-4 py-2 rounded-lg transition-colors duration-200 font-medium text-sm" data-testid="button-signup">Sign Up</a>
+              </>
             )}
           </div>
         </div>
