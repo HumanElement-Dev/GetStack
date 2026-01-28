@@ -1,12 +1,32 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, boolean, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, boolean, jsonb, integer } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const users = pgTable("users", {
+// Re-export auth models (users and sessions tables)
+export * from "./models/auth";
+
+// User tiers for subscription management
+export const userTiers = pgTable("user_tiers", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
+  userId: varchar("user_id").notNull().unique(),
+  tier: varchar("tier", { length: 20 }).notNull().default("free"), // 'free' | 'premium'
+  status: varchar("status", { length: 20 }).notNull().default("active"), // 'active' | 'cancelled' | 'past_due'
+  currentPeriodEnd: timestamp("current_period_end"),
+  pinLimit: integer("pin_limit").default(3), // Free users get 3 pins
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Pinned websites for dashboard users
+export const pinnedSites = pgTable("pinned_sites", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  domain: text("domain").notNull(),
+  name: text("name"),
+  cmsType: text("cms_type"),
+  lastChecked: timestamp("last_checked"),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const pluginSchema = z.object({
@@ -63,9 +83,15 @@ export const detectionRequests = pgTable("detection_requests", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
+export const insertUserTierSchema = createInsertSchema(userTiers).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertPinnedSiteSchema = createInsertSchema(pinnedSites).omit({
+  id: true,
+  createdAt: true,
 });
 
 export const insertDetectionRequestSchema = createInsertSchema(detectionRequests).omit({
@@ -92,8 +118,10 @@ export const detectionRequestSchema = z.object({
   ),
 });
 
-export type InsertUser = z.infer<typeof insertUserSchema>;
-export type User = typeof users.$inferSelect;
+export type InsertUserTier = z.infer<typeof insertUserTierSchema>;
+export type UserTier = typeof userTiers.$inferSelect;
+export type InsertPinnedSite = z.infer<typeof insertPinnedSiteSchema>;
+export type PinnedSite = typeof pinnedSites.$inferSelect;
 export type InsertDetectionRequest = z.infer<typeof insertDetectionRequestSchema>;
 export type DetectionRequest = typeof detectionRequests.$inferSelect;
 export type DetectionRequestInput = z.infer<typeof detectionRequestSchema>;

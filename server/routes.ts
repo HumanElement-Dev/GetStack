@@ -1,11 +1,15 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { detectionRequestSchema, type Plugin, type ThemeInfo } from "@shared/schema";
+import { detectionRequestSchema, type Plugin, type ThemeInfo, userTiers, pinnedSites } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { readFileSync, existsSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
+import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
+import { db } from "./db";
+import { eq, and } from "drizzle-orm";
+import rateLimit from "express-rate-limit";
 
 // Load plugin signatures once at startup
 const __filename = fileURLToPath(import.meta.url);
@@ -186,8 +190,139 @@ async function fetchThemeInfo(baseUrl: string, themeSlug: string): Promise<Theme
   }
 }
 
+// Rate limiter for auth-adjacent endpoints
+const authRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: { error: "Too many requests, please try again later" },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Helper to validate redirect URLs (prevent open redirects)
+function isValidRedirect(url: string): boolean {
+  if (!url) return false;
+  // Only allow relative paths starting with /
+  return url.startsWith('/') && !url.startsWith('//');
+}
+
+// Middleware to require a specific tier
+function requireTier(tier: "free" | "premium") {
+  return async (req: any, res: any, next: any) => {
+    const userId = req.user?.claims?.sub;
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    
+    const [userTier] = await db.select().from(userTiers).where(eq(userTiers.userId, userId));
+    
+    // If no tier exists, create a free tier for the user
+    if (!userTier) {
+      await db.insert(userTiers).values({ userId, tier: "free", status: "active" });
+      if (tier === "premium") {
+        return res.status(403).json({ message: "Premium subscription required" });
+      }
+      return next();
+    }
+    
+    if (tier === "premium" && userTier.tier !== "premium") {
+      return res.status(403).json({ message: "Premium subscription required" });
+    }
+    
+    req.userTier = userTier;
+    return next();
+  };
+}
+
+// Helper to check if user can pin more sites (free limit: 3)
+async function canPinMoreSites(userId: string): Promise<{ allowed: boolean; current: number; limit: number }> {
+  const [userTier] = await db.select().from(userTiers).where(eq(userTiers.userId, userId));
+  const limit = userTier?.tier === "premium" ? 100 : 3; // Premium gets 100, free gets 3
+  
+  const existingPins = await db.select().from(pinnedSites).where(eq(pinnedSites.userId, userId));
+  const current = existingPins.length;
+  
+  return { allowed: current < limit, current, limit };
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
-  // WordPress detection endpoint
+  // Apply rate limiting BEFORE auth routes
+  app.use("/api/login", authRateLimiter);
+  app.use("/api/callback", authRateLimiter);
+  
+  // Setup auth BEFORE other routes
+  await setupAuth(app);
+  registerAuthRoutes(app);
+  
+  // Protected endpoint: Get user's pinned sites
+  app.get("/api/pins", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const pins = await db.select().from(pinnedSites).where(eq(pinnedSites.userId, userId));
+      const pinStatus = await canPinMoreSites(userId);
+      
+      res.json({ pins, ...pinStatus });
+    } catch (error) {
+      console.error("Error fetching pins:", error);
+      res.status(500).json({ message: "Failed to fetch pins" });
+    }
+  });
+  
+  // Protected endpoint: Add a pinned site
+  app.post("/api/pins", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const { domain, name, cmsType } = req.body;
+      
+      if (!domain) {
+        return res.status(400).json({ message: "Domain is required" });
+      }
+      
+      // Check pin limit
+      const pinStatus = await canPinMoreSites(userId);
+      if (!pinStatus.allowed) {
+        return res.status(403).json({ 
+          message: `Pin limit reached. You have ${pinStatus.current}/${pinStatus.limit} pins. Upgrade to premium for more.` 
+        });
+      }
+      
+      const [pin] = await db.insert(pinnedSites).values({
+        userId,
+        domain,
+        name: name || domain,
+        cmsType,
+      }).returning();
+      
+      res.json(pin);
+    } catch (error) {
+      console.error("Error creating pin:", error);
+      res.status(500).json({ message: "Failed to create pin" });
+    }
+  });
+  
+  // Protected endpoint: Delete a pinned site
+  app.delete("/api/pins/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const pinId = req.params.id;
+      
+      await db.delete(pinnedSites).where(
+        and(eq(pinnedSites.id, pinId), eq(pinnedSites.userId, userId))
+      );
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting pin:", error);
+      res.status(500).json({ message: "Failed to delete pin" });
+    }
+  });
+  
+  // Example premium-only endpoint
+  app.get("/api/premium/analytics", isAuthenticated, requireTier("premium"), async (req: any, res) => {
+    res.json({ message: "Premium analytics data would go here" });
+  });
+
+  // WordPress detection endpoint (public - for free tool)
   app.post("/api/detect-wordpress", async (req, res) => {
     try {
       const validationResult = detectionRequestSchema.safeParse(req.body);

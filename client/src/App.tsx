@@ -7,12 +7,14 @@ import NotFound from "@/pages/not-found";
 import Welcome from "@/pages/welcome";
 import Detect from "@/pages/detect";
 import Dashboard from "@/pages/dashboard";
+import Login from "@/pages/login";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Welcome} />
       <Route path="/detect" component={Detect} />
+      <Route path="/login" component={Login} />
       <Route path="/dashboard" component={Dashboard} />
       <Route component={NotFound} />
     </Switch>

@@ -25,12 +25,38 @@ The server uses Node.js with Express in a RESTful API pattern:
 - **Validation**: Zod schemas for request/response validation
 - **Storage**: Abstracted storage interface supporting both in-memory and database persistence
 
+## Authentication & Authorization
+The application uses Replit Auth for secure user authentication:
+- **Auth Provider**: Replit Auth integration (secure OAuth via Replit)
+- **Session Storage**: PostgreSQL-backed sessions via `connect-pg-simple`
+- **User Management**: Users stored in `users` table with Replit profile data
+- **Tier System**: Free tier (3 pinned sites) and Premium tier (100 pinned sites)
+- **Protected Routes**: Dashboard requires authentication; public detection tool is accessible to all
+- **Rate Limiting**: Auth endpoints protected by `express-rate-limit`
+
+### Key Auth Files:
+- `server/replit_integrations/auth/` - Auth setup and middleware
+- `client/src/hooks/use-auth.ts` - Client-side auth hook
+- `client/src/pages/login.tsx` - Login page with Replit Auth button
+- `client/src/pages/dashboard.tsx` - Protected dashboard (redirects to login if unauthenticated)
+
+### Tier-Based Features:
+- **Free Users**: 3 pinned sites limit
+- **Premium Users**: 100 pinned sites limit
+
 ## Data Storage Solutions
 The application uses a flexible storage approach:
 - **ORM**: Drizzle ORM with PostgreSQL dialect for database operations
 - **Database**: Configured for PostgreSQL with Neon Database serverless connection
 - **Schema Management**: Drizzle Kit for database migrations and schema management
 - **Fallback Storage**: In-memory storage implementation for development/testing
+
+### Database Tables:
+- `users` - User profiles from Replit Auth
+- `sessions` - Express session storage
+- `user_tiers` - Subscription tier tracking (free/premium)
+- `pinned_sites` - User's saved/pinned detection results
+- `detection_requests` - Detection history and logs
 
 ## Platform Detection Logic
 The core functionality analyzes websites to detect WordPress, Wix, and Shopify through multiple detection methods:
