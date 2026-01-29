@@ -1,0 +1,121 @@
+2.0.1 - better url handling
+
+2.0.2 
+Implement a minimum loading duration for smoother animations, enhance WordPress detection logic, add private IP address protection, and refine the display of detection results with improved styling and error handling.
+
+2.0.3
+Update API endpoint to handle multipart form data uploads.
+
+2.0.4Introduce a new route for website detection and a welcome page. Update navigation links in the header to conditionally display "Analyze Website" or "Home" based on the current route. The original home page component is now redirected to the welcome page.
+
+2.0.5
+This commit introduces the initial structure for the detection page, providing a basic user interface for accessing detection functionalities without requiring authentication.
+
+3.0.0
+Introduce a new dashboard page with header and sidebar components, and update routing to include the dashboard.
+
+3.0.1
+Update results display and backend logic to detect and report Wix sites, including new UI elements and data structures.
+
+3.0.2
+Add a new section to manage user roles and permissions, enhancing application security and access control.
+
+3.0.3Update hero section text and remove extraneous whitespace in the welcome page component.
+
+3.0.4
+WIX 
+Update welcome page text to reflect new Wix version detection capability.
+
+3.0.5
+Adds a new navigation item labeled "Dashboard" that links to the dashboard page.
+Update header and dashboard header components to include a "Dashboard" link and adjust spacing and styling for navigation buttons.
+Add a new dashboard page and update the navigation to include a "Dashboard" button, linking to the new page.
+Replaces the static "WordPress Analyzer" header and buttons with a dynamic search bar component, enhancing navigation and search functionality within the dashboard.
+Remove border-b from branding div in sidebar.tsx to merge logo into sidebar.
+Add a LogOut icon and link to the sidebar component in client/src/components/sidebar.tsx, providing a "Leave Dashboard" option that navigates to the homepage.
+Adds a new navigation element to the sidebar, providing a direct link back to the homepage.
+
+3.0.6
+PLUGINS
+Refactors the detection tool to display a list of detected plugins, enhances the user interface by fading out the initial heading and repositioning the form, and updates the backend to capture and return plugin data.
+Update UI to remove the initial heading and expand the "theme & plugin details" card to list detected plugins alphabetically.
+Enhance plugin detection by implementing multiple regex patterns to capture plugin slugs from various script, style, and data references within the HTML content, addressing an issue where not all plugins were being identified.
+Fix bug in WordPress plugin detection logic to accurately list all installed plugins.
+Exclude core WordPress components like 'wp-site-health' and 'wp-block-editor' from plugin detection to reduce false positives.
+Refine WordPress detection algorithm to reduce false positives.
+Update server/routes.ts to add a new method that attempts to fetch and parse the /wp-content/plugins/ directory listing to detect plugin folders, with error handling and user-agent.
+Refactor the plugin detection logic in server/routes.ts to use a single, strict regex pattern for identifying plugins directly from /wp-content/plugins/FOLDER-NAME/ paths, eliminating less reliable methods and reducing false positives.
+
+3.0.7
+Detail the plugin detection approach including HTML source scanning, directory listing, REST API checks, and core filtering. Outline limitations such as invisibility of backend-only plugins, asset optimization interference, and the average detection rate.
+Update WordPress plugin detection logic to accurately identify all installed plugins by comparing a generated list against a known list of plugins.
+Integrate WPScan API v3 to validate existing detected plugins and retrieve vulnerability data, using WPSCAN_API_TOKEN.
+Integrate WPScan API for plugin validation, requiring a WPScan API token and respecting free tier limits.
+Add WPScan API integration to fetch plugin vulnerability data.
+
+3.0.8
+Enhance WordPress plugin detection by loading plugin signatures from a JSON file. Implement new detection methods based on CSS class patterns, script/style handle patterns, and REST API endpoints. Also, capture plugin version numbers from URL query strings.
+Update documentation to reflect enhanced plugin detection capabilities, including path, directory listing, CSS, script, meta, REST API checks, and WPScan validation, with a new signature database.
+
+3.0.9
+Update plugin detection logic by adding 'batch' to excluded paths and refining regex patterns for CSS, script handles, meta tags, and REST endpoints. Add type assertions for plugin signature entries to improve type safety.
+Update UI components and styling to enhance the overall look and feel of the application.
+
+3.1.0
+Update the application to attempt loading plugin signatures from multiple locations to prevent runtime errors during deployment.
+Add new detection logic for WordPress components, enhancing the application's overall detection capabilities.
+Add basic structure for WordPress detection application
+
+3.1.1
+Shopify detection
+Refactors platform detection logic in replit.md to include specific methods for detecting WordPress, Wix, and Shopify, including header analysis, content patterns, and JavaScript/cookie checks.
+
+3.1.2
+Animate the domain input field and results display on the dashboard
+Update website detection results display to show domain prominently
+Improve website's dashboard user interface and results display
+
+3.1.3
+Wordpress Version
+Update a tool that helps identify WordPress installations
+
+3.1.4
+Update dashboard layout to include a new top bar with logo and search
+Update dashboard layout to include a new top navigation bar
+Adjust layout to place header across the full page width
+
+Update button text to prompt users to check the website
+
+3.2.0
+Responsive
+Introduce a mobile-friendly layout by collapsing the sidebar, stacking header elements, and adjusting the detection form for smaller screens.
+Make the results display responsive and adjust spacing
+Update website header to be mobile-responsive with navigation and login access
+
+3.2.1
+Integrates ThemeInfo schema and parsing logic to extract theme details (name, version, author, description, etc.) from WordPress sites. Updates client-side display and server-side storage to accommodate the new theme information, and enhances plugin schema with wpOrgUrl.
+
+3.3
+we have added Theme Detection for wordpress
+
+3.3.1
+now detecting child/parent theme configurations
+
+3.3.2
+added supporting theme data including:
+version number
+author
+descriptions
+links to the website
+tag
+
+3.3.3
+added theme screenshot image
+
+3.4
+login oauth
+
+
+
+
+
