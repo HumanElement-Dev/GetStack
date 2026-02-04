@@ -8,6 +8,7 @@ import Welcome from "@/pages/welcome";
 import Detect from "@/pages/detect";
 import Dashboard from "@/pages/dashboard";
 import Login from "@/pages/login";
+import Admin from "@/pages/admin";
 import { useEffect } from "react";
 import { initGA } from "./lib/analytics";
 import { useAnalytics } from "./hooks/use-analytics";
@@ -21,6 +22,7 @@ function Router() {
       <Route path="/detect" component={Detect} />
       <Route path="/login" component={Login} />
       <Route path="/dashboard" component={Dashboard} />
+      <Route path="/admin" component={Admin} />
       <Route component={NotFound} />
     </Switch>
   );

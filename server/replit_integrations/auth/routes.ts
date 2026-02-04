@@ -2,8 +2,8 @@ import type { Express } from "express";
 import { authStorage } from "./storage";
 import { isAuthenticated } from "./replitAuth";
 import { db } from "../../db";
-import { userTiers } from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { userTiers, users } from "@shared/schema";
+import { eq, desc } from "drizzle-orm";
 
 // Register auth-specific routes
 export function registerAuthRoutes(app: Express): void {
@@ -27,6 +27,45 @@ export function registerAuthRoutes(app: Express): void {
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Admin endpoint to get all users (protected by admin check)
+  app.get("/api/admin/users", isAuthenticated, async (req: any, res) => {
+    try {
+      const adminUserId = process.env.ADMIN_USER_ID;
+      const currentUserId = req.user.claims.sub;
+
+      // Check if user is admin
+      if (!adminUserId || currentUserId !== adminUserId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      // Get all users with their tier info
+      const allUsers = await db.select().from(users).orderBy(desc(users.createdAt));
+      const allTiers = await db.select().from(userTiers);
+
+      // Create a map of userId to tier
+      const tierMap = new Map(allTiers.map(t => [t.userId, t]));
+
+      // Combine user data with tier info
+      const usersWithTiers = allUsers.map(user => ({
+        ...user,
+        tier: tierMap.get(user.id)?.tier || "free",
+        pinLimit: tierMap.get(user.id)?.pinLimit || 3,
+      }));
+
+      // Calculate stats
+      const stats = {
+        totalUsers: allUsers.length,
+        freeUsers: usersWithTiers.filter(u => u.tier === "free").length,
+        premiumUsers: usersWithTiers.filter(u => u.tier === "premium").length,
+      };
+
+      res.json({ users: usersWithTiers, stats });
+    } catch (error) {
+      console.error("Error fetching admin users:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
     }
   });
 }
