@@ -38,6 +38,13 @@ The application uses Replit Auth for secure user authentication:
 - `server/replit_integrations/auth/` - Auth setup and middleware
 - `client/src/hooks/use-auth.ts` - Client-side auth hook
 - `client/src/pages/login.tsx` - Login page with Replit Auth button
+- `client/src/pages/admin.tsx` - Admin dashboard (protected by ADMIN_USER_ID)
+
+### Admin Access:
+- Admin page available at `/admin` (not linked in navigation for security)
+- Protected by `ADMIN_USER_ID` environment variable
+- Shows all registered users with their tier, email, and signup date
+- Displays stats: total users, free users, premium users
 - `client/src/pages/dashboard.tsx` - Protected dashboard (redirects to login if unauthenticated)
 
 ### Tier-Based Features:
