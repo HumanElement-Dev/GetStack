@@ -5,6 +5,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/use-auth";
+import { trackEvent } from "@/lib/analytics";
 
 export default function Header() {
   const [location] = useLocation();
@@ -189,7 +190,7 @@ export default function Header() {
             ) : (
               <>
                 <Link href="/login" className="border border-primary text-primary hover:bg-primary/10 px-4 py-2 rounded-lg transition-colors duration-200 font-medium text-sm" data-testid="button-login">Log In</Link>
-                <a href="/api/login" className="bg-primary hover:bg-blue-600 text-primary-foreground px-4 py-2 rounded-lg transition-colors duration-200 font-medium text-sm" data-testid="button-signup">Sign Up</a>
+                <a href="/api/login" className="bg-primary hover:bg-blue-600 text-primary-foreground px-4 py-2 rounded-lg transition-colors duration-200 font-medium text-sm" data-testid="button-signup" onClick={() => trackEvent('signup_click', 'auth', 'header_signup')}>Sign Up</a>
               </>
             )}
           </div>

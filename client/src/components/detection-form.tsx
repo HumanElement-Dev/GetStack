@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import type { DetectionResult } from "@/components/results-display";
 import { Search } from "lucide-react";
+import { trackEvent } from "@/lib/analytics";
 
 interface DetectionFormProps {
   onResult: (result: DetectionResult | null) => void;
@@ -39,10 +40,12 @@ export default function DetectionForm({ onResult, isLoading, setIsLoading, inlin
       onResult(null);
     },
     onSuccess: async (data: DetectionResult) => {
-      // Add minimum loading duration for animations to be visible
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       onResult(data);
+      
+      trackEvent('detection_complete', 'detection', data.domain, data.isWordPress ? 1 : 0);
+      
       toast({
         title: "Analysis Complete",
         description: `WordPress detection finished for ${data.domain}`,
