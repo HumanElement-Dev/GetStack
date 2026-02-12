@@ -38,13 +38,17 @@ The application uses Replit Auth for secure user authentication:
 - `server/replit_integrations/auth/` - Auth setup and middleware
 - `client/src/hooks/use-auth.ts` - Client-side auth hook
 - `client/src/pages/login.tsx` - Login page with Replit Auth button
-- `client/src/pages/admin.tsx` - Admin dashboard (protected by ADMIN_USER_ID)
+- `client/src/pages/admin.tsx` - Super Admin dashboard (protected by DB role)
 
-### Admin Access:
-- Admin page available at `/admin` (not linked in navigation for security)
-- Protected by `ADMIN_USER_ID` environment variable
-- Shows all registered users with their tier, email, and signup date
-- Displays stats: total users, free users, premium users
+### Super Admin Access:
+- Admin page available at `/admin`
+- Protected by `role` column on `users` table (must be `super_admin`)
+- Server returns 404 (not 403) for non-admins so the page appears non-existent
+- Admin link visible only to super_admin users in sidebar, mobile sidebar, and dashboard header dropdowns
+- Shows: email, role, tier, creation date, last login (updatedAt)
+- Stats: total users, signups in last 7 days, free users, premium users
+- Super admin emails: `richard@humanelement.agency`
+- The `upsertUser` in auth storage excludes `role` from updates to prevent login from resetting it
 - `client/src/pages/dashboard.tsx` - Protected dashboard (redirects to login if unauthenticated)
 
 ### Tier-Based Features:
