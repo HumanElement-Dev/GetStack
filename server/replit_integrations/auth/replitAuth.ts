@@ -2,6 +2,7 @@ import * as client from "openid-client";
 import { Strategy, type VerifyFunction } from "openid-client/passport";
 
 import passport from "passport";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import session from "express-session";
 import type { Express, RequestHandler } from "express";
 import memoize from "memoizee";
@@ -119,21 +120,87 @@ export async function setupAuth(app: Express) {
   });
 
   app.get("/api/logout", (req, res) => {
+    const user = req.user as any;
+    const isGoogleUser = user?.authProvider === "google";
+
     req.logout(() => {
-      res.redirect(
-        client.buildEndSessionUrl(config, {
-          client_id: process.env.REPL_ID!,
-          post_logout_redirect_uri: `${req.protocol}://${req.hostname}`,
-        }).href
-      );
+      if (isGoogleUser) {
+        res.redirect("/");
+      } else {
+        res.redirect(
+          client.buildEndSessionUrl(config, {
+            client_id: process.env.REPL_ID!,
+            post_logout_redirect_uri: `${req.protocol}://${req.hostname}`,
+          }).href
+        );
+      }
     });
   });
+
+  if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+    passport.use(
+      new GoogleStrategy(
+        {
+          clientID: process.env.GOOGLE_CLIENT_ID,
+          clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+          callbackURL: "/api/auth/google/callback",
+          proxy: true,
+        },
+        async (_accessToken, _refreshToken, profile, done) => {
+          try {
+            const email = profile.emails?.[0]?.value;
+            const googleId = `google_${profile.id}`;
+
+            await authStorage.upsertUser({
+              id: googleId,
+              email: email || null,
+              firstName: profile.name?.givenName || null,
+              lastName: profile.name?.familyName || null,
+              profileImageUrl: profile.photos?.[0]?.value || null,
+            });
+
+            const sessionUser = {
+              claims: { sub: googleId },
+              authProvider: "google",
+              expires_at: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
+            };
+
+            done(null, sessionUser);
+          } catch (error) {
+            done(error as Error);
+          }
+        }
+      )
+    );
+
+    app.get(
+      "/api/auth/google",
+      passport.authenticate("google", { scope: ["profile", "email"] })
+    );
+
+    app.get(
+      "/api/auth/google/callback",
+      passport.authenticate("google", {
+        successRedirect: "/dashboard",
+        failureRedirect: "/login",
+      })
+    );
+  }
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
   const user = req.user as any;
 
-  if (!req.isAuthenticated() || !user.expires_at) {
+  if (!req.isAuthenticated() || !user?.expires_at) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  if (user.authProvider === "google") {
+    const now = Math.floor(Date.now() / 1000);
+    if (now <= user.expires_at) {
+      user.expires_at = now + 7 * 24 * 60 * 60;
+      return next();
+    }
     return res.status(401).json({ message: "Unauthorized" });
   }
 

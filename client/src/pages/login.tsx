@@ -4,7 +4,9 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LogIn, ArrowLeft, Shield, Sparkles, Clock } from "lucide-react";
+import { SiGoogle } from "react-icons/si";
 import { trackEvent } from "@/lib/analytics";
+import { Separator } from "@/components/ui/separator";
 
 export default function Login() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -57,11 +59,28 @@ export default function Login() {
                 </div>
                 <div className="flex items-center gap-3 text-sm text-muted-foreground">
                   <Shield className="w-4 h-4 text-primary" />
-                  <span>Secure authentication via Replit</span>
+                  <span>Secure authentication</span>
                 </div>
               </div>
 
-              <div className="pt-4">
+              <div className="pt-4 space-y-3">
+                <a 
+                  href="/api/auth/google" 
+                  className="block w-full"
+                  onClick={() => trackEvent('login_click', 'auth', 'google_login')}
+                >
+                  <Button variant="outline" className="w-full h-12 text-base" size="lg">
+                    <SiGoogle className="w-5 h-5 mr-2" />
+                    Sign in with Google
+                  </Button>
+                </a>
+
+                <div className="flex items-center gap-3">
+                  <Separator className="flex-1" />
+                  <span className="text-xs text-muted-foreground">or</span>
+                  <Separator className="flex-1" />
+                </div>
+
                 <a 
                   href="/api/login" 
                   className="block w-full"
