@@ -5,9 +5,10 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Users, Crown, UserCheck, Loader2, ShieldAlert } from "lucide-react";
+import { ArrowLeft, Users, Crown, UserCheck, Loader2, CalendarDays } from "lucide-react";
 import { Link } from "wouter";
 import { format } from "date-fns";
+import NotFound from "@/pages/not-found";
 
 interface AdminUser {
   id: string;
@@ -15,7 +16,9 @@ interface AdminUser {
   firstName: string | null;
   lastName: string | null;
   profileImageUrl: string | null;
+  role: string;
   createdAt: string | null;
+  updatedAt: string | null;
   tier: string;
   pinLimit: number;
 }
@@ -26,6 +29,7 @@ interface AdminData {
     totalUsers: number;
     freeUsers: number;
     premiumUsers: number;
+    recentSignups: number;
   };
 }
 
@@ -54,22 +58,7 @@ export default function Admin() {
   }
 
   if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <ShieldAlert className="w-12 h-12 text-destructive mx-auto mb-2" />
-            <CardTitle>Access Denied</CardTitle>
-            <CardDescription>You don't have permission to view this page.</CardDescription>
-          </CardHeader>
-          <CardContent className="text-center">
-            <Link href="/" className="text-primary hover:underline">
-              Return to Home
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    return <NotFound />;
   }
 
   return (
@@ -84,10 +73,10 @@ export default function Admin() {
 
         <div className="mb-8">
           <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-          <p className="text-muted-foreground">View all registered users and their subscription status.</p>
+          <p className="text-muted-foreground">View all registered users and their status.</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Users</CardTitle>
@@ -95,6 +84,15 @@ export default function Admin() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{data?.stats.totalUsers || 0}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Last 7 Days</CardTitle>
+              <CalendarDays className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{data?.stats.recentSignups || 0}</div>
             </CardContent>
           </Card>
           <Card>
@@ -121,7 +119,7 @@ export default function Admin() {
           <CardHeader>
             <CardTitle>Registered Users</CardTitle>
             <CardDescription>
-              All users who have signed up for GetStack
+              All users who have signed up ({data?.stats.totalUsers || 0} total)
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -129,44 +127,39 @@ export default function Admin() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Name</TableHead>
                     <TableHead>Email</TableHead>
+                    <TableHead>Role</TableHead>
                     <TableHead>Tier</TableHead>
-                    <TableHead>Pin Limit</TableHead>
-                    <TableHead>Joined</TableHead>
+                    <TableHead>Created</TableHead>
+                    <TableHead>Last Login</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {data.users.map((user) => (
                     <TableRow key={user.id}>
                       <TableCell className="font-medium">
-                        <div className="flex items-center gap-2">
-                          {user.profileImageUrl && (
-                            <img
-                              src={user.profileImageUrl}
-                              alt=""
-                              className="w-8 h-8 rounded-full"
-                            />
-                          )}
-                          <span>
-                            {user.firstName || user.lastName
-                              ? `${user.firstName || ""} ${user.lastName || ""}`.trim()
-                              : "No name"}
-                          </span>
-                        </div>
+                        {user.email || "No email"}
                       </TableCell>
-                      <TableCell>{user.email || "No email"}</TableCell>
                       <TableCell>
-                        <Badge variant={user.tier === "premium" ? "default" : "secondary"}>
+                        <Badge variant={user.role === "super_admin" ? "destructive" : "secondary"}>
+                          {user.role}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={user.tier === "premium" ? "default" : "outline"}>
                           {user.tier === "premium" && <Crown className="w-3 h-3 mr-1" />}
                           {user.tier}
                         </Badge>
                       </TableCell>
-                      <TableCell>{user.pinLimit}</TableCell>
                       <TableCell>
                         {user.createdAt
                           ? format(new Date(user.createdAt), "MMM d, yyyy")
                           : "Unknown"}
+                      </TableCell>
+                      <TableCell>
+                        {user.updatedAt
+                          ? format(new Date(user.updatedAt), "MMM d, yyyy HH:mm")
+                          : "Never"}
                       </TableCell>
                     </TableRow>
                   ))}

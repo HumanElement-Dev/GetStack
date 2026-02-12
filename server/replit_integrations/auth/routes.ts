@@ -5,9 +5,7 @@ import { db } from "../../db";
 import { userTiers, users } from "@shared/schema";
 import { eq, desc } from "drizzle-orm";
 
-// Register auth-specific routes
 export function registerAuthRoutes(app: Express): void {
-  // Get current authenticated user with tier info
   app.get("/api/auth/user", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
@@ -17,7 +15,6 @@ export function registerAuthRoutes(app: Express): void {
         return res.status(404).json({ message: "User not found" });
       }
       
-      // Get user's tier
       const [tier] = await db.select().from(userTiers).where(eq(userTiers.userId, userId));
       
       res.json({
@@ -30,36 +27,35 @@ export function registerAuthRoutes(app: Express): void {
     }
   });
 
-  // Admin endpoint to get all users (protected by admin check)
   app.get("/api/admin/users", isAuthenticated, async (req: any, res) => {
     try {
-      const adminUserId = process.env.ADMIN_USER_ID;
       const currentUserId = req.user.claims.sub;
+      const currentUser = await authStorage.getUser(currentUserId);
 
-      // Check if user is admin
-      if (!adminUserId || currentUserId !== adminUserId) {
-        return res.status(403).json({ message: "Access denied" });
+      if (!currentUser || currentUser.role !== "super_admin") {
+        return res.status(404).json({ message: "Not found" });
       }
 
-      // Get all users with their tier info
       const allUsers = await db.select().from(users).orderBy(desc(users.createdAt));
       const allTiers = await db.select().from(userTiers);
-
-      // Create a map of userId to tier
       const tierMap = new Map(allTiers.map(t => [t.userId, t]));
 
-      // Combine user data with tier info
       const usersWithTiers = allUsers.map(user => ({
         ...user,
         tier: tierMap.get(user.id)?.tier || "free",
         pinLimit: tierMap.get(user.id)?.pinLimit || 3,
       }));
 
-      // Calculate stats
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+      const recentSignups = allUsers.filter(u => u.createdAt && new Date(u.createdAt) >= sevenDaysAgo).length;
+
       const stats = {
         totalUsers: allUsers.length,
         freeUsers: usersWithTiers.filter(u => u.tier === "free").length,
         premiumUsers: usersWithTiers.filter(u => u.tier === "premium").length,
+        recentSignups,
       };
 
       res.json({ users: usersWithTiers, stats });

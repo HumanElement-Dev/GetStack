@@ -1,12 +1,15 @@
 import { Link, useLocation } from "wouter";
-import { Home, Search, Settings, BarChart3, LogOut } from "lucide-react";
+import { Home, Search, Settings, BarChart3, LogOut, ShieldCheck } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function Sidebar() {
   const [location] = useLocation();
+  const { user } = useAuth();
 
   const navItems = [
     { icon: Home, label: "Home", path: "/" },
     { icon: Search, label: "Analyze", path: "/dashboard" },
+    ...((user as any)?.role === "super_admin" ? [{ icon: ShieldCheck, label: "Admin", path: "/admin" }] : []),
   ];
 
   return (

@@ -1,5 +1,6 @@
 import { Link, useLocation } from "wouter";
-import { Home, Search, LogOut } from "lucide-react";
+import { Home, Search, LogOut, ShieldCheck } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 
 interface MobileSidebarProps {
   onClose: () => void;
@@ -7,10 +8,12 @@ interface MobileSidebarProps {
 
 export default function MobileSidebar({ onClose }: MobileSidebarProps) {
   const [location] = useLocation();
+  const { user } = useAuth();
 
   const navItems = [
     { icon: Home, label: "Home", path: "/" },
     { icon: Search, label: "Analyze", path: "/dashboard" },
+    ...((user as any)?.role === "super_admin" ? [{ icon: ShieldCheck, label: "Admin", path: "/admin" }] : []),
   ];
 
   return (

@@ -1,4 +1,4 @@
-import { Bell, Menu, LogOut, Home, LayoutDashboard } from "lucide-react";
+import { Bell, Menu, LogOut, Home, LayoutDashboard, ShieldCheck } from "lucide-react";
 import { Link } from "wouter";
 import DetectionForm from "@/components/detection-form";
 import type { DetectionResult } from "@/components/results-display";
@@ -90,6 +90,14 @@ export default function DashboardHeader({ onResult, isLoading, setIsLoading }: D
                   Dashboard
                 </DropdownMenuItem>
               </Link>
+              {(user as any)?.role === "super_admin" && (
+                <Link href="/admin">
+                  <DropdownMenuItem className="cursor-pointer">
+                    <ShieldCheck className="w-4 h-4 mr-2" />
+                    Admin
+                  </DropdownMenuItem>
+                </Link>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem className="cursor-pointer text-destructive" onClick={() => logout()}>
                 <LogOut className="w-4 h-4 mr-2" />
@@ -147,6 +155,14 @@ export default function DashboardHeader({ onResult, isLoading, setIsLoading }: D
                 Dashboard
               </DropdownMenuItem>
             </Link>
+            {(user as any)?.role === "super_admin" && (
+              <Link href="/admin">
+                <DropdownMenuItem className="cursor-pointer">
+                  <ShieldCheck className="w-4 h-4 mr-2" />
+                  Admin
+                </DropdownMenuItem>
+              </Link>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem className="cursor-pointer text-destructive" onClick={() => logout()}>
               <LogOut className="w-4 h-4 mr-2" />
