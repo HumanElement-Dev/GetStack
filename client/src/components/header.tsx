@@ -141,11 +141,11 @@ export default function Header() {
                             <span>Log In</span>
                           </div>
                         </Link>
-                        <a href="/api/login" className="block">
+                        <Link href="/login" onClick={() => setIsOpen(false)}>
                           <div className="flex items-center justify-center space-x-2 w-full px-4 py-3 bg-primary hover:bg-blue-600 text-primary-foreground rounded-lg transition-colors cursor-pointer font-medium">
                             <span>Sign Up</span>
                           </div>
-                        </a>
+                        </Link>
                       </>
                     )}
                   </div>
@@ -190,7 +190,7 @@ export default function Header() {
             ) : (
               <>
                 <Link href="/login" className="border border-primary text-primary hover:bg-primary/10 px-4 py-2 rounded-lg transition-colors duration-200 font-medium text-sm" data-testid="button-login">Log In</Link>
-                <a href="/api/login" className="bg-primary hover:bg-blue-600 text-primary-foreground px-4 py-2 rounded-lg transition-colors duration-200 font-medium text-sm" data-testid="button-signup" onClick={() => trackEvent('signup_click', 'auth', 'header_signup')}>Sign Up</a>
+                <Link href="/login" className="bg-primary hover:bg-blue-600 text-primary-foreground px-4 py-2 rounded-lg transition-colors duration-200 font-medium text-sm" data-testid="button-signup" onClick={() => trackEvent('signup_click', 'auth', 'header_signup')}>Sign Up</Link>
               </>
             )}
           </div>
