@@ -83,6 +83,9 @@ The core functionality analyzes websites to detect WordPress, Wix, and Shopify t
 - **CDN Patterns**: Detects `static.wixstatic.com` and `parastorage.com` resources
 - **JavaScript**: Identifies Wix-specific scripts like `wix-thunderbolt` and `clientSideRender.min.js`
 - **Cookies**: Looks for `_wix_browser_sess` and other Wix session identifiers
+- **Site Details Extraction**: When Wix is detected, extracts site title, description, OG image, template name, rendering engine (Thunderbolt/Santa), and language
+- **WixInfo Schema**: Stored as `wix_info` jsonb column in `detection_requests` table, typed via `WixInfo` in `shared/schema.ts`
+- **Purple Card Display**: Wix results show a themed purple "Site Details" card matching the WordPress theme card style
 
 ### Shopify Detection
 - **HTTP Headers**: Checks for `X-ShopId`, `X-Shopify-Stage`, `X-Shopify-Shop-Api-Call-Limit`
