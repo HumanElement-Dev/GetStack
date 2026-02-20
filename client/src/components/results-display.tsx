@@ -1,4 +1,4 @@
-import type { Plugin, ThemeInfo } from "@shared/schema";
+import type { Plugin, ThemeInfo, WixInfo } from "@shared/schema";
 import { 
   Layout, ShoppingCart, Mail, Search, TrendingUp, 
   Zap, Shield, ShieldCheck, FileText, Image, Globe, Code, 
@@ -43,6 +43,7 @@ export interface DetectionResult {
   wordPressVersion?: string | null;
   theme?: string | null;
   themeInfo?: ThemeInfo | null;
+  wixInfo?: WixInfo | null;
   pluginCount?: string | null;
   plugins?: Plugin[];
   technologies?: string[];
@@ -412,6 +413,93 @@ export default function ResultsDisplay({ result, isLoading, compact = false }: R
             </div>
           </div>
         </div>
+
+        {/* Wix Site Details Card */}
+        {result.wixInfo && (
+          <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 md:p-6" data-testid="wix-site-details">
+            <div className="flex flex-col sm:flex-row items-start gap-3 sm:space-x-4">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                  <i className="fas fa-paint-brush text-purple-600 text-lg"></i>
+                </div>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-purple-800 mb-3">
+                  Site Details
+                </h3>
+                <div className="bg-white rounded-lg p-4 border border-purple-200 space-y-4">
+                  <div className="space-y-3">
+                    {result.wixInfo.siteTitle && (
+                      <div>
+                        <span className="text-xs text-purple-500 uppercase tracking-wide font-medium">Site Title</span>
+                        <p className="font-bold text-purple-900 text-lg mt-0.5" data-testid="text-wix-title">
+                          {result.wixInfo.siteTitle}
+                        </p>
+                      </div>
+                    )}
+
+                    {result.wixInfo.siteDescription && (
+                      <div>
+                        <span className="text-xs text-purple-500 uppercase tracking-wide font-medium">Description</span>
+                        <p className="text-sm text-purple-700 mt-0.5" data-testid="text-wix-description">
+                          {result.wixInfo.siteDescription}
+                        </p>
+                      </div>
+                    )}
+
+                    {result.wixInfo.ogImage && (
+                      <div>
+                        <span className="text-xs text-purple-500 uppercase tracking-wide font-medium">Site Preview</span>
+                        <div className="mt-1">
+                          <img
+                            src={result.wixInfo.ogImage}
+                            alt="Site preview"
+                            className={`${compact ? 'w-full max-w-sm' : 'w-full'} h-auto object-cover rounded-lg border border-purple-200`}
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = 'none';
+                            }}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex flex-wrap gap-3 pt-2 border-t border-purple-100">
+                      {result.wixInfo.templateName && (
+                        <div className="flex items-center gap-1.5">
+                          <Layout className="w-4 h-4 text-purple-500" />
+                          <span className="text-xs text-purple-600">Template:</span>
+                          <span className="text-xs font-medium text-purple-800" data-testid="text-wix-template">
+                            {result.wixInfo.templateName}
+                          </span>
+                        </div>
+                      )}
+
+                      {result.wixInfo.renderingEngine && (
+                        <div className="flex items-center gap-1.5">
+                          <Rocket className="w-4 h-4 text-purple-500" />
+                          <span className="text-xs text-purple-600">Engine:</span>
+                          <span className="text-xs font-medium text-purple-800" data-testid="text-wix-engine">
+                            {result.wixInfo.renderingEngine}
+                          </span>
+                        </div>
+                      )}
+
+                      {result.wixInfo.language && (
+                        <div className="flex items-center gap-1.5">
+                          <Globe className="w-4 h-4 text-purple-500" />
+                          <span className="text-xs text-purple-600">Language:</span>
+                          <span className="text-xs font-medium text-purple-800" data-testid="text-wix-language">
+                            {result.wixInfo.language}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }

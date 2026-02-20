@@ -68,6 +68,17 @@ export const themeInfoSchema = z.object({
 
 export type ThemeInfo = z.infer<typeof themeInfoSchema>;
 
+export const wixInfoSchema = z.object({
+  templateName: z.string().optional(),
+  siteTitle: z.string().optional(),
+  siteDescription: z.string().optional(),
+  renderingEngine: z.string().optional(),
+  language: z.string().optional(),
+  ogImage: z.string().optional(),
+});
+
+export type WixInfo = z.infer<typeof wixInfoSchema>;
+
 export const detectionRequests = pgTable("detection_requests", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   domain: text("domain").notNull(),
@@ -76,6 +87,7 @@ export const detectionRequests = pgTable("detection_requests", {
   wordPressVersion: text("wordpress_version"),
   theme: text("theme"),
   themeInfo: jsonb("theme_info").$type<ThemeInfo>(),
+  wixInfo: jsonb("wix_info").$type<WixInfo>(),
   pluginCount: text("plugin_count"),
   plugins: jsonb("plugins").$type<Plugin[]>(),
   technologies: text("technologies").array(),

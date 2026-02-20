@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { detectionRequestSchema, type Plugin, type ThemeInfo, userTiers, pinnedSites } from "@shared/schema";
+import { detectionRequestSchema, type Plugin, type ThemeInfo, type WixInfo, userTiers, pinnedSites } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { readFileSync, existsSync } from "fs";
 import { fileURLToPath } from "url";
@@ -369,6 +369,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         let wordPressVersion = null;
         let theme = null;
         let themeInfo: ThemeInfo | null = null;
+        let wixInfo: WixInfo | null = null;
         let pluginCount = null;
         let plugins: Plugin[] = [];
         let technologies: string[] = [];
@@ -841,6 +842,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
               console.log(`Detection result: ${isWix ? 'Wix' : 'Not Wix'}`);
               console.log(`Requirements: Score >= 4 AND >= 1 indicator`);
               console.log(`=====================================\n`);
+
+              if (isWix) {
+                const extractedWixInfo: WixInfo = {};
+
+                const titleMatch = content.match(/<title[^>]*>([^<]+)<\/title>/i);
+                if (titleMatch) {
+                  extractedWixInfo.siteTitle = titleMatch[1].trim();
+                }
+
+                const descMatch = content.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i)
+                  || content.match(/<meta[^>]*content=["']([^"']+)["'][^>]*name=["']description["']/i);
+                if (descMatch) {
+                  extractedWixInfo.siteDescription = descMatch[1].trim();
+                }
+
+                const ogImageMatch = content.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i)
+                  || content.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i);
+                if (ogImageMatch) {
+                  extractedWixInfo.ogImage = ogImageMatch[1].trim();
+                }
+
+                const langMatch = content.match(/<html[^>]*lang=["']([^"']+)["']/i);
+                if (langMatch) {
+                  extractedWixInfo.language = langMatch[1].trim();
+                }
+
+                if (/wix-thunderbolt/i.test(content)) {
+                  extractedWixInfo.renderingEngine = 'Thunderbolt';
+                } else if (/santa-/i.test(content) || /santa\./i.test(content)) {
+                  extractedWixInfo.renderingEngine = 'Santa (Legacy)';
+                } else {
+                  extractedWixInfo.renderingEngine = 'Wix';
+                }
+
+                const templateMatch = content.match(/wix-warmup-data[^>]*>([^<]+)/i);
+                if (templateMatch) {
+                  try {
+                    const warmupData = JSON.parse(templateMatch[1]);
+                    const templateId = warmupData?.platform?.templateId 
+                      || warmupData?.wixCodeModel?.appData?.templateId;
+                    if (templateId) {
+                      extractedWixInfo.templateName = templateId;
+                    }
+                  } catch (e) {}
+                }
+
+                if (!extractedWixInfo.templateName) {
+                  const dataTemplateMatch = content.match(/data-template=["']([^"']+)["']/i)
+                    || content.match(/"templateId"\s*:\s*"([^"]+)"/i);
+                  if (dataTemplateMatch) {
+                    extractedWixInfo.templateName = dataTemplateMatch[1];
+                  }
+                }
+
+                wixInfo = extractedWixInfo;
+                console.log(`Wix info extracted:`, JSON.stringify(wixInfo, null, 2));
+              }
             }
 
             // Shopify Detection - only check if WordPress and Wix were not detected
@@ -934,6 +992,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           wordPressVersion,
           theme,
           themeInfo,
+          wixInfo,
           pluginCount,
           plugins,
           technologies,
@@ -948,6 +1007,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           wordPressVersion,
           theme,
           themeInfo,
+          wixInfo,
           pluginCount,
           plugins,
           technologies,
