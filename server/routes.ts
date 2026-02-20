@@ -933,6 +933,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   }
                 }
 
+                if (!extractedWixInfo.templateName) {
+                  extractedWixInfo.templateName = 'Custom Wix Build';
+                }
+
                 wixInfo = extractedWixInfo;
                 console.log(`Wix info extracted:`, JSON.stringify(wixInfo, null, 2));
               }

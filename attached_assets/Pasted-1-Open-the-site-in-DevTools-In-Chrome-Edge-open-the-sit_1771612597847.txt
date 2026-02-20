@@ -1,0 +1,66 @@
+1. Open the site in DevTools
+In Chrome/Edge: open the site, press F12 or Ctrl+Shift+I / Cmd+Option+I to open Developer Tools.
+​
+​
+
+Use the Elements, Sources, Network, and Console tabs for different kinds of clues.
+​
+
+2. Confirm it’s Wix and which “flavour”
+In Elements and Network:
+
+Look for asset URLs like https://static.wixstatic.com/ or editor URLs like https://editor.wix.com/ which confirm it’s Wix.
+​
+
+Check for Wix-specific JS objects/functions in Sources/Console, such as wixLocation, wixWindow, or references to velo (Wix’s dev environment).
+​
+​
+
+In the DOM, you may see wrapper elements with classes or attributes containing wix, wixui, or wixsite, which signal Wix Editor/Studio.
+
+These tell you: Wix Editor vs Wix Studio vs heavily custom Velo site (more custom scripts and code files).
+
+3. Scan HTML for template‑style IDs
+Still in Elements / View Source:
+
+Search (Ctrl+F/Cmd+F) for template, tmpl, data-template-id, pageData, siteData, or bootstrapData.
+
+Sometimes JSON blobs in <script> tags (type application/json) store site configuration, including internal template or layout IDs, though not human‑readable names.
+​
+
+If you find a GUID-like value near the word “template”, you can cross‑reference it against Wix’s template ID tables in their API docs to infer the base template category (e.g., “electronics store template”, “AI tech company template”).
+​
+
+You’re unlikely to get a friendly “Business Consultant Template” label, but you can often infer “this started from X ecommerce/portfolio template family”.
+
+4. Inspect structure and components
+Use Elements pane and the inspector:
+
+Hover different sections (header, hero, galleries, strips) and watch which elements highlight.
+
+Note repeating patterns: specific galleries, sliders, product grids, or blog layouts often map to particular Wix apps (Stores, Bookings, Blog, Events).
+
+Open the Network → JS or Network → XHR filter and see calls that include wixstores, wixblog, wixevents, etc., which reveal enabled apps.
+​
+
+This doesn’t give the template name, but it tells you which app ecosystem the design is built around so you can search Wix templates with those apps pre‑enabled.
+​
+
+5. Use dev tools + template gallery together
+Once you know:
+
+Builder type (Wix Editor/Studio) and
+
+Site type (store, portfolio, bookings, blog) and
+
+Style cues (minimal, dark, illustrative, etc.),
+​
+
+go to the Wix templates gallery, filter by category and style, and visually match header layout, hero sections, and key sections. This is often the only realistic way to approximate the original template.
+​
+​
+
+6. Know the limitations
+Wix heavily rewrites and minifies output, and many sites are customized enough that the original template is unrecognizable.
+
+There is no official template name exposed in public HTML, and third‑party “detectors” mainly infer template families, not exact names.
