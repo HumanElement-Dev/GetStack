@@ -846,15 +846,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
               if (isWix) {
                 const extractedWixInfo: WixInfo = {};
 
+                const ogSiteNameMatch = content.match(/<meta[^>]*property=["']og:site_name["'][^>]*content=["']([^"']+)["']/i)
+                  || content.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:site_name["']/i);
+                const ogTitleMatch = content.match(/<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']+)["']/i)
+                  || content.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:title["']/i);
                 const titleMatch = content.match(/<title[^>]*>([^<]+)<\/title>/i);
-                if (titleMatch) {
-                  extractedWixInfo.siteTitle = titleMatch[1].trim();
+
+                const cleanWixTitle = (raw: string): string => {
+                  let cleaned = raw.trim();
+                  cleaned = cleaned.replace(/^(HOME|HOMEPAGE|Welcome\s+to)\s*[|\-–—:]\s*/i, '');
+                  cleaned = cleaned.replace(/\s*[|\-–—]\s*(HOME|HOMEPAGE|Wix\.com|Wix)$/i, '');
+                  cleaned = cleaned.replace(/\s*[|\-–—]\s*$/i, '');
+                  return cleaned;
+                };
+
+                const isGenericTitle = (title: string): boolean => {
+                  const lower = title.toLowerCase().trim();
+                  return !lower || lower === 'wix' || lower === 'wix.com' || lower === 'home' || lower === 'homepage' || lower === 'my site' || lower.length < 2;
+                };
+
+                const ogSiteName = ogSiteNameMatch?.[1]?.trim();
+                const ogTitle = ogTitleMatch?.[1]?.trim();
+                const rawTitle = titleMatch?.[1]?.trim();
+
+                if (ogSiteName && !isGenericTitle(ogSiteName)) {
+                  extractedWixInfo.siteTitle = ogSiteName;
+                } else if (ogTitle && !isGenericTitle(ogTitle)) {
+                  extractedWixInfo.siteTitle = cleanWixTitle(ogTitle);
+                } else if (rawTitle) {
+                  const cleaned = cleanWixTitle(rawTitle);
+                  if (!isGenericTitle(cleaned)) {
+                    extractedWixInfo.siteTitle = cleaned;
+                  } else {
+                    extractedWixInfo.siteTitle = rawTitle;
+                  }
                 }
 
                 const descMatch = content.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i)
                   || content.match(/<meta[^>]*content=["']([^"']+)["'][^>]*name=["']description["']/i);
-                if (descMatch) {
-                  extractedWixInfo.siteDescription = descMatch[1].trim();
+                const ogDescMatch = content.match(/<meta[^>]*property=["']og:description["'][^>]*content=["']([^"']+)["']/i)
+                  || content.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:description["']/i);
+                const metaDesc = descMatch?.[1]?.trim();
+                const ogDesc = ogDescMatch?.[1]?.trim();
+                if (metaDesc && metaDesc.length > 0) {
+                  extractedWixInfo.siteDescription = metaDesc;
+                } else if (ogDesc && ogDesc.length > 0) {
+                  extractedWixInfo.siteDescription = ogDesc;
                 }
 
                 const ogImageMatch = content.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i)

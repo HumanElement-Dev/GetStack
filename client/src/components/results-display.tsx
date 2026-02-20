@@ -428,73 +428,61 @@ export default function ResultsDisplay({ result, isLoading, compact = false }: R
                   Site Details
                 </h3>
                 <div className="bg-white rounded-lg p-4 border border-purple-200 space-y-4">
-                  <div className="space-y-3">
-                    {result.wixInfo.siteTitle && (
-                      <div>
-                        <span className="text-xs text-purple-500 uppercase tracking-wide font-medium">Site Title</span>
-                        <p className="font-bold text-purple-900 text-lg mt-0.5" data-testid="text-wix-title">
-                          {result.wixInfo.siteTitle}
-                        </p>
-                      </div>
-                    )}
-
-                    {result.wixInfo.siteDescription && (
-                      <div>
-                        <span className="text-xs text-purple-500 uppercase tracking-wide font-medium">Description</span>
-                        <p className="text-sm text-purple-700 mt-0.5" data-testid="text-wix-description">
-                          {result.wixInfo.siteDescription}
-                        </p>
-                      </div>
-                    )}
-
-                    {result.wixInfo.ogImage && (
-                      <div>
-                        <span className="text-xs text-purple-500 uppercase tracking-wide font-medium">Site Preview</span>
-                        <div className="mt-1">
-                          <img
-                            src={result.wixInfo.ogImage}
-                            alt="Site preview"
-                            className={`${compact ? 'w-full max-w-sm' : 'w-full'} h-auto object-cover rounded-lg border border-purple-200`}
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).style.display = 'none';
-                            }}
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="flex flex-wrap gap-3 pt-2 border-t border-purple-100">
-                      {result.wixInfo.templateName && (
-                        <div className="flex items-center gap-1.5">
-                          <Layout className="w-4 h-4 text-purple-500" />
-                          <span className="text-xs text-purple-600">Template:</span>
-                          <span className="text-xs font-medium text-purple-800" data-testid="text-wix-template">
-                            {result.wixInfo.templateName}
+                  <div className="flex flex-col sm:flex-row items-start gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <h4 className="font-bold text-purple-900 text-lg" data-testid="text-wix-title">
+                            {result.wixInfo.siteTitle || result.domain}
+                          </h4>
+                          <span className="inline-block text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium mt-1">
+                            Wix Website
                           </span>
                         </div>
-                      )}
-
-                      {result.wixInfo.renderingEngine && (
-                        <div className="flex items-center gap-1.5">
-                          <Rocket className="w-4 h-4 text-purple-500" />
-                          <span className="text-xs text-purple-600">Engine:</span>
-                          <span className="text-xs font-medium text-purple-800" data-testid="text-wix-engine">
+                        {result.wixInfo.renderingEngine && (
+                          <span className="text-sm text-purple-600 font-mono bg-purple-50 px-2 py-1 rounded" data-testid="text-wix-engine">
                             {result.wixInfo.renderingEngine}
                           </span>
-                        </div>
+                        )}
+                      </div>
+
+                      {result.wixInfo.siteDescription && (
+                        <p className="text-sm text-purple-700 mt-2" data-testid="text-wix-description">
+                          {result.wixInfo.siteDescription}
+                        </p>
                       )}
 
-                      {result.wixInfo.language && (
-                        <div className="flex items-center gap-1.5">
-                          <Globe className="w-4 h-4 text-purple-500" />
-                          <span className="text-xs text-purple-600">Language:</span>
-                          <span className="text-xs font-medium text-purple-800" data-testid="text-wix-language">
-                            {result.wixInfo.language}
+                      {result.wixInfo.templateName && (
+                        <div className="flex items-center gap-2 text-sm mt-2">
+                          <span className="text-purple-600">Template:</span>
+                          <span className="text-purple-800 font-medium" data-testid="text-wix-template">
+                            {result.wixInfo.templateName}
                           </span>
                         </div>
                       )}
                     </div>
                   </div>
+
+                  {result.wixInfo.ogImage && (
+                    <div className="flex justify-start">
+                      <img
+                        src={result.wixInfo.ogImage}
+                        alt={`${result.wixInfo.siteTitle || result.domain} preview`}
+                        className={`${compact ? 'w-full max-w-sm' : 'w-full'} h-auto object-cover rounded-lg border border-purple-200`}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
+
+                  {result.wixInfo.language && (
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded">
+                        {result.wixInfo.language}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
