@@ -75,6 +75,9 @@ export const wixInfoSchema = z.object({
   renderingEngine: z.string().optional(),
   language: z.string().optional(),
   ogImage: z.string().optional(),
+  builderType: z.string().optional(),
+  wixApps: z.array(z.string()).optional(),
+  siteCategory: z.string().optional(),
 });
 
 export type WixInfo = z.infer<typeof wixInfoSchema>;

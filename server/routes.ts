@@ -913,6 +913,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   extractedWixInfo.renderingEngine = 'Wix';
                 }
 
+                if (/wixui|wix-rich-content|wix-dropdown-menu/i.test(content) && /corvid|velo|wix-code/i.test(content)) {
+                  extractedWixInfo.builderType = 'Wix Studio + Velo';
+                } else if (/corvid|velo|wix-code|_api\/wix-/i.test(content)) {
+                  extractedWixInfo.builderType = 'Wix Velo (Custom Code)';
+                } else if (/wix-studio|editorx\.com|editor-x/i.test(content)) {
+                  extractedWixInfo.builderType = 'Wix Studio';
+                } else {
+                  extractedWixInfo.builderType = 'Wix Editor';
+                }
+
+                const detectedApps: string[] = [];
+                if (/wixstores|wix-stores|wix-ecom|ecom-platform/i.test(content)) detectedApps.push('Wix Stores');
+                if (/wix-blog|blog-frontend-adapter|blog-ooi/i.test(content)) detectedApps.push('Wix Blog');
+                if (/wix-bookings|bookings-/i.test(content)) detectedApps.push('Wix Bookings');
+                if (/wix-events|events-/i.test(content)) detectedApps.push('Wix Events');
+                if (/wix-restaurants|restaurants-/i.test(content)) detectedApps.push('Wix Restaurants');
+                if (/wix-forum|forum-/i.test(content)) detectedApps.push('Wix Forum');
+                if (/wix-music|music-manager/i.test(content)) detectedApps.push('Wix Music');
+                if (/wix-video|pro-gallery|wix-pro-gallery/i.test(content)) detectedApps.push('Wix Pro Gallery');
+                if (/wix-pricing-plans|pricing-plans/i.test(content)) detectedApps.push('Wix Pricing Plans');
+                if (/members-area|wix-members/i.test(content)) detectedApps.push('Wix Members');
+                if (/wix-chat|livechat/i.test(content)) detectedApps.push('Wix Chat');
+                if (/wix-forms|wix-form-builder/i.test(content)) detectedApps.push('Wix Forms');
+                if (detectedApps.length > 0) {
+                  extractedWixInfo.wixApps = detectedApps;
+                }
+
+                let siteCategory = 'General';
+                if (detectedApps.includes('Wix Stores')) siteCategory = 'E-commerce';
+                else if (detectedApps.includes('Wix Blog')) siteCategory = 'Blog';
+                else if (detectedApps.includes('Wix Bookings')) siteCategory = 'Services / Bookings';
+                else if (detectedApps.includes('Wix Events')) siteCategory = 'Events';
+                else if (detectedApps.includes('Wix Restaurants')) siteCategory = 'Restaurant';
+                else if (detectedApps.includes('Wix Forum')) siteCategory = 'Community';
+                else if (detectedApps.includes('Wix Pro Gallery')) siteCategory = 'Portfolio';
+                else if (detectedApps.includes('Wix Music')) siteCategory = 'Music';
+                extractedWixInfo.siteCategory = siteCategory;
+
                 const templateMatch = content.match(/wix-warmup-data[^>]*>([^<]+)/i);
                 if (templateMatch) {
                   try {
@@ -934,7 +972,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 }
 
                 if (!extractedWixInfo.templateName) {
-                  extractedWixInfo.templateName = 'Custom Wix Build';
+                  const bootstrapMatch = content.match(/bootstrapData[^>]*>([^<]+)/i)
+                    || content.match(/pageData[^>]*>([^<]+)/i)
+                    || content.match(/siteData[^>]*>([^<]+)/i);
+                  if (bootstrapMatch) {
+                    try {
+                      const bsData = JSON.parse(bootstrapMatch[1]);
+                      const findTemplateId = (obj: any, depth = 0): string | null => {
+                        if (!obj || depth > 5) return null;
+                        if (typeof obj === 'object') {
+                          if (obj.templateId && typeof obj.templateId === 'string') return obj.templateId;
+                          for (const key of Object.keys(obj)) {
+                            const found = findTemplateId(obj[key], depth + 1);
+                            if (found) return found;
+                          }
+                        }
+                        return null;
+                      };
+                      const tplId = findTemplateId(bsData);
+                      if (tplId) {
+                        extractedWixInfo.templateName = tplId;
+                      }
+                    } catch (e) {}
+                  }
+                }
+
+                if (!extractedWixInfo.templateName) {
+                  extractedWixInfo.templateName = siteCategory !== 'General'
+                    ? `Custom Wix Build (${siteCategory})`
+                    : 'Custom Wix Build';
                 }
 
                 wixInfo = extractedWixInfo;

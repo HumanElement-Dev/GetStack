@@ -85,7 +85,11 @@ The core functionality analyzes websites to detect WordPress, Wix, and Shopify t
 - **Cookies**: Looks for `_wix_browser_sess` and other Wix session identifiers
 - **Site Details Extraction**: When Wix is detected, extracts site title, description, OG image, template name, rendering engine (Thunderbolt/Santa), and language
 - **WixInfo Schema**: Stored as `wix_info` jsonb column in `detection_requests` table, typed via `WixInfo` in `shared/schema.ts`
-- **Purple Card Display**: Wix results show a themed purple "Site Details" card matching the WordPress theme card style
+- **Builder Type Detection**: Identifies Wix Editor vs Wix Studio vs Wix Velo (Custom Code) based on script signatures
+- **Wix App Detection**: Detects enabled Wix apps (Stores, Blog, Bookings, Events, Restaurants, Forum, Music, Pro Gallery, Pricing Plans, Members, Chat, Forms) from HTML content patterns
+- **Site Categorization**: Infers site category (E-commerce, Blog, Services/Bookings, Events, Restaurant, Community, Portfolio, Music, General) from detected apps
+- **Template Identification**: Searches warmup data, data-template attributes, templateId JSON, bootstrapData/pageData/siteData blobs; falls back to "Custom Wix Build" or "Custom Wix Build (Category)" when no template found
+- **Purple Card Display**: Wix results show a themed purple "Site Details" card with builder type badge, site category badge, detected Wix apps as tags, and template info
 
 ### Shopify Detection
 - **HTTP Headers**: Checks for `X-ShopId`, `X-Shopify-Stage`, `X-Shopify-Shop-Api-Call-Limit`

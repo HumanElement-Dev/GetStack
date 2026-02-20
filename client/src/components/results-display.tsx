@@ -435,9 +435,18 @@ export default function ResultsDisplay({ result, isLoading, compact = false }: R
                           <h4 className="font-bold text-purple-900 text-lg" data-testid="text-wix-title">
                             {result.wixInfo.siteTitle || result.domain}
                           </h4>
-                          <span className="inline-block text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium mt-1">
-                            Wix Website
-                          </span>
+                          <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                            {result.wixInfo.builderType && (
+                              <span className="inline-block text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium">
+                                {result.wixInfo.builderType}
+                              </span>
+                            )}
+                            {result.wixInfo.siteCategory && result.wixInfo.siteCategory !== 'General' && (
+                              <span className="inline-block text-xs bg-purple-200 text-purple-800 px-2 py-0.5 rounded-full font-medium">
+                                {result.wixInfo.siteCategory}
+                              </span>
+                            )}
+                          </div>
                         </div>
                         {result.wixInfo.renderingEngine && (
                           <span className="text-sm text-purple-600 font-mono bg-purple-50 px-2 py-1 rounded" data-testid="text-wix-engine">
@@ -454,6 +463,7 @@ export default function ResultsDisplay({ result, isLoading, compact = false }: R
 
                       {result.wixInfo.templateName && (
                         <div className="flex items-center gap-2 text-sm mt-2">
+                          <Layout className="w-4 h-4 text-purple-500" />
                           <span className="text-purple-600">Template:</span>
                           <span className="text-purple-800 font-medium" data-testid="text-wix-template">
                             {result.wixInfo.templateName}
@@ -476,13 +486,20 @@ export default function ResultsDisplay({ result, isLoading, compact = false }: R
                     </div>
                   )}
 
-                  {result.wixInfo.language && (
-                    <div className="flex flex-wrap gap-1.5 mt-2">
-                      <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded">
-                        {result.wixInfo.language}
-                      </span>
+                  {(result.wixInfo.wixApps && result.wixInfo.wixApps.length > 0) || result.wixInfo.language ? (
+                    <div className="flex flex-wrap gap-1.5 pt-2 border-t border-purple-100">
+                      {result.wixInfo.wixApps?.map((app) => (
+                        <span key={app} className="text-xs bg-purple-50 text-purple-700 border border-purple-200 px-2 py-0.5 rounded">
+                          {app}
+                        </span>
+                      ))}
+                      {result.wixInfo.language && (
+                        <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded">
+                          {result.wixInfo.language}
+                        </span>
+                      )}
                     </div>
-                  )}
+                  ) : null}
                 </div>
               </div>
             </div>
