@@ -390,6 +390,27 @@ export default function ResultsDisplay({ result, isLoading, compact = false }: R
 
   // Wix detected
   if (result.cmsType === 'wix') {
+    const wixAppMeta: Record<string, { icon: LucideIcon; description: string; category: string; color: string }> = {
+      'Wix Stores':         { icon: ShoppingCart, description: 'Online store & product catalog',     category: 'E-commerce',    color: '#7c3aed' },
+      'Wix Blog':           { icon: FileText,     description: 'Blogging & content publishing',      category: 'Content',       color: '#6d28d9' },
+      'Wix Bookings':       { icon: Layout,       description: 'Appointments & scheduling',          category: 'Services',      color: '#5b21b6' },
+      'Wix Events':         { icon: Rocket,       description: 'Event management & ticketing',       category: 'Events',        color: '#4c1d95' },
+      'Wix Restaurants':    { icon: Database,     description: 'Online ordering & menus',            category: 'Food & Drink',  color: '#7c3aed' },
+      'Wix Forum':          { icon: Globe,        description: 'Community discussion boards',         category: 'Community',     color: '#6d28d9' },
+      'Wix Music':          { icon: Zap,          description: 'Music player & track sales',         category: 'Media',         color: '#5b21b6' },
+      'Wix Pro Gallery':    { icon: Image,        description: 'Professional photo galleries',       category: 'Media',         color: '#4c1d95' },
+      'Wix Pricing Plans':  { icon: CreditCard,   description: 'Subscription & membership plans',   category: 'Monetization',  color: '#7c3aed' },
+      'Wix Members':        { icon: Shield,       description: 'Member login & profiles',            category: 'Membership',    color: '#6d28d9' },
+      'Wix Chat':           { icon: Mail,         description: 'Live chat & messaging',              category: 'Support',       color: '#5b21b6' },
+      'Wix Forms':          { icon: FileInput,    description: 'Contact forms & lead capture',       category: 'Forms',         color: '#4c1d95' },
+    };
+
+    const templateLabel = result.wixInfo?.templateName || 'Custom Wix Build';
+    const categoryLabel = result.wixInfo?.siteCategory && result.wixInfo.siteCategory !== 'General'
+      ? result.wixInfo.siteCategory
+      : null;
+    const placeholderLabel = templateLabel;
+
     return (
       <div className="space-y-4 md:space-y-6">
         {/* Wix Confirmation Card */}
@@ -414,7 +435,7 @@ export default function ResultsDisplay({ result, isLoading, compact = false }: R
           </div>
         </div>
 
-        {/* Wix Site Details Card */}
+        {/* Wix Theme Details Card */}
         {result.wixInfo && (
           <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 md:p-6" data-testid="wix-site-details">
             <div className="flex flex-col sm:flex-row items-start gap-3 sm:space-x-4">
@@ -425,81 +446,149 @@ export default function ResultsDisplay({ result, isLoading, compact = false }: R
               </div>
               <div className="flex-1">
                 <h3 className="text-lg font-semibold text-purple-800 mb-3">
-                  Site Details
+                  Theme Details
                 </h3>
                 <div className="bg-white rounded-lg p-4 border border-purple-200 space-y-4">
-                  <div className="flex flex-col sm:flex-row items-start gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1">
-                          <h4 className="font-bold text-purple-900 text-lg" data-testid="text-wix-title">
-                            {result.wixInfo.siteTitle || result.domain}
-                          </h4>
-                          <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                  <div className="space-y-3">
+                    <div className="flex flex-col sm:flex-row items-start gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <h4 className="font-bold text-purple-900 text-lg" data-testid="text-wix-template">
+                              {result.wixInfo.templateName || 'Custom Wix Build'}
+                            </h4>
                             {result.wixInfo.builderType && (
-                              <span className="inline-block text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium">
+                              <span className="inline-block text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium mt-1">
                                 {result.wixInfo.builderType}
                               </span>
                             )}
-                            {result.wixInfo.siteCategory && result.wixInfo.siteCategory !== 'General' && (
-                              <span className="inline-block text-xs bg-purple-200 text-purple-800 px-2 py-0.5 rounded-full font-medium">
-                                {result.wixInfo.siteCategory}
-                              </span>
-                            )}
                           </div>
+                          {result.wixInfo.renderingEngine && (
+                            <span className="text-sm text-purple-600 font-mono bg-purple-50 px-2 py-1 rounded" data-testid="text-wix-engine">
+                              {result.wixInfo.renderingEngine}
+                            </span>
+                          )}
                         </div>
-                        {result.wixInfo.renderingEngine && (
-                          <span className="text-sm text-purple-600 font-mono bg-purple-50 px-2 py-1 rounded" data-testid="text-wix-engine">
-                            {result.wixInfo.renderingEngine}
-                          </span>
+
+                        {categoryLabel && (
+                          <p className="text-sm text-purple-700 mt-2" data-testid="text-wix-description">
+                            {categoryLabel} Wix Site
+                          </p>
                         )}
-                      </div>
 
-                      {result.wixInfo.siteDescription && (
-                        <p className="text-sm text-purple-700 mt-2" data-testid="text-wix-description">
-                          {result.wixInfo.siteDescription}
-                        </p>
-                      )}
+                        {result.wixInfo.siteDescription && (
+                          <p className="text-sm text-purple-600 mt-1" data-testid="text-wix-site-description">
+                            {result.wixInfo.siteDescription}
+                          </p>
+                        )}
 
-                      {result.wixInfo.templateName && (
                         <div className="flex items-center gap-2 text-sm mt-2">
-                          <Layout className="w-4 h-4 text-purple-500" />
-                          <span className="text-purple-600">Template:</span>
-                          <span className="text-purple-800 font-medium" data-testid="text-wix-template">
-                            {result.wixInfo.templateName}
-                          </span>
+                          <span className="text-purple-600">By:</span>
+                          <a
+                            href="https://www.wix.com"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-purple-800 font-medium hover:underline"
+                          >
+                            Wix
+                          </a>
                         </div>
-                      )}
+                      </div>
+                    </div>
+
+                    {/* Placeholder image — styled like WP theme screenshot */}
+                    <div className="flex justify-start">
+                      <div
+                        className={`${compact ? 'w-full max-w-sm' : 'w-full'} rounded-lg border border-purple-200 overflow-hidden`}
+                        style={{ aspectRatio: '16/9' }}
+                      >
+                        <svg
+                          width="100%"
+                          height="100%"
+                          viewBox="0 0 800 450"
+                          xmlns="http://www.w3.org/2000/svg"
+                          style={{ display: 'block' }}
+                        >
+                          <defs>
+                            <linearGradient id="wixGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                              <stop offset="0%" stopColor="#6d28d9" />
+                              <stop offset="100%" stopColor="#4c1d95" />
+                            </linearGradient>
+                          </defs>
+                          <rect width="800" height="450" fill="url(#wixGrad)" />
+                          <rect x="0" y="0" width="800" height="450" fill="rgba(255,255,255,0.04)" />
+                          {/* Decorative circles */}
+                          <circle cx="650" cy="80" r="120" fill="rgba(255,255,255,0.05)" />
+                          <circle cx="150" cy="370" r="90" fill="rgba(255,255,255,0.05)" />
+                          {/* Wix logo text */}
+                          <text x="400" y="190" textAnchor="middle" fontFamily="sans-serif" fontSize="28" fontWeight="700" fill="rgba(255,255,255,0.5)" letterSpacing="6">WIX</text>
+                          {/* Template label */}
+                          <text x="400" y="240" textAnchor="middle" fontFamily="sans-serif" fontSize="22" fontWeight="700" fill="white">{placeholderLabel}</text>
+                          {/* Sub label */}
+                          <text x="400" y="275" textAnchor="middle" fontFamily="sans-serif" fontSize="14" fill="rgba(255,255,255,0.7)">Website Builder</text>
+                        </svg>
+                      </div>
                     </div>
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
-                  {result.wixInfo.ogImage && (
-                    <div className="flex justify-start">
-                      <img
-                        src={result.wixInfo.ogImage}
-                        alt={`${result.wixInfo.siteTitle || result.domain} preview`}
-                        className={`${compact ? 'w-full max-w-sm' : 'w-full'} h-auto object-cover rounded-lg border border-purple-200`}
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
-                        }}
-                      />
+        {/* Wix Apps Card */}
+        {result.wixInfo?.wixApps && result.wixInfo.wixApps.length > 0 && (
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 md:p-6" data-testid="wix-apps-details">
+            <div className="flex flex-col sm:flex-row items-start gap-3 sm:space-x-4">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Puzzle className="w-5 h-5 text-blue-600" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-blue-800 mb-3">
+                  Detected Wix Apps
+                </h3>
+                <div className="bg-white rounded-lg p-4 border border-blue-200 space-y-4">
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="font-medium text-blue-800">Apps</span>
+                      <span className="text-sm text-blue-600 bg-blue-100 px-2 py-1 rounded">
+                        {result.wixInfo.wixApps.length} detected
+                      </span>
                     </div>
-                  )}
-
-                  {(result.wixInfo.wixApps && result.wixInfo.wixApps.length > 0) || result.wixInfo.language ? (
-                    <div className="flex flex-wrap gap-1.5 pt-2 border-t border-purple-100">
-                      {result.wixInfo.wixApps?.map((app) => (
-                        <span key={app} className="text-xs bg-purple-50 text-purple-700 border border-purple-200 px-2 py-0.5 rounded">
-                          {app}
-                        </span>
-                      ))}
-                      {result.wixInfo.language && (
-                        <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded">
-                          {result.wixInfo.language}
-                        </span>
-                      )}
+                    <div className="space-y-2" data-testid="list-wix-apps">
+                      {result.wixInfo.wixApps.map((app) => {
+                        const meta = wixAppMeta[app] || { icon: Puzzle, description: 'Wix application', category: 'App', color: '#6d28d9' };
+                        const IconComponent = meta.icon;
+                        return (
+                          <div
+                            key={app}
+                            className="flex items-start gap-3 p-3 bg-gradient-to-r from-white to-blue-50/30 rounded-lg border border-blue-100/50 hover:border-blue-200 transition-colors"
+                            data-testid={`wix-app-${app.toLowerCase().replace(/\s+/g, '-')}`}
+                          >
+                            <div
+                              className="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center text-white font-semibold"
+                              style={{ backgroundColor: meta.color }}
+                            >
+                              <IconComponent className="w-5 h-5" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="flex-1">
+                                  <h4 className="font-semibold text-blue-900 text-sm">{app}</h4>
+                                  <p className="text-xs text-blue-700/80 mt-0.5">{meta.description}</p>
+                                </div>
+                                <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium whitespace-nowrap">
+                                  {meta.category}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                  ) : null}
+                  </div>
                 </div>
               </div>
             </div>
