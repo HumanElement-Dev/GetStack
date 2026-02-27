@@ -747,26 +747,26 @@ export default function ResultsDisplay({ result, isLoading, compact = false }: R
         </div>
 
         {/* Shopify Apps Card */}
-        {result.shopifyInfo?.detectedApps && result.shopifyInfo.detectedApps.length > 0 && (
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 md:p-6" data-testid="shopify-apps-details">
-            <div className="flex flex-col sm:flex-row items-start gap-3 sm:space-x-4">
-              <div className="flex-shrink-0">
-                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                  <Puzzle className="w-5 h-5 text-blue-600" />
-                </div>
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 md:p-6" data-testid="shopify-apps-details">
+          <div className="flex flex-col sm:flex-row items-start gap-3 sm:space-x-4">
+            <div className="flex-shrink-0">
+              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                <Puzzle className="w-5 h-5 text-blue-600" />
               </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-blue-800 mb-3">
-                  Detected Shopify Apps
-                </h3>
-                <div className="bg-white rounded-lg p-4 border border-blue-200 space-y-4">
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="font-medium text-blue-800">Apps</span>
-                      <span className="text-sm text-blue-600 bg-blue-100 px-2 py-1 rounded">
-                        {result.shopifyInfo.detectedApps.length} detected
-                      </span>
-                    </div>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-blue-800 mb-3">
+                Detected Shopify Apps
+              </h3>
+              <div className="bg-white rounded-lg p-4 border border-blue-200 space-y-4">
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="font-medium text-blue-800">Apps</span>
+                    <span className="text-sm text-blue-600 bg-blue-100 px-2 py-1 rounded">
+                      {result.shopifyInfo?.detectedApps?.length ?? 0} detected
+                    </span>
+                  </div>
+                  {result.shopifyInfo?.detectedApps && result.shopifyInfo.detectedApps.length > 0 ? (
                     <div className="space-y-2" data-testid="list-shopify-apps">
                       {result.shopifyInfo.detectedApps.map((app) => {
                         const meta = shopifyAppMeta[app] || { icon: Puzzle, description: 'Shopify application', category: 'App', color: '#059669' };
@@ -798,12 +798,16 @@ export default function ResultsDisplay({ result, isLoading, compact = false }: R
                         );
                       })}
                     </div>
-                  </div>
+                  ) : (
+                    <p className="text-sm text-blue-600">
+                      No third-party apps detected from frontend assets. Apps that load only server-side or use custom domains may not be visible.
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
           </div>
-        )}
+        </div>
       </div>
     );
   }
