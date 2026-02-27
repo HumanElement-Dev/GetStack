@@ -1177,26 +1177,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   extractedShopifyInfo.detectedApps = detectedApps;
                 }
 
-                // Try to fetch theme screenshot from Shopify Theme Store
+                // Try to fetch theme screenshot from Shopify Theme Store search
                 if (extractedShopifyInfo.themeName) {
                   try {
-                    const themeSlug = extractedShopifyInfo.themeName
-                      .toLowerCase()
-                      .replace(/\s+/g, '-')
-                      .replace(/[^a-z0-9-]/g, '')
-                      .replace(/-+/g, '-');
-                    const themeStoreUrl = `https://themes.shopify.com/themes/${themeSlug}`;
-                    const themeStoreRes = await fetch(themeStoreUrl, {
-                      headers: { 'User-Agent': 'GetStack/1.0' },
-                      signal: AbortSignal.timeout(5000),
+                    const searchUrl = `https://themes.shopify.com/themes?q=${encodeURIComponent(extractedShopifyInfo.themeName)}`;
+                    const themeStoreRes = await fetch(searchUrl, {
+                      headers: {
+                        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                        'Accept': 'text/html',
+                      },
+                      signal: AbortSignal.timeout(6000),
                     });
                     if (themeStoreRes.ok) {
                       const themeStoreHtml = await themeStoreRes.text();
-                      const ogImageMatch = themeStoreHtml.match(/<meta[^>]+property="og:image"[^>]+content="([^"]+)"/i) ||
-                        themeStoreHtml.match(/<meta[^>]+content="([^"]+)"[^>]+property="og:image"/i);
-                      if (ogImageMatch) {
-                        extractedShopifyInfo.themeScreenshot = ogImageMatch[1];
-                        console.log(`Shopify theme screenshot found: ${ogImageMatch[1]}`);
+                      // The search results HTML contains pairs of alt="{ThemeName}" followed by cdn.shopify.com/theme-store/*.jpg
+                      // Find the first CDN image URL that appears after an exact (case-insensitive) alt match for this theme name
+                      const escapedName = extractedShopifyInfo.themeName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                      const searchPattern = new RegExp(
+                        `alt="${escapedName}"[\\s\\S]{0,400}?cdn\\.shopify\\.com/theme-store/([a-z0-9]+\\.jpg)`,
+                        'i'
+                      );
+                      const imgMatch = themeStoreHtml.match(searchPattern);
+                      if (imgMatch) {
+                        extractedShopifyInfo.themeScreenshot = `https://cdn.shopify.com/theme-store/${imgMatch[1]}`;
+                        console.log(`Shopify theme screenshot found: ${extractedShopifyInfo.themeScreenshot}`);
+                      } else {
+                        console.log(`No theme screenshot found for: ${extractedShopifyInfo.themeName}`);
                       }
                     }
                   } catch {
