@@ -90,6 +90,7 @@ export const shopifyInfoSchema = z.object({
   language: z.string().optional(),
   shopDomain: z.string().optional(),
   detectedApps: z.array(z.string()).optional(),
+  themeScreenshot: z.string().optional(),
 });
 
 export type ShopifyInfo = z.infer<typeof shopifyInfoSchema>;

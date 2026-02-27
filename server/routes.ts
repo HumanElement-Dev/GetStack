@@ -1157,6 +1157,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   extractedShopifyInfo.detectedApps = detectedApps;
                 }
 
+                // Try to fetch theme screenshot from Shopify Theme Store
+                if (extractedShopifyInfo.themeName) {
+                  try {
+                    const themeSlug = extractedShopifyInfo.themeName
+                      .toLowerCase()
+                      .replace(/\s+/g, '-')
+                      .replace(/[^a-z0-9-]/g, '');
+                    const themeStoreUrl = `https://themes.shopify.com/themes/${themeSlug}`;
+                    const themeStoreRes = await fetch(themeStoreUrl, {
+                      headers: { 'User-Agent': 'GetStack/1.0' },
+                      signal: AbortSignal.timeout(5000),
+                    });
+                    if (themeStoreRes.ok) {
+                      const themeStoreHtml = await themeStoreRes.text();
+                      const ogImageMatch = themeStoreHtml.match(/<meta[^>]+property="og:image"[^>]+content="([^"]+)"/i) ||
+                        themeStoreHtml.match(/<meta[^>]+content="([^"]+)"[^>]+property="og:image"/i);
+                      if (ogImageMatch) {
+                        extractedShopifyInfo.themeScreenshot = ogImageMatch[1];
+                        console.log(`Shopify theme screenshot found: ${ogImageMatch[1]}`);
+                      }
+                    }
+                  } catch {
+                    // Theme store fetch failed — no screenshot available
+                  }
+                }
+
                 shopifyInfo = extractedShopifyInfo;
                 console.log('Shopify info extracted:', JSON.stringify(shopifyInfo, null, 2));
               }

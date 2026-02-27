@@ -698,11 +698,24 @@ export default function ResultsDisplay({ result, isLoading, compact = false }: R
                     </div>
                   </div>
 
-                  {/* Placeholder image — styled like WP/Wix theme screenshot */}
+                  {/* Theme screenshot — real image when available, SVG placeholder as fallback */}
                   <div className="flex justify-start">
+                    {result.shopifyInfo?.themeScreenshot ? (
+                      <img
+                        src={result.shopifyInfo.themeScreenshot}
+                        alt={`${shopifyThemeLabel} theme screenshot`}
+                        className={`${compact ? 'w-full max-w-sm' : 'w-full'} h-auto object-cover rounded-lg border border-purple-200`}
+                        onError={(e) => {
+                          const target = e.currentTarget;
+                          target.style.display = 'none';
+                          const sibling = target.nextElementSibling as HTMLElement | null;
+                          if (sibling) sibling.style.display = 'block';
+                        }}
+                      />
+                    ) : null}
                     <div
                       className={`${compact ? 'w-full max-w-sm' : 'w-full'} rounded-lg border border-purple-200 overflow-hidden`}
-                      style={{ aspectRatio: '16/9' }}
+                      style={{ aspectRatio: '16/9', display: result.shopifyInfo?.themeScreenshot ? 'none' : 'block' }}
                     >
                       <svg
                         width="100%"
