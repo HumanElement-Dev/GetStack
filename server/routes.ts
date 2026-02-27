@@ -1080,16 +1080,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
               if (isShopify) {
                 const extractedShopifyInfo: import("@shared/schema").ShopifyInfo = {};
 
-                // Theme name and ID from Shopify JS blob
-                const themeNameMatch = content.match(/"name"\s*:\s*"([^"]+)".*?"id"\s*:\s*(\d+)/s) ||
-                  content.match(/Shopify\.theme\s*=\s*\{[^}]*"name"\s*:\s*"([^"]+)"/);
-                if (themeNameMatch) {
-                  extractedShopifyInfo.themeName = themeNameMatch[1];
-                }
-                const themeIdMatch = content.match(/Shopify\.theme\.id\s*=\s*(\d+)/) ||
-                  content.match(/"theme_id"\s*:\s*(\d+)/);
-                if (themeIdMatch) {
-                  extractedShopifyInfo.themeId = themeIdMatch[1];
+                // Parse full Shopify.theme = {...} object for reliable theme data
+                const shopifyThemeObjMatch = content.match(/Shopify\.theme\s*=\s*(\{[^}]+\})/);
+                if (shopifyThemeObjMatch) {
+                  try {
+                    const themeObj = JSON.parse(shopifyThemeObjMatch[1]);
+                    // schema_name is the real theme store name; name is the store's custom label
+                    extractedShopifyInfo.themeName = themeObj.schema_name || themeObj.name || undefined;
+                    extractedShopifyInfo.themeVersion = themeObj.schema_version || undefined;
+                    extractedShopifyInfo.themeId = themeObj.id ? String(themeObj.id) : undefined;
+                    if (themeObj.theme_store_id) {
+                      extractedShopifyInfo.themeStoreId = String(themeObj.theme_store_id);
+                    }
+                  } catch {
+                    // Fallback: simple regex extraction
+                    const schemaNameMatch = shopifyThemeObjMatch[1].match(/"schema_name"\s*:\s*"([^"]+)"/);
+                    const nameMatch = shopifyThemeObjMatch[1].match(/"name"\s*:\s*"([^"]+)"/);
+                    const schemaVersionMatch = shopifyThemeObjMatch[1].match(/"schema_version"\s*:\s*"([^"]+)"/);
+                    const idMatch = shopifyThemeObjMatch[1].match(/"id"\s*:\s*(\d+)/);
+                    extractedShopifyInfo.themeName = (schemaNameMatch || nameMatch)?.[1];
+                    extractedShopifyInfo.themeVersion = schemaVersionMatch?.[1];
+                    extractedShopifyInfo.themeId = idMatch?.[1];
+                  }
+                } else {
+                  // Fallback for older Shopify property-assignment style
+                  const handleMatch = content.match(/Shopify\.theme\.handle\s*=\s*"([^"]+)"/);
+                  const idMatch = content.match(/Shopify\.theme\.id\s*=\s*(\d+)/);
+                  if (handleMatch && handleMatch[1] !== 'null') {
+                    extractedShopifyInfo.themeName = handleMatch[1];
+                  }
+                  if (idMatch) extractedShopifyInfo.themeId = idMatch[1];
                 }
 
                 // Shop domain (myshopify.com handle)
@@ -1163,7 +1183,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     const themeSlug = extractedShopifyInfo.themeName
                       .toLowerCase()
                       .replace(/\s+/g, '-')
-                      .replace(/[^a-z0-9-]/g, '');
+                      .replace(/[^a-z0-9-]/g, '')
+                      .replace(/-+/g, '-');
                     const themeStoreUrl = `https://themes.shopify.com/themes/${themeSlug}`;
                     const themeStoreRes = await fetch(themeStoreUrl, {
                       headers: { 'User-Agent': 'GetStack/1.0' },

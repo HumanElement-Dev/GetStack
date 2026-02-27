@@ -671,10 +671,19 @@ export default function ResultsDisplay({ result, isLoading, compact = false }: R
                             Shopify Liquid
                           </span>
                         </div>
-                        {result.shopifyInfo?.currency && (
-                          <span className="text-sm text-purple-600 font-mono bg-purple-50 px-2 py-1 rounded" data-testid="text-shopify-currency">
-                            {result.shopifyInfo.currency}
-                          </span>
+                        {(result.shopifyInfo?.themeVersion || result.shopifyInfo?.currency) && (
+                          <div className="flex flex-col items-end gap-1">
+                            {result.shopifyInfo?.themeVersion && (
+                              <span className="text-sm text-purple-600 font-mono bg-purple-50 px-2 py-1 rounded" data-testid="text-shopify-version">
+                                v{result.shopifyInfo.themeVersion}
+                              </span>
+                            )}
+                            {result.shopifyInfo?.currency && (
+                              <span className="text-xs text-purple-500 font-mono bg-purple-50 px-2 py-0.5 rounded" data-testid="text-shopify-currency">
+                                {result.shopifyInfo.currency}
+                              </span>
+                            )}
+                          </div>
                         )}
                       </div>
 

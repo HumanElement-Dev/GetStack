@@ -89,6 +89,8 @@ export const shopifyInfoSchema = z.object({
   currency: z.string().optional(),
   language: z.string().optional(),
   shopDomain: z.string().optional(),
+  themeVersion: z.string().optional(),
+  themeStoreId: z.string().optional(),
   detectedApps: z.array(z.string()).optional(),
   themeScreenshot: z.string().optional(),
 });
