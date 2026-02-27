@@ -370,6 +370,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         let theme = null;
         let themeInfo: ThemeInfo | null = null;
         let wixInfo: WixInfo | null = null;
+        let shopifyInfo: import("@shared/schema").ShopifyInfo | null = null;
         let pluginCount = null;
         let plugins: Plugin[] = [];
         let technologies: string[] = [];
@@ -1075,6 +1076,90 @@ export async function registerRoutes(app: Express): Promise<Server> {
               console.log(`Detection result: ${isShopify ? 'Shopify' : 'Not Shopify'}`);
               console.log(`Requirements: Score >= 4 AND >= 1 indicator`);
               console.log(`=====================================\n`);
+
+              if (isShopify) {
+                const extractedShopifyInfo: import("@shared/schema").ShopifyInfo = {};
+
+                // Theme name and ID from Shopify JS blob
+                const themeNameMatch = content.match(/"name"\s*:\s*"([^"]+)".*?"id"\s*:\s*(\d+)/s) ||
+                  content.match(/Shopify\.theme\s*=\s*\{[^}]*"name"\s*:\s*"([^"]+)"/);
+                if (themeNameMatch) {
+                  extractedShopifyInfo.themeName = themeNameMatch[1];
+                }
+                const themeIdMatch = content.match(/Shopify\.theme\.id\s*=\s*(\d+)/) ||
+                  content.match(/"theme_id"\s*:\s*(\d+)/);
+                if (themeIdMatch) {
+                  extractedShopifyInfo.themeId = themeIdMatch[1];
+                }
+
+                // Shop domain (myshopify.com handle)
+                const shopDomainMatch = content.match(/"shop"\s*:\s*"([^"]+\.myshopify\.com)"/) ||
+                  content.match(/\.myshopify\.com"[^>]*>([a-z0-9-]+)/) ||
+                  content.match(/https?:\/\/([a-z0-9-]+\.myshopify\.com)/i);
+                if (shopDomainMatch) {
+                  extractedShopifyInfo.shopDomain = shopDomainMatch[1].replace(/^https?:\/\//, '');
+                }
+
+                // Currency
+                const currencyMatch = content.match(/"currency"\s*:\s*"([A-Z]{3})"/) ||
+                  content.match(/Shopify\.currency\s*=\s*\{[^}]*"active"\s*:\s*"([A-Z]{3})"/) ||
+                  content.match(/"active"\s*:\s*"([A-Z]{3})"/);
+                if (currencyMatch) {
+                  extractedShopifyInfo.currency = currencyMatch[1];
+                }
+
+                // Language
+                const langMatch = content.match(/<html[^>]+lang="([^"]+)"/i);
+                if (langMatch) {
+                  extractedShopifyInfo.language = langMatch[1];
+                }
+
+                // Store name from og:site_name or title
+                const ogSiteNameMatch = content.match(/<meta[^>]+property="og:site_name"[^>]+content="([^"]+)"/i) ||
+                  content.match(/<meta[^>]+content="([^"]+)"[^>]+property="og:site_name"/i);
+                if (ogSiteNameMatch) {
+                  extractedShopifyInfo.storeName = ogSiteNameMatch[1].trim();
+                } else {
+                  const titleMatch = content.match(/<title[^>]*>([^<]+)<\/title>/i);
+                  if (titleMatch) {
+                    let storeTitle = titleMatch[1].trim();
+                    storeTitle = storeTitle.replace(/\s*[–\-|]\s*(Shopify|Online Store|Store|Shop).*$/i, '').trim();
+                    if (storeTitle) extractedShopifyInfo.storeName = storeTitle;
+                  }
+                }
+
+                // Detected third-party apps
+                const appPatterns: Record<string, string> = {
+                  'Klaviyo':          'klaviyo\\.com|static\\.klaviyo\\.com',
+                  'Yotpo':            'staticw2\\.yotpo\\.com|cdn\\.yotpo\\.com',
+                  'Judge.me':         'cdn\\.judge\\.me',
+                  'Tidio':            'code\\.tidio\\.co',
+                  'Gorgias':          'config\\.gorgias\\.chat|beacon\\.gorgias\\.com',
+                  'Loox':             'loox\\.io',
+                  'Recharge':         'rechargepayments\\.com',
+                  'Smile.io':         'smile\\.io',
+                  'Lucky Orange':     'luckyorange\\.com',
+                  'Hotjar':           'hotjar\\.com',
+                  'Privy':            'widget\\.privy\\.com',
+                  'PageFly':          'pagefly\\.io',
+                  'Shogun':           'getshogun\\.com',
+                  'AfterShip':        'aftership\\.com',
+                  'Bold Commerce':    'boldcommerce\\.com',
+                  'Omnisend':         'omnisend\\.com',
+                };
+                const detectedApps: string[] = [];
+                for (const [appName, pattern] of Object.entries(appPatterns)) {
+                  if (new RegExp(pattern, 'i').test(content)) {
+                    detectedApps.push(appName);
+                  }
+                }
+                if (detectedApps.length > 0) {
+                  extractedShopifyInfo.detectedApps = detectedApps;
+                }
+
+                shopifyInfo = extractedShopifyInfo;
+                console.log('Shopify info extracted:', JSON.stringify(shopifyInfo, null, 2));
+              }
             }
 
           } catch (contentError) {
@@ -1100,6 +1185,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           theme,
           themeInfo,
           wixInfo,
+          shopifyInfo,
           pluginCount,
           plugins,
           technologies,
@@ -1115,6 +1201,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           theme,
           themeInfo,
           wixInfo,
+          shopifyInfo,
           pluginCount,
           plugins,
           technologies,

@@ -82,6 +82,18 @@ export const wixInfoSchema = z.object({
 
 export type WixInfo = z.infer<typeof wixInfoSchema>;
 
+export const shopifyInfoSchema = z.object({
+  storeName: z.string().optional(),
+  themeName: z.string().optional(),
+  themeId: z.string().optional(),
+  currency: z.string().optional(),
+  language: z.string().optional(),
+  shopDomain: z.string().optional(),
+  detectedApps: z.array(z.string()).optional(),
+});
+
+export type ShopifyInfo = z.infer<typeof shopifyInfoSchema>;
+
 export const detectionRequests = pgTable("detection_requests", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   domain: text("domain").notNull(),
@@ -91,6 +103,7 @@ export const detectionRequests = pgTable("detection_requests", {
   theme: text("theme"),
   themeInfo: jsonb("theme_info").$type<ThemeInfo>(),
   wixInfo: jsonb("wix_info").$type<WixInfo>(),
+  shopifyInfo: jsonb("shopify_info").$type<ShopifyInfo>(),
   pluginCount: text("plugin_count"),
   plugins: jsonb("plugins").$type<Plugin[]>(),
   technologies: text("technologies").array(),

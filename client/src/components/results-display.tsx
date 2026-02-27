@@ -1,4 +1,4 @@
-import type { Plugin, ThemeInfo, WixInfo } from "@shared/schema";
+import type { Plugin, ThemeInfo, WixInfo, ShopifyInfo } from "@shared/schema";
 import { 
   Layout, ShoppingCart, Mail, Search, TrendingUp, 
   Zap, Shield, ShieldCheck, FileText, Image, Globe, Code, 
@@ -44,6 +44,7 @@ export interface DetectionResult {
   theme?: string | null;
   themeInfo?: ThemeInfo | null;
   wixInfo?: WixInfo | null;
+  shopifyInfo?: ShopifyInfo | null;
   pluginCount?: string | null;
   plugins?: Plugin[];
   technologies?: string[];
@@ -600,6 +601,27 @@ export default function ResultsDisplay({ result, isLoading, compact = false }: R
 
   // Shopify detected
   if (result.cmsType === 'shopify') {
+    const shopifyAppMeta: Record<string, { icon: LucideIcon; description: string; category: string; color: string }> = {
+      'Klaviyo':        { icon: Mail,         description: 'Email & SMS marketing automation',      category: 'Marketing',     color: '#059669' },
+      'Yotpo':          { icon: Search,        description: 'Reviews, ratings & loyalty programs',   category: 'Social Proof',  color: '#10b981' },
+      'Judge.me':       { icon: ShieldCheck,   description: 'Product reviews & ratings platform',    category: 'Social Proof',  color: '#047857' },
+      'Tidio':          { icon: Mail,          description: 'Live chat & chatbot support',            category: 'Support',       color: '#059669' },
+      'Gorgias':        { icon: Mail,          description: 'Ecommerce helpdesk & support',          category: 'Support',       color: '#10b981' },
+      'Loox':           { icon: Image,         description: 'Photo reviews & referral program',      category: 'Social Proof',  color: '#047857' },
+      'Recharge':       { icon: CreditCard,    description: 'Subscriptions & recurring payments',    category: 'Subscriptions', color: '#059669' },
+      'Smile.io':       { icon: Zap,           description: 'Loyalty, referrals & rewards',          category: 'Loyalty',       color: '#10b981' },
+      'Lucky Orange':   { icon: Gauge,         description: 'Conversion rate optimization & heatmaps', category: 'Analytics',   color: '#047857' },
+      'Hotjar':         { icon: TrendingUp,    description: 'Behavior analytics & heatmaps',         category: 'Analytics',     color: '#059669' },
+      'Privy':          { icon: Mail,          description: 'Popups, email capture & SMS',           category: 'Marketing',     color: '#10b981' },
+      'PageFly':        { icon: Layout,        description: 'Advanced page builder & landing pages', category: 'Page Builder',  color: '#047857' },
+      'Shogun':         { icon: Layout,        description: 'Landing page & store builder',          category: 'Page Builder',  color: '#059669' },
+      'AfterShip':      { icon: Rocket,        description: 'Order tracking & returns management',   category: 'Shipping',      color: '#10b981' },
+      'Bold Commerce':  { icon: ShoppingCart,  description: 'Subscriptions, bundles & upsells',     category: 'Commerce',      color: '#047857' },
+      'Omnisend':       { icon: Mail,          description: 'Email & SMS marketing platform',        category: 'Marketing',     color: '#059669' },
+    };
+
+    const shopifyThemeLabel = result.shopifyInfo?.themeName || 'Shopify Theme';
+
     return (
       <div className="space-y-4 md:space-y-6">
         {/* Shopify Confirmation Card */}
@@ -623,6 +645,152 @@ export default function ResultsDisplay({ result, isLoading, compact = false }: R
             </div>
           </div>
         </div>
+
+        {/* Shopify Theme Details Card */}
+        <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 md:p-6" data-testid="shopify-theme-details">
+          <div className="flex flex-col sm:flex-row items-start gap-3 sm:space-x-4">
+            <div className="flex-shrink-0">
+              <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                <i className="fas fa-paint-brush text-purple-600 text-lg"></i>
+              </div>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-purple-800 mb-3">
+                Theme Details
+              </h3>
+              <div className="bg-white rounded-lg p-4 border border-purple-200 space-y-4">
+                <div className="space-y-3">
+                  <div className="flex flex-col sm:flex-row items-start gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <h4 className="font-bold text-purple-900 text-lg" data-testid="text-shopify-theme">
+                            {shopifyThemeLabel}
+                          </h4>
+                          <span className="inline-block text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium mt-1">
+                            Shopify Liquid
+                          </span>
+                        </div>
+                        {result.shopifyInfo?.currency && (
+                          <span className="text-sm text-purple-600 font-mono bg-purple-50 px-2 py-1 rounded" data-testid="text-shopify-currency">
+                            {result.shopifyInfo.currency}
+                          </span>
+                        )}
+                      </div>
+
+                      <p className="text-sm text-purple-700 mt-2">
+                        {result.shopifyInfo?.shopDomain
+                          ? `eCommerce Store · ${result.shopifyInfo.shopDomain}`
+                          : 'eCommerce Platform'}
+                      </p>
+
+                      <div className="flex items-center gap-2 text-sm mt-2">
+                        <span className="text-purple-600">By:</span>
+                        <a
+                          href="https://www.shopify.com"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-purple-800 font-medium hover:underline"
+                        >
+                          Shopify
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Placeholder image — styled like WP/Wix theme screenshot */}
+                  <div className="flex justify-start">
+                    <div
+                      className={`${compact ? 'w-full max-w-sm' : 'w-full'} rounded-lg border border-purple-200 overflow-hidden`}
+                      style={{ aspectRatio: '16/9' }}
+                    >
+                      <svg
+                        width="100%"
+                        height="100%"
+                        viewBox="0 0 800 450"
+                        xmlns="http://www.w3.org/2000/svg"
+                        style={{ display: 'block' }}
+                      >
+                        <defs>
+                          <linearGradient id="shopifyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="#059669" />
+                            <stop offset="100%" stopColor="#047857" />
+                          </linearGradient>
+                        </defs>
+                        <rect width="800" height="450" fill="url(#shopifyGrad)" />
+                        <rect x="0" y="0" width="800" height="450" fill="rgba(255,255,255,0.04)" />
+                        <circle cx="650" cy="80" r="120" fill="rgba(255,255,255,0.05)" />
+                        <circle cx="150" cy="370" r="90" fill="rgba(255,255,255,0.05)" />
+                        <text x="400" y="190" textAnchor="middle" fontFamily="sans-serif" fontSize="28" fontWeight="700" fill="rgba(255,255,255,0.5)" letterSpacing="6">SHOPIFY</text>
+                        <text x="400" y="240" textAnchor="middle" fontFamily="sans-serif" fontSize="22" fontWeight="700" fill="white">{shopifyThemeLabel}</text>
+                        <text x="400" y="275" textAnchor="middle" fontFamily="sans-serif" fontSize="14" fill="rgba(255,255,255,0.7)">eCommerce Theme</text>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Shopify Apps Card */}
+        {result.shopifyInfo?.detectedApps && result.shopifyInfo.detectedApps.length > 0 && (
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 md:p-6" data-testid="shopify-apps-details">
+            <div className="flex flex-col sm:flex-row items-start gap-3 sm:space-x-4">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Puzzle className="w-5 h-5 text-blue-600" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-blue-800 mb-3">
+                  Detected Shopify Apps
+                </h3>
+                <div className="bg-white rounded-lg p-4 border border-blue-200 space-y-4">
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="font-medium text-blue-800">Apps</span>
+                      <span className="text-sm text-blue-600 bg-blue-100 px-2 py-1 rounded">
+                        {result.shopifyInfo.detectedApps.length} detected
+                      </span>
+                    </div>
+                    <div className="space-y-2" data-testid="list-shopify-apps">
+                      {result.shopifyInfo.detectedApps.map((app) => {
+                        const meta = shopifyAppMeta[app] || { icon: Puzzle, description: 'Shopify application', category: 'App', color: '#059669' };
+                        const IconComponent = meta.icon;
+                        return (
+                          <div
+                            key={app}
+                            className="flex items-start gap-3 p-3 bg-gradient-to-r from-white to-blue-50/30 rounded-lg border border-blue-100/50 hover:border-blue-200 transition-colors"
+                            data-testid={`shopify-app-${app.toLowerCase().replace(/\s+/g, '-')}`}
+                          >
+                            <div
+                              className="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center text-white font-semibold"
+                              style={{ backgroundColor: meta.color }}
+                            >
+                              <IconComponent className="w-5 h-5" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="flex-1">
+                                  <h4 className="font-semibold text-blue-900 text-sm">{app}</h4>
+                                  <p className="text-xs text-blue-700/80 mt-0.5">{meta.description}</p>
+                                </div>
+                                <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium whitespace-nowrap">
+                                  {meta.category}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
