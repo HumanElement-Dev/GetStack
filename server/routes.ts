@@ -39,6 +39,40 @@ if (!existsSync(metadataPath)) {
 
 const pluginMetadata: Record<string, Omit<Plugin, 'version'>> = JSON.parse(readFileSync(metadataPath, 'utf-8'));
 
+// Load Shopify theme database for cross-referencing non-store themes
+let shopifyThemeDbPath = join(__dirname, 'shopify-theme-db.json');
+if (!existsSync(shopifyThemeDbPath)) {
+  shopifyThemeDbPath = join(__dirname, '..', 'server', 'shopify-theme-db.json');
+}
+if (!existsSync(shopifyThemeDbPath)) {
+  shopifyThemeDbPath = join(process.cwd(), 'server', 'shopify-theme-db.json');
+}
+const shopifyThemeDb: Record<string, {
+  name: string;
+  developer: string;
+  developerUrl: string;
+  description: string;
+  category: string;
+  price: string;
+  storeUrl: string;
+  source: string;
+  previewImage: string | null;
+}> = JSON.parse(readFileSync(shopifyThemeDbPath, 'utf-8'));
+
+// Look up a theme name in the Shopify theme database (case/space-insensitive)
+function lookupShopifyTheme(themeName: string) {
+  if (!themeName) return null;
+  const key = themeName.toLowerCase().trim();
+  // Exact match
+  if (shopifyThemeDb[key]) return shopifyThemeDb[key];
+  // Partial match: theme name starts with db key or vice versa
+  for (const [dbKey, entry] of Object.entries(shopifyThemeDb)) {
+    if (key.startsWith(dbKey) || dbKey.startsWith(key)) return entry;
+    if (key.includes(dbKey) || dbKey.includes(key)) return entry;
+  }
+  return null;
+}
+
 // Helper function to enrich plugin slugs with metadata
 function enrichPluginData(slugs: string[], versions: Map<string, string> = new Map()): Plugin[] {
   return slugs.map(slug => {
@@ -1207,6 +1241,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     }
                   } catch {
                     // Theme store fetch failed — no screenshot available
+                  }
+                }
+
+                // Cross-reference with curated theme database if no Shopify Theme Store screenshot found
+                if (extractedShopifyInfo.themeName && !extractedShopifyInfo.themeScreenshot) {
+                  const dbEntry = lookupShopifyTheme(extractedShopifyInfo.themeName);
+                  if (dbEntry) {
+                    extractedShopifyInfo.themeDeveloper = dbEntry.developer;
+                    extractedShopifyInfo.themeDeveloperUrl = dbEntry.developerUrl;
+                    extractedShopifyInfo.themeMarketUrl = dbEntry.storeUrl;
+                    extractedShopifyInfo.themeSource = dbEntry.source;
+                    extractedShopifyInfo.themeCategory = dbEntry.category;
+                    extractedShopifyInfo.themePrice = dbEntry.price;
+                    extractedShopifyInfo.themeDescription = dbEntry.description;
+                    if (dbEntry.previewImage) {
+                      extractedShopifyInfo.themeScreenshot = dbEntry.previewImage;
+                    }
+                    console.log(`Theme DB match found for "${extractedShopifyInfo.themeName}": ${dbEntry.name} by ${dbEntry.developer} (${dbEntry.source})`);
+                  } else {
+                    console.log(`No theme DB entry found for: ${extractedShopifyInfo.themeName}`);
                   }
                 }
 

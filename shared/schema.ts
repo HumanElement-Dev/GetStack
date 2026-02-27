@@ -93,6 +93,13 @@ export const shopifyInfoSchema = z.object({
   themeStoreId: z.string().optional(),
   detectedApps: z.array(z.string()).optional(),
   themeScreenshot: z.string().optional(),
+  themeDeveloper: z.string().optional(),
+  themeDeveloperUrl: z.string().optional(),
+  themeMarketUrl: z.string().optional(),
+  themeSource: z.string().optional(),
+  themeCategory: z.string().optional(),
+  themePrice: z.string().optional(),
+  themeDescription: z.string().optional(),
 });
 
 export type ShopifyInfo = z.infer<typeof shopifyInfoSchema>;

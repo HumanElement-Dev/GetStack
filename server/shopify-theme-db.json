@@ -1,0 +1,233 @@
+{
+  "turbo": {
+    "name": "Turbo",
+    "developer": "Out of the Sandbox",
+    "developerUrl": "https://outofthesandbox.com",
+    "description": "High-performance Shopify theme built for fast-moving brands and large catalogs",
+    "category": "Multipurpose",
+    "price": "$350+",
+    "storeUrl": "https://outofthesandbox.com/products/turbo-theme",
+    "source": "Out of the Sandbox",
+    "previewImage": "https://outofthesandbox.com/cdn/shop/files/Portland_1660x1684.png?v=1710529530"
+  },
+  "flex": {
+    "name": "Flex",
+    "developer": "Out of the Sandbox",
+    "developerUrl": "https://outofthesandbox.com",
+    "description": "Highly customizable Shopify theme with drag-and-drop sections and flexible layouts",
+    "category": "Multipurpose",
+    "price": "$350+",
+    "storeUrl": "https://outofthesandbox.com/products/flex-theme",
+    "source": "Out of the Sandbox",
+    "previewImage": "https://outofthesandbox.com/cdn/shop/files/Fresh_1660x1684.png?v=1711465097"
+  },
+  "retina": {
+    "name": "Retina",
+    "developer": "Out of the Sandbox",
+    "developerUrl": "https://outofthesandbox.com",
+    "description": "Feature-rich Shopify theme optimized for high-resolution displays and visual storytelling",
+    "category": "Fashion / Lifestyle",
+    "price": "$350+",
+    "storeUrl": "https://outofthesandbox.com/products/retina-theme",
+    "source": "Out of the Sandbox",
+    "previewImage": null
+  },
+  "lookbook": {
+    "name": "Lookbook",
+    "developer": "Out of the Sandbox",
+    "developerUrl": "https://outofthesandbox.com",
+    "description": "Editorial-style Shopify theme designed for lifestyle, fashion, and photography brands",
+    "category": "Fashion / Lifestyle",
+    "price": "$350+",
+    "storeUrl": "https://outofthesandbox.com/products/lookbook-theme",
+    "source": "Out of the Sandbox",
+    "previewImage": null
+  },
+  "ella": {
+    "name": "Ella",
+    "developer": "Halothemes",
+    "developerUrl": "https://halothemes.net",
+    "description": "Feature-rich multipurpose Shopify theme with 30+ layouts for fashion, beauty, and electronics",
+    "category": "Multipurpose",
+    "price": "$89",
+    "storeUrl": "https://themeforest.net/item/ella-multipurpose-shopify-theme-os-20/9691007",
+    "source": "ThemeForest",
+    "previewImage": "https://market-resized.envatousercontent.com/themeforest.net/files/715033022/ella-section-shopify-theme-preview/ella-main-preview.__large_preview.jpg?auto=format&q=94&cf_fit=crop&gravity=top&h=8000&w=590&s=cafafb881a3ae67d86a09d05132885463ba6de95c6b2a621203adaf0d3878024"
+  },
+  "kalles": {
+    "name": "Kalles",
+    "developer": "The4",
+    "developerUrl": "https://the4.co",
+    "description": "Clean, versatile Shopify theme ideal for clothing, furniture, and general retail stores",
+    "category": "Multipurpose",
+    "price": "$49",
+    "storeUrl": "https://themeforest.net/item/kalles-clean-versatile-shopify-theme/26320622",
+    "source": "ThemeForest",
+    "previewImage": "https://market-resized.envatousercontent.com/themeforest.net/files/660032705/Preview.__large_preview.png?auto=format&q=94&cf_fit=crop&gravity=top&h=8000&w=590&s=e4e2f894a0baa6a74ef922d485a110514b08d4e89a7515cb660e49b3662e76a3"
+  },
+  "gecko": {
+    "name": "Gecko",
+    "developer": "The4",
+    "developerUrl": "https://the4.co",
+    "description": "Responsive multipurpose Shopify theme with 90+ modern layouts for any niche",
+    "category": "Multipurpose",
+    "price": "$49",
+    "storeUrl": "https://themeforest.net/item/gecko-responsive-shopify-theme/15373461",
+    "source": "ThemeForest",
+    "previewImage": null
+  },
+  "wokiee": {
+    "name": "Wokiee",
+    "developer": "Wokiee",
+    "developerUrl": "https://themeforest.net/user/wokiee",
+    "description": "Ultimate multipurpose Shopify theme with 99+ unique home page demos",
+    "category": "Multipurpose",
+    "price": "$69",
+    "storeUrl": "https://themeforest.net/item/wokiee-multipurpose-shopify-theme/15703428",
+    "source": "ThemeForest",
+    "previewImage": null
+  },
+  "warehouse": {
+    "name": "Warehouse",
+    "developer": "Halothemes",
+    "developerUrl": "https://halothemes.net",
+    "description": "Drag-and-drop Shopify theme built for large product catalogs and wholesale stores",
+    "category": "B2B / Wholesale",
+    "price": "$79",
+    "storeUrl": "https://themeforest.net/item/warehouse-drag-and-drop-shopify-theme/14671784",
+    "source": "ThemeForest",
+    "previewImage": null
+  },
+  "shella": {
+    "name": "Shella",
+    "developer": "MrSave",
+    "developerUrl": "https://themeforest.net/user/mrsave",
+    "description": "Ultra-fast multipurpose Shopify theme with 60+ demos and mobile-first design",
+    "category": "Multipurpose",
+    "price": "$79",
+    "storeUrl": "https://themeforest.net/item/shella-multipurpose-shopify-theme-fast/10750898",
+    "source": "ThemeForest",
+    "previewImage": null
+  },
+  "avone": {
+    "name": "Avone",
+    "developer": "TemplateMela",
+    "developerUrl": "https://themeforest.net/user/templatemela",
+    "description": "Multipurpose Shopify theme for fashion, jewelry, electronics and digital products",
+    "category": "Multipurpose",
+    "price": "$59",
+    "storeUrl": "https://themeforest.net/item/avone-multipurpose-shopify-theme/21161952",
+    "source": "ThemeForest",
+    "previewImage": null
+  },
+  "ecomus": {
+    "name": "Ecomus",
+    "developer": "Themesflat",
+    "developerUrl": "https://themeforest.net/user/themesflat",
+    "description": "Ultimate Shopify OS 3.0 theme with blocks architecture and maximum performance",
+    "category": "Multipurpose",
+    "price": "$69",
+    "storeUrl": "https://themeforest.net/item/ecomus-ultimate-shopify-os-20-theme/50243724",
+    "source": "ThemeForest",
+    "previewImage": null
+  },
+  "debutify": {
+    "name": "Debutify",
+    "developer": "Debutify Inc.",
+    "developerUrl": "https://debutify.com",
+    "description": "High-converting Shopify theme with built-in conversion boosters and upsell features",
+    "category": "Conversion Optimized",
+    "price": "Free / $29+/mo",
+    "storeUrl": "https://debutify.com",
+    "source": "Debutify",
+    "previewImage": null
+  },
+  "shoptimized": {
+    "name": "Shoptimized",
+    "developer": "Bradley Long",
+    "developerUrl": "https://shoptimized.net",
+    "description": "Conversion-focused Shopify theme with 30+ built-in conversion boosters",
+    "category": "Conversion Optimized",
+    "price": "$167",
+    "storeUrl": "https://shoptimized.net/theme/",
+    "source": "Shoptimized",
+    "previewImage": null
+  },
+  "boostertheme": {
+    "name": "Booster Theme",
+    "developer": "Booster Apps",
+    "developerUrl": "https://boostertheme.com",
+    "description": "All-in-one Shopify theme with 40+ built-in apps to maximize conversions",
+    "category": "Conversion Optimized",
+    "price": "$248/yr",
+    "storeUrl": "https://boostertheme.com",
+    "source": "Booster",
+    "previewImage": null
+  },
+  "xclusive": {
+    "name": "Xclusive",
+    "developer": "ThemeXclub",
+    "developerUrl": "https://themeforest.net/user/themexclub",
+    "description": "Clean and professional Shopify theme for fashion, apparel, and accessories stores",
+    "category": "Fashion",
+    "price": "$59",
+    "storeUrl": "https://themeforest.net/item/xclusive-clean-professional-shopify-theme/43836764",
+    "source": "ThemeForest",
+    "previewImage": null
+  },
+  "outstock": {
+    "name": "Outstock",
+    "developer": "Theme-Mojo",
+    "developerUrl": "https://themeforest.net/user/theme-mojo",
+    "description": "Clean, minimal Shopify 2.0 theme for fashion, beauty, and lifestyle brands",
+    "category": "Fashion / Lifestyle",
+    "price": "$59",
+    "storeUrl": "https://themeforest.net/item/shopify-outstock-clean-minimal-drag-drop/21041667",
+    "source": "ThemeForest",
+    "previewImage": null
+  },
+  "maxmod": {
+    "name": "Maxmod",
+    "developer": "Plazarthemes",
+    "developerUrl": "https://themeforest.net/user/plazarthemes",
+    "description": "Multipurpose Shopify 2.0 theme with modern design and advanced features",
+    "category": "Multipurpose",
+    "price": "$59",
+    "storeUrl": "https://themeforest.net/item/maxmod-multipurpose-shopify-20-theme/51552282",
+    "source": "ThemeForest",
+    "previewImage": null
+  },
+  "sv fashion": {
+    "name": "SV Fashion",
+    "developer": "Shella Themes",
+    "developerUrl": "https://themeforest.net/user/mrsave",
+    "description": "Fashion-focused Shopify theme with sleek modern design and multiple layout options",
+    "category": "Fashion",
+    "price": "$79",
+    "storeUrl": "https://themeforest.net/item/sv-fashion-shopify-theme/33463977",
+    "source": "ThemeForest",
+    "previewImage": null
+  },
+  "minimog": {
+    "name": "Minimog",
+    "developer": "ThemeMove",
+    "developerUrl": "https://themeforest.net/user/thememove",
+    "description": "Next-generation high-converting Shopify theme with clean minimal aesthetics",
+    "category": "Conversion Optimized",
+    "price": "$89",
+    "storeUrl": "https://themeforest.net/item/minimog-the-high-converting-shopify-theme/33380968",
+    "source": "ThemeForest",
+    "previewImage": null
+  },
+  "fox": {
+    "name": "Fox",
+    "developer": "Foxecom",
+    "developerUrl": "https://foxecom.com",
+    "description": "Conversion-focused Shopify theme with built-in sales-boosting features",
+    "category": "Conversion Optimized",
+    "price": "$89",
+    "storeUrl": "https://foxecom.com/products/fox-theme",
+    "source": "Foxecom",
+    "previewImage": null
+  }
+}

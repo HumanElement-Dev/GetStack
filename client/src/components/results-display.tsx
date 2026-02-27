@@ -667,43 +667,89 @@ export default function ResultsDisplay({ result, isLoading, compact = false }: R
                           <h4 className="font-bold text-purple-900 text-lg" data-testid="text-shopify-theme">
                             {shopifyThemeLabel}
                           </h4>
-                          <span className="inline-block text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium mt-1">
-                            Shopify Liquid
-                          </span>
-                        </div>
-                        {(result.shopifyInfo?.themeVersion || result.shopifyInfo?.currency) && (
-                          <div className="flex flex-col items-end gap-1">
-                            {result.shopifyInfo?.themeVersion && (
-                              <span className="text-sm text-purple-600 font-mono bg-purple-50 px-2 py-1 rounded" data-testid="text-shopify-version">
-                                v{result.shopifyInfo.themeVersion}
+                          <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                            <span className="inline-block text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium">
+                              Shopify Liquid
+                            </span>
+                            {result.shopifyInfo?.themeSource && result.shopifyInfo.themeSource !== 'Shopify Theme Store' && (
+                              <span className="inline-block text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium">
+                                {result.shopifyInfo.themeSource}
                               </span>
                             )}
-                            {result.shopifyInfo?.currency && (
-                              <span className="text-xs text-purple-500 font-mono bg-purple-50 px-2 py-0.5 rounded" data-testid="text-shopify-currency">
-                                {result.shopifyInfo.currency}
+                            {result.shopifyInfo?.themeCategory && (
+                              <span className="inline-block text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-medium">
+                                {result.shopifyInfo.themeCategory}
                               </span>
                             )}
                           </div>
-                        )}
+                        </div>
+                        <div className="flex flex-col items-end gap-1 shrink-0">
+                          {result.shopifyInfo?.themeVersion && (
+                            <span className="text-sm text-purple-600 font-mono bg-purple-50 px-2 py-1 rounded" data-testid="text-shopify-version">
+                              v{result.shopifyInfo.themeVersion}
+                            </span>
+                          )}
+                          {result.shopifyInfo?.currency && (
+                            <span className="text-xs text-purple-500 font-mono bg-purple-50 px-2 py-0.5 rounded" data-testid="text-shopify-currency">
+                              {result.shopifyInfo.currency}
+                            </span>
+                          )}
+                        </div>
                       </div>
 
-                      <p className="text-sm text-purple-700 mt-2">
-                        {result.shopifyInfo?.shopDomain
-                          ? `eCommerce Store · ${result.shopifyInfo.shopDomain}`
-                          : 'eCommerce Platform'}
-                      </p>
+                      {result.shopifyInfo?.themeDescription ? (
+                        <p className="text-sm text-purple-700 mt-2">{result.shopifyInfo.themeDescription}</p>
+                      ) : (
+                        <p className="text-sm text-purple-700 mt-2">
+                          {result.shopifyInfo?.shopDomain
+                            ? `eCommerce Store · ${result.shopifyInfo.shopDomain}`
+                            : 'eCommerce Platform'}
+                        </p>
+                      )}
 
                       <div className="flex items-center gap-2 text-sm mt-2">
                         <span className="text-purple-600">By:</span>
-                        <a
-                          href="https://www.shopify.com"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-purple-800 font-medium hover:underline"
-                        >
-                          Shopify
-                        </a>
+                        {result.shopifyInfo?.themeDeveloper ? (
+                          result.shopifyInfo.themeDeveloperUrl ? (
+                            <a
+                              href={result.shopifyInfo.themeDeveloperUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-purple-800 font-medium hover:underline"
+                            >
+                              {result.shopifyInfo.themeDeveloper}
+                            </a>
+                          ) : (
+                            <span className="text-purple-800 font-medium">{result.shopifyInfo.themeDeveloper}</span>
+                          )
+                        ) : (
+                          <a
+                            href="https://www.shopify.com"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-purple-800 font-medium hover:underline"
+                          >
+                            Shopify
+                          </a>
+                        )}
                       </div>
+
+                      {result.shopifyInfo?.themeMarketUrl && (
+                        <div className="mt-2">
+                          <a
+                            href={result.shopifyInfo.themeMarketUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-sm text-purple-600 hover:text-purple-800 hover:underline"
+                          >
+                            <Globe className="w-4 h-4" />
+                            View on {result.shopifyInfo.themeSource || 'ThemeForest'}
+                            {result.shopifyInfo.themePrice && (
+                              <span className="text-xs text-purple-500 ml-1">· {result.shopifyInfo.themePrice}</span>
+                            )}
+                          </a>
+                        </div>
+                      )}
                     </div>
                   </div>
 
