@@ -10,10 +10,17 @@ import { useToast } from "@/hooks/use-toast";
 
 export default function Detect() {
   const [result, setResult] = useState<DetectionResult | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(
+    () => !!new URLSearchParams(window.location.search).get("url")
+  );
+  const [mounted, setMounted] = useState(false);
   const search = useSearch();
   const { toast } = useToast();
   const hasAutoRun = useRef(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams(search);
@@ -65,13 +72,13 @@ export default function Detect() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans">
+    <div className={`min-h-screen bg-background text-foreground font-sans transition-opacity duration-300 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
       <Header />
       
       <main className="flex-1 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl mx-auto">
-          {/* Hero Section - fades out when results appear */}
-          <div className={`text-center mb-12 transition-all duration-500 ${result ? 'opacity-0 h-0 mb-0 overflow-hidden' : 'opacity-100'}`}>
+          {/* Hero Section - hidden while loading or after results appear */}
+          <div className={`text-center mb-12 transition-all duration-500 ${(result || isLoading) ? 'opacity-0 h-0 mb-0 overflow-hidden' : 'opacity-100'}`}>
             <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-4">
               Is this website running WordPress?
             </h1>

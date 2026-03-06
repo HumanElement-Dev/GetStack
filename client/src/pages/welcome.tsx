@@ -9,13 +9,14 @@ import { Search } from "lucide-react";
 export default function Welcome() {
   const [, setLocation] = useLocation();
   const [website, setWebsite] = useState("");
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   const handleAnalyze = () => {
-    if (website.trim()) {
-      setLocation(`/detect?url=${encodeURIComponent(website.trim())}`);
-    } else {
-      setLocation("/detect");
-    }
+    const target = website.trim()
+      ? `/detect?url=${encodeURIComponent(website.trim())}`
+      : "/detect";
+    setIsTransitioning(true);
+    setTimeout(() => setLocation(target), 300);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -25,7 +26,7 @@ export default function Welcome() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans">
+    <div className={`min-h-screen bg-background text-foreground font-sans transition-opacity duration-300 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
       <Header />
       <main className="flex-1 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
