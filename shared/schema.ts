@@ -108,7 +108,7 @@ export const squarespaceInfoSchema = z.object({
   siteTitle: z.string().optional(),
   siteDescription: z.string().optional(),
   template: z.string().optional(),
-  version: z.string().optional(),
+  version: z.enum(['7.0', '7.1']).optional(),
   language: z.string().optional(),
   ogImage: z.string().optional(),
   siteId: z.string().optional(),
