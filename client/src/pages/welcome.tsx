@@ -4,8 +4,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
-import { Search, Puzzle, Eye, ShieldCheck } from "lucide-react";
+import { Search, Puzzle, Eye, ShieldCheck, Globe } from "lucide-react";
 import { SiWordpress, SiWix, SiShopify, SiSquarespace } from "react-icons/si";
+import type { IconType } from "react-icons";
+import type { LucideIcon } from "lucide-react";
+
+type PlatformIcon = IconType | LucideIcon;
+
+const platforms: { name: string; icon: PlatformIcon; color: string; summary: string }[] = [
+  { name: "WordPress", icon: SiWordpress, color: "#21759B", summary: "Theme, version & plugins" },
+  { name: "Wix", icon: SiWix, color: "#0C6EFC", summary: "Builder type, apps & templates" },
+  { name: "Shopify", icon: SiShopify, color: "#96BF48", summary: "Theme, store info & apps" },
+  { name: "Squarespace", icon: SiSquarespace, color: "#222222", summary: "Version, features & template" },
+];
 
 export default function Welcome() {
   const [, setLocation] = useLocation();
@@ -98,21 +109,19 @@ export default function Welcome() {
               <p className="text-muted-foreground">Deep detection for the web's most popular site builders</p>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[
-                { name: "WordPress", icon: SiWordpress, color: "#21759B", summary: "Theme, version & plugins" },
-                { name: "Wix", icon: SiWix, color: "#0C6EFC", summary: "Builder type, apps & templates" },
-                { name: "Shopify", icon: SiShopify, color: "#96BF48", summary: "Theme, store info & apps" },
-                { name: "Squarespace", icon: SiSquarespace, color: "#222222", summary: "Version, features & template" },
-              ].map((platform) => (
-                <div
-                  key={platform.name}
-                  className="flex flex-col items-center gap-3 p-5 rounded-lg border bg-card hover:shadow-md transition-shadow"
-                >
-                  <platform.icon className="w-8 h-8" style={{ color: platform.color }} />
-                  <span className="font-semibold text-foreground">{platform.name}</span>
-                  <span className="text-xs text-muted-foreground text-center">{platform.summary}</span>
-                </div>
-              ))}
+              {platforms.map((platform) => {
+                const Icon = platform.icon || Globe;
+                return (
+                  <div
+                    key={platform.name}
+                    className="flex flex-col items-center gap-3 p-5 rounded-lg border bg-card hover:shadow-md transition-shadow"
+                  >
+                    <Icon className="w-8 h-8" style={{ color: platform.color }} />
+                    <span className="font-semibold text-foreground">{platform.name}</span>
+                    <span className="text-xs text-muted-foreground text-center">{platform.summary}</span>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
