@@ -1,6 +1,6 @@
 # Overview
 
-GetStack is a website platform detection tool that allows users to analyze websites to determine their underlying technology stack. The application detects WordPress, Wix, and Shopify platforms, and provides detailed insights including version detection, theme identification, plugin analysis (for WordPress), and general technology stack detection. Built as a full-stack web application, it features a modern React frontend with a clean, professional interface and an Express.js backend that handles website analysis requests.
+GetStack is a website platform detection tool that allows users to analyze websites to determine their underlying technology stack. The application detects WordPress, Wix, Shopify, and Squarespace platforms, and provides detailed insights including version detection, theme identification, plugin analysis (for WordPress), and general technology stack detection. Built as a full-stack web application, it features a modern React frontend with a clean, professional interface and an Express.js backend that handles website analysis requests.
 
 # User Preferences
 
@@ -97,6 +97,19 @@ The core functionality analyzes websites to detect WordPress, Wix, and Shopify t
 - **Domain References**: Identifies `myshopify.com` references in content
 - **JavaScript API**: Looks for `Shopify.theme`, `Shopify.routes`, and `Shopify.Checkout` objects
 - **Analytics**: Detects Shopify-specific cookies (`_shopify_s`, `_shopify_y`, etc.)
+
+### Squarespace Detection
+- **HTTP Headers**: Checks for `X-Sqsp-Version` and `Server: Squarespace`
+- **CDN Patterns**: Detects `static1.squarespace.com` and `images.squarespace-cdn.com` resources
+- **Meta Tags**: Looks for `<meta name="generator" content="Squarespace">`
+- **JavaScript Globals**: Identifies `SQUARESPACE_CONTEXT` and `window.SQUARESPACE_6`
+- **CSS Classes**: Detects `sqs-` prefixed CSS classes, `sqs-block`, `sqs-layout`
+- **Score-based System**: Requires minimum score of 4 and at least 1 indicator
+- **SquarespaceInfo Schema**: Stored as `squarespace_info` jsonb column in `detection_requests` table, typed via `SquarespaceInfo` in `shared/schema.ts`
+- **Info Extraction**: When detected, extracts site title, description, template ID, version (7.0/7.1), language, site ID, OG image
+- **Feature Detection**: Detects Squarespace capabilities (Commerce, Blog, Scheduling, Member Areas, Podcast, Newsletter, Courses, Donations) from HTML content patterns
+- **Site Categorization**: Infers category (E-commerce, Blog, Services, Media, Education, General) from detected features
+- **Dark Card Display**: Squarespace results show a black-themed SVG placeholder, purple "Site Details" card with version/template info, and blue "Detected Features" card
 
 **General Features:**
 - **Technology Detection**: Identifies additional technologies in use (React, Vue, Next.js, etc.)

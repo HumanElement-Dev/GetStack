@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { detectionRequestSchema, type Plugin, type ThemeInfo, type WixInfo, userTiers, pinnedSites } from "@shared/schema";
+import { detectionRequestSchema, type Plugin, type ThemeInfo, type WixInfo, type SquarespaceInfo, userTiers, pinnedSites } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { readFileSync, existsSync } from "fs";
 import { fileURLToPath } from "url";
@@ -399,12 +399,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         let isWordPress = false;
         let isWix = false;
         let isShopify = false;
+        let isSquarespace = false;
         let cmsType = null;
         let wordPressVersion = null;
         let theme = null;
         let themeInfo: ThemeInfo | null = null;
         let wixInfo: WixInfo | null = null;
         let shopifyInfo: import("@shared/schema").ShopifyInfo | null = null;
+        let squarespaceInfo: SquarespaceInfo | null = null;
         let pluginCount = null;
         let plugins: Plugin[] = [];
         let technologies: string[] = [];
@@ -1269,6 +1271,179 @@ export async function registerRoutes(app: Express): Promise<Server> {
               }
             }
 
+            // === Squarespace Detection ===
+            if (!isWordPress && !isWix && !isShopify) {
+              let sqspScore = 0;
+              const sqspIndicators: string[] = [];
+
+              const sqspVersionHeader = fullResponse.headers.get('X-Sqsp-Version');
+              if (sqspVersionHeader) {
+                sqspScore += 5;
+                sqspIndicators.push('X-Sqsp-Version header');
+              }
+
+              const serverHeader = fullResponse.headers.get('Server');
+              if (serverHeader && /squarespace/i.test(serverHeader)) {
+                sqspScore += 5;
+                sqspIndicators.push('Server: Squarespace header');
+              }
+
+              if (/static1\.squarespace\.com/i.test(content)) {
+                sqspScore += 4;
+                sqspIndicators.push('Squarespace static CDN');
+              }
+
+              if (/images\.squarespace-cdn\.com/i.test(content)) {
+                sqspScore += 4;
+                sqspIndicators.push('Squarespace image CDN');
+              }
+
+              if (/<meta[^>]+name=["']generator["'][^>]+content=["']Squarespace/i.test(content)) {
+                sqspScore += 4;
+                sqspIndicators.push('Squarespace generator meta tag');
+              }
+
+              if (/SQUARESPACE_CONTEXT/i.test(content) || /window\.SQUARESPACE_6/i.test(content)) {
+                sqspScore += 4;
+                sqspIndicators.push('Squarespace JS globals');
+              }
+
+              if (/class=["'][^"']*sqs-/i.test(content) || /sqs-block|sqs-layout/i.test(content)) {
+                sqspScore += 2;
+                sqspIndicators.push('Squarespace CSS classes');
+              }
+
+              if (/squarespace\.com/i.test(content) && !sqspIndicators.includes('Squarespace static CDN') && !sqspIndicators.includes('Squarespace image CDN')) {
+                sqspScore += 2;
+                sqspIndicators.push('squarespace.com reference');
+              }
+
+              if (sqspScore >= 4 && sqspIndicators.length >= 1) {
+                isSquarespace = true;
+              }
+
+              console.log(`\n=== Squarespace Detection for ${normalizedDomain} ===`);
+              console.log(`Score: ${sqspScore}`);
+              console.log(`Indicators found: [${sqspIndicators.join(', ')}]`);
+              console.log(`Detection result: ${isSquarespace ? 'Squarespace' : 'Not Squarespace'}`);
+              console.log(`Requirements: Score >= 4 AND >= 1 indicator`);
+              console.log(`=====================================\n`);
+
+              if (isSquarespace) {
+                const extractedSqspInfo: SquarespaceInfo = {};
+
+                const ogSiteNameMatch = content.match(/<meta[^>]+property=["']og:site_name["'][^>]+content=["']([^"']+)["']/i)
+                  || content.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:site_name["']/i);
+                if (ogSiteNameMatch) {
+                  extractedSqspInfo.siteTitle = ogSiteNameMatch[1].trim();
+                } else {
+                  const titleMatch = content.match(/<title[^>]*>([^<]+)<\/title>/i);
+                  if (titleMatch) {
+                    extractedSqspInfo.siteTitle = titleMatch[1].trim().replace(/\s*[-–|].*$/, '');
+                  }
+                }
+
+                const metaDescMatch = content.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i)
+                  || content.match(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']description["']/i);
+                if (metaDescMatch) {
+                  extractedSqspInfo.siteDescription = metaDescMatch[1].trim();
+                }
+
+                const ogImageMatch = content.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i)
+                  || content.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i);
+                if (ogImageMatch) {
+                  extractedSqspInfo.ogImage = ogImageMatch[1].trim();
+                }
+
+                const langMatch = content.match(/<html[^>]+lang=["']([^"']+)["']/i);
+                if (langMatch) {
+                  extractedSqspInfo.language = langMatch[1].trim();
+                }
+
+                const contextMatch = content.match(/Static\.SQUARESPACE_CONTEXT\s*=\s*(\{[\s\S]*?\});/);
+                if (contextMatch) {
+                  try {
+                    const ctxJson = JSON.parse(contextMatch[1]);
+                    if (ctxJson.templateVersion) {
+                      extractedSqspInfo.template = ctxJson.templateVersion;
+                    }
+                    if (ctxJson.templateId) {
+                      extractedSqspInfo.template = ctxJson.templateId;
+                    }
+                    if (ctxJson.websiteId) {
+                      extractedSqspInfo.siteId = ctxJson.websiteId;
+                    }
+                  } catch {
+                    // JSON parse failed — try regex fallback
+                  }
+                }
+
+                // Regex fallbacks for template & siteId
+                if (!extractedSqspInfo.template) {
+                  const tplMatch = content.match(/["']templateVersion["']\s*:\s*["']([^"']+)["']/i)
+                    || content.match(/["']templateId["']\s*:\s*["']([^"']+)["']/i);
+                  if (tplMatch) {
+                    extractedSqspInfo.template = tplMatch[1];
+                  }
+                }
+                if (!extractedSqspInfo.siteId) {
+                  const siteIdMatch = content.match(/["']websiteId["']\s*:\s*["']([0-9a-f-]{36})["']/i);
+                  if (siteIdMatch) {
+                    extractedSqspInfo.siteId = siteIdMatch[1];
+                  }
+                }
+
+                // Version detection: 7.1 vs 7.0
+                if (/squarespace-v6-universal/i.test(content) || /sqs-slide-container/i.test(content) || /data-content-field/i.test(content)) {
+                  extractedSqspInfo.version = '7.0';
+                } else if (/fluid-engine/i.test(content) || /section-background/i.test(content)) {
+                  extractedSqspInfo.version = '7.1';
+                } else if (sqspVersionHeader) {
+                  extractedSqspInfo.version = sqspVersionHeader;
+                }
+
+                // Feature detection
+                const sqspFeaturePatterns: [string, RegExp][] = [
+                  ['Commerce', /sqs-product|commerce\.squarespace\.com|squarespace-commerce|data-product-type|product-list/i],
+                  ['Blog', /sqs-block-blog|BlogList|blog-pg-wrapper|blog-item-wrapper|\/blog\//i],
+                  ['Scheduling', /acuityscheduling\.com|squarespacescheduling\.com|scheduling-page/i],
+                  ['Member Areas', /sqs-members|member-area|data-member-area/i],
+                  ['Podcast', /sqs-audio|sqs-block-podcast|podcast-episode/i],
+                  ['Newsletter', /sqs-block-newsletter|newsletter-form|newsletter-block/i],
+                  ['Courses', /sqs-block-course|course-item|squarespace-courses/i],
+                  ['Donations', /sqs-block-donation|donation-block|donate-button/i],
+                ];
+
+                const detectedFeatures: string[] = [];
+                for (const [featureName, pattern] of sqspFeaturePatterns) {
+                  if (pattern.test(content)) {
+                    detectedFeatures.push(featureName);
+                  }
+                }
+                if (detectedFeatures.length > 0) {
+                  extractedSqspInfo.detectedFeatures = detectedFeatures;
+                }
+
+                // Derive site category from features
+                if (detectedFeatures.includes('Commerce')) {
+                  extractedSqspInfo.siteCategory = 'E-commerce';
+                } else if (detectedFeatures.includes('Blog')) {
+                  extractedSqspInfo.siteCategory = 'Blog';
+                } else if (detectedFeatures.includes('Scheduling')) {
+                  extractedSqspInfo.siteCategory = 'Services';
+                } else if (detectedFeatures.includes('Podcast')) {
+                  extractedSqspInfo.siteCategory = 'Media';
+                } else if (detectedFeatures.includes('Courses')) {
+                  extractedSqspInfo.siteCategory = 'Education';
+                } else {
+                  extractedSqspInfo.siteCategory = 'General';
+                }
+
+                squarespaceInfo = extractedSqspInfo;
+                console.log('Squarespace info extracted:', JSON.stringify(squarespaceInfo, null, 2));
+              }
+            }
+
           } catch (contentError) {
             console.error('Error fetching content:', contentError);
           }
@@ -1281,6 +1456,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           cmsType = 'wix';
         } else if (isShopify) {
           cmsType = 'shopify';
+        } else if (isSquarespace) {
+          cmsType = 'squarespace';
         }
 
         // Store the detection result
@@ -1293,6 +1470,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           themeInfo,
           wixInfo,
           shopifyInfo,
+          squarespaceInfo,
           pluginCount,
           plugins,
           technologies,
@@ -1309,6 +1487,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           themeInfo,
           wixInfo,
           shopifyInfo,
+          squarespaceInfo,
           pluginCount,
           plugins,
           technologies,

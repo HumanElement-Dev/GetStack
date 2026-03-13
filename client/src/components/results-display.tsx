@@ -1,4 +1,4 @@
-import type { Plugin, ThemeInfo, WixInfo, ShopifyInfo } from "@shared/schema";
+import type { Plugin, ThemeInfo, WixInfo, ShopifyInfo, SquarespaceInfo } from "@shared/schema";
 import { 
   Layout, ShoppingCart, Mail, Search, TrendingUp, 
   Zap, Shield, ShieldCheck, FileText, Image, Globe, Code, 
@@ -45,6 +45,7 @@ export interface DetectionResult {
   themeInfo?: ThemeInfo | null;
   wixInfo?: WixInfo | null;
   shopifyInfo?: ShopifyInfo | null;
+  squarespaceInfo?: SquarespaceInfo | null;
   pluginCount?: string | null;
   plugins?: Plugin[];
   technologies?: string[];
@@ -867,6 +868,214 @@ export default function ResultsDisplay({ result, isLoading, compact = false }: R
     );
   }
 
+  // Squarespace detected
+  if (result.cmsType === 'squarespace') {
+    const sqspFeatureMeta: Record<string, { icon: LucideIcon; description: string; category: string; color: string }> = {
+      'Commerce':      { icon: ShoppingCart, description: 'Online store & product catalog',      category: 'E-commerce',   color: '#111111' },
+      'Blog':          { icon: FileText,     description: 'Blogging & content publishing',       category: 'Content',      color: '#222222' },
+      'Scheduling':    { icon: Layout,       description: 'Appointments & scheduling (Acuity)',  category: 'Services',     color: '#333333' },
+      'Member Areas':  { icon: Shield,       description: 'Gated content & member-only pages',   category: 'Membership',   color: '#111111' },
+      'Podcast':       { icon: Zap,          description: 'Podcast hosting & audio player',      category: 'Media',        color: '#222222' },
+      'Newsletter':    { icon: Mail,         description: 'Email signup & newsletter forms',     category: 'Marketing',    color: '#333333' },
+      'Courses':       { icon: Rocket,       description: 'Online courses & digital products',   category: 'Education',    color: '#111111' },
+      'Donations':     { icon: CreditCard,   description: 'Donation forms & fundraising',        category: 'Fundraising',  color: '#222222' },
+    };
+
+    const sqspTemplateLabel = result.squarespaceInfo?.template || 'Squarespace Site';
+    const sqspVersionLabel = result.squarespaceInfo?.version || null;
+
+    return (
+      <div className="space-y-4 md:space-y-6">
+        {/* Squarespace Confirmation Card */}
+        <div className="bg-green-50 border border-green-200 rounded-xl p-4 md:p-6" data-testid="squarespace-detected">
+          <div className="flex flex-col sm:flex-row items-start gap-3 sm:space-x-4">
+            <div className="flex-shrink-0">
+              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                <i className="fab fa-squarespace text-green-600 text-lg"></i>
+              </div>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-xl md:text-2xl font-bold text-green-800 mb-2 break-all" data-testid="text-domain">
+                {result.domain}
+              </h3>
+              <p className="text-sm md:text-base text-green-700 mb-4">
+                This website is running <span className="font-semibold">Squarespace</span>
+              </p>
+              <div className="bg-white rounded-lg p-3 md:p-4 border border-green-200">
+                <p className="text-sm text-green-700">
+                  Squarespace website builder detected
+                  {sqspVersionLabel && <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">v{sqspVersionLabel}</span>}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Squarespace Site Details Card */}
+        {result.squarespaceInfo && (
+          <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 md:p-6" data-testid="squarespace-site-details">
+            <div className="flex flex-col sm:flex-row items-start gap-3 sm:space-x-4">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                  <i className="fas fa-paint-brush text-purple-600 text-lg"></i>
+                </div>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-purple-800 mb-3">
+                  Site Details
+                </h3>
+                <div className="bg-white rounded-lg p-4 border border-purple-200 space-y-4">
+                  <div className="space-y-3">
+                    <div className="flex flex-col sm:flex-row items-start gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <h4 className="font-bold text-purple-900 text-lg" data-testid="text-sqsp-template">
+                              {sqspTemplateLabel}
+                            </h4>
+                            <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                              <span className="inline-block text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium">
+                                Squarespace
+                              </span>
+                              {result.squarespaceInfo.siteCategory && result.squarespaceInfo.siteCategory !== 'General' && (
+                                <span className="inline-block text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-medium">
+                                  {result.squarespaceInfo.siteCategory}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex flex-col items-end gap-1 shrink-0">
+                            {sqspVersionLabel && (
+                              <span className="text-sm text-purple-600 font-mono bg-purple-50 px-2 py-1 rounded" data-testid="text-sqsp-version">
+                                v{sqspVersionLabel}
+                              </span>
+                            )}
+                            {result.squarespaceInfo.language && (
+                              <span className="text-xs text-purple-500 font-mono bg-purple-50 px-2 py-0.5 rounded" data-testid="text-sqsp-language">
+                                {result.squarespaceInfo.language}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {result.squarespaceInfo.siteDescription ? (
+                          <p className="text-sm text-purple-700 mt-2">{result.squarespaceInfo.siteDescription}</p>
+                        ) : (
+                          <p className="text-sm text-purple-700 mt-2">Website Builder</p>
+                        )}
+
+                        <div className="flex items-center gap-2 text-sm mt-2">
+                          <span className="text-purple-600">By:</span>
+                          <a
+                            href="https://www.squarespace.com"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-purple-800 font-medium hover:underline"
+                          >
+                            Squarespace
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* SVG placeholder */}
+                    <div className="flex justify-start">
+                      <div
+                        className={`${compact ? 'w-full max-w-sm' : 'w-full'} rounded-lg border border-purple-200 overflow-hidden`}
+                        style={{ aspectRatio: '16/9' }}
+                      >
+                        <svg
+                          width="100%"
+                          height="100%"
+                          viewBox="0 0 800 450"
+                          xmlns="http://www.w3.org/2000/svg"
+                          style={{ display: 'block' }}
+                        >
+                          <defs>
+                            <linearGradient id="sqspGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                              <stop offset="0%" stopColor="#1a1a1a" />
+                              <stop offset="100%" stopColor="#111111" />
+                            </linearGradient>
+                          </defs>
+                          <rect width="800" height="450" fill="url(#sqspGrad)" />
+                          <rect x="0" y="0" width="800" height="450" fill="rgba(255,255,255,0.02)" />
+                          <circle cx="650" cy="80" r="120" fill="rgba(255,255,255,0.03)" />
+                          <circle cx="150" cy="370" r="90" fill="rgba(255,255,255,0.03)" />
+                          <text x="400" y="190" textAnchor="middle" fontFamily="sans-serif" fontSize="28" fontWeight="700" fill="rgba(255,255,255,0.4)" letterSpacing="6">SQUARESPACE</text>
+                          <text x="400" y="240" textAnchor="middle" fontFamily="sans-serif" fontSize="22" fontWeight="700" fill="white">{sqspTemplateLabel}</text>
+                          <text x="400" y="275" textAnchor="middle" fontFamily="sans-serif" fontSize="14" fill="rgba(255,255,255,0.6)">Website Builder</text>
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Squarespace Features Card */}
+        {result.squarespaceInfo?.detectedFeatures && result.squarespaceInfo.detectedFeatures.length > 0 && (
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 md:p-6" data-testid="squarespace-features-details">
+            <div className="flex flex-col sm:flex-row items-start gap-3 sm:space-x-4">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Puzzle className="w-5 h-5 text-blue-600" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-blue-800 mb-3">
+                  Detected Features
+                </h3>
+                <div className="bg-white rounded-lg p-4 border border-blue-200 space-y-4">
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="font-medium text-blue-800">Features</span>
+                      <span className="text-sm text-blue-600 bg-blue-100 px-2 py-1 rounded">
+                        {result.squarespaceInfo.detectedFeatures.length} detected
+                      </span>
+                    </div>
+                    <div className="space-y-2" data-testid="list-squarespace-features">
+                      {result.squarespaceInfo.detectedFeatures.map((feature) => {
+                        const meta = sqspFeatureMeta[feature] || { icon: Puzzle, description: 'Squarespace feature', category: 'Feature', color: '#111111' };
+                        const IconComponent = meta.icon;
+                        return (
+                          <div
+                            key={feature}
+                            className="flex items-start gap-3 p-3 bg-gradient-to-r from-white to-blue-50/30 rounded-lg border border-blue-100/50 hover:border-blue-200 transition-colors"
+                            data-testid={`sqsp-feature-${feature.toLowerCase().replace(/\s+/g, '-')}`}
+                          >
+                            <div
+                              className="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center text-white font-semibold"
+                              style={{ backgroundColor: meta.color }}
+                            >
+                              <IconComponent className="w-5 h-5" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="flex-1">
+                                  <h4 className="font-semibold text-blue-900 text-sm">{feature}</h4>
+                                  <p className="text-xs text-blue-700/80 mt-0.5">{meta.description}</p>
+                                </div>
+                                <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium whitespace-nowrap">
+                                  {meta.category}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   // Platform not recognized
   return (
     <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 md:p-6 mb-4 md:mb-8" data-testid="platform-not-detected">
@@ -881,7 +1090,7 @@ export default function ResultsDisplay({ result, isLoading, compact = false }: R
             Platform Not Recognized
           </h3>
           <p className="text-sm md:text-base text-amber-700 mb-4" data-testid="text-domain">
-            <span className="font-medium break-all">{result.domain}</span> does not appear to be running WordPress, Wix, or Shopify
+            <span className="font-medium break-all">{result.domain}</span> does not appear to be running WordPress, Wix, Shopify, or Squarespace
           </p>
           {result.technologies && result.technologies.length > 0 && (
             <div className="bg-white rounded-lg p-3 md:p-4 border border-amber-200">

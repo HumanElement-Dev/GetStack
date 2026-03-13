@@ -104,16 +104,31 @@ export const shopifyInfoSchema = z.object({
 
 export type ShopifyInfo = z.infer<typeof shopifyInfoSchema>;
 
+export const squarespaceInfoSchema = z.object({
+  siteTitle: z.string().optional(),
+  siteDescription: z.string().optional(),
+  template: z.string().optional(),
+  version: z.string().optional(),
+  language: z.string().optional(),
+  ogImage: z.string().optional(),
+  siteId: z.string().optional(),
+  detectedFeatures: z.array(z.string()).optional(),
+  siteCategory: z.string().optional(),
+});
+
+export type SquarespaceInfo = z.infer<typeof squarespaceInfoSchema>;
+
 export const detectionRequests = pgTable("detection_requests", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   domain: text("domain").notNull(),
-  cmsType: text("cms_type"), // 'wordpress', 'wix', or null
+  cmsType: text("cms_type"), // 'wordpress', 'wix', 'shopify', 'squarespace', or null
   isWordPress: boolean("is_wordpress"), // keeping for backward compatibility
   wordPressVersion: text("wordpress_version"),
   theme: text("theme"),
   themeInfo: jsonb("theme_info").$type<ThemeInfo>(),
   wixInfo: jsonb("wix_info").$type<WixInfo>(),
   shopifyInfo: jsonb("shopify_info").$type<ShopifyInfo>(),
+  squarespaceInfo: jsonb("squarespace_info").$type<SquarespaceInfo>(),
   pluginCount: text("plugin_count"),
   plugins: jsonb("plugins").$type<Plugin[]>(),
   technologies: text("technologies").array(),
