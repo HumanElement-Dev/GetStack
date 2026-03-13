@@ -10,7 +10,7 @@ export default function Footer() {
             <span className="text-foreground font-medium">GetStack</span>
           </div>
           <p className="text-sm text-muted-foreground">
-            © 2025 GetStack. A{" "}
+            © 2026 GetStack. A{" "}
             <a 
               href="https://humanelement.agency" 
               target="_blank" 
