@@ -40,6 +40,7 @@ export interface DetectionResult {
   domain: string;
   cmsType?: string | null;
   isWordPress: boolean | null;
+  isSquarespace?: boolean | null;
   wordPressVersion?: string | null;
   theme?: string | null;
   themeInfo?: ThemeInfo | null;
@@ -871,7 +872,7 @@ export default function ResultsDisplay({ result, isLoading, compact = false }: R
   // Squarespace detected
   if (result.cmsType === 'squarespace') {
     const sqspFeatureMeta: Record<string, { icon: LucideIcon; description: string; category: string; color: string }> = {
-      'Commerce':      { icon: ShoppingCart, description: 'Online store & product catalog',      category: 'E-commerce',   color: '#111111' },
+      'Store':         { icon: ShoppingCart, description: 'Online store & product catalog',      category: 'E-commerce',   color: '#111111' },
       'Blog':          { icon: FileText,     description: 'Blogging & content publishing',       category: 'Content',      color: '#222222' },
       'Scheduling':    { icon: Layout,       description: 'Appointments & scheduling (Acuity)',  category: 'Services',     color: '#333333' },
       'Member Areas':  { icon: Shield,       description: 'Gated content & member-only pages',   category: 'Membership',   color: '#111111' },

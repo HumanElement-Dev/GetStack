@@ -1365,7 +1365,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   try {
                     const ctxJson = JSON.parse(contextMatch[1]);
                     if (ctxJson.templateVersion) {
-                      extractedSqspInfo.template = ctxJson.templateVersion;
+                      const tv = String(ctxJson.templateVersion);
+                      if (/^7\.\d/.test(tv)) {
+                        extractedSqspInfo.version = tv.startsWith('7.1') ? '7.1' : '7.0';
+                      }
                     }
                     if (ctxJson.templateId) {
                       extractedSqspInfo.template = ctxJson.templateId;
@@ -1378,10 +1381,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   }
                 }
 
-                // Regex fallbacks for template & siteId
+                // Regex fallbacks for version, template & siteId
+                if (!extractedSqspInfo.version) {
+                  const tvMatch = content.match(/["']templateVersion["']\s*:\s*["']([^"']+)["']/i);
+                  if (tvMatch) {
+                    const tv = tvMatch[1];
+                    if (/^7\.\d/.test(tv)) {
+                      extractedSqspInfo.version = tv.startsWith('7.1') ? '7.1' : '7.0';
+                    }
+                  }
+                }
                 if (!extractedSqspInfo.template) {
-                  const tplMatch = content.match(/["']templateVersion["']\s*:\s*["']([^"']+)["']/i)
-                    || content.match(/["']templateId["']\s*:\s*["']([^"']+)["']/i);
+                  const tplMatch = content.match(/["']templateId["']\s*:\s*["']([^"']+)["']/i);
                   if (tplMatch) {
                     extractedSqspInfo.template = tplMatch[1];
                   }
@@ -1393,18 +1404,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   }
                 }
 
-                // Version detection: 7.1 vs 7.0
-                if (/squarespace-v6-universal/i.test(content) || /sqs-slide-container/i.test(content) || /data-content-field/i.test(content)) {
-                  extractedSqspInfo.version = '7.0';
-                } else if (/fluid-engine/i.test(content) || /section-background/i.test(content)) {
-                  extractedSqspInfo.version = '7.1';
-                } else if (sqspVersionHeader) {
-                  extractedSqspInfo.version = sqspVersionHeader;
+                // Heuristic version fallback if SQUARESPACE_CONTEXT didn't provide it
+                if (!extractedSqspInfo.version) {
+                  if (/squarespace-v6-universal/i.test(content) || /sqs-slide-container/i.test(content) || /data-content-field/i.test(content)) {
+                    extractedSqspInfo.version = '7.0';
+                  } else if (/fluid-engine/i.test(content) || /section-background/i.test(content)) {
+                    extractedSqspInfo.version = '7.1';
+                  }
                 }
 
                 // Feature detection
                 const sqspFeaturePatterns: [string, RegExp][] = [
-                  ['Commerce', /sqs-product|commerce\.squarespace\.com|squarespace-commerce|data-product-type|product-list/i],
+                  ['Store', /sqs-product|commerce\.squarespace\.com|squarespace-commerce|data-product-type|product-list/i],
                   ['Blog', /sqs-block-blog|BlogList|blog-pg-wrapper|blog-item-wrapper|\/blog\//i],
                   ['Scheduling', /acuityscheduling\.com|squarespacescheduling\.com|scheduling-page/i],
                   ['Member Areas', /sqs-members|member-area|data-member-area/i],
@@ -1425,7 +1436,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 }
 
                 // Derive site category from features
-                if (detectedFeatures.includes('Commerce')) {
+                if (detectedFeatures.includes('Store')) {
                   extractedSqspInfo.siteCategory = 'E-commerce';
                 } else if (detectedFeatures.includes('Blog')) {
                   extractedSqspInfo.siteCategory = 'Blog';
@@ -1482,6 +1493,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           domain: normalizedDomain,
           cmsType,
           isWordPress,
+          isSquarespace,
           wordPressVersion,
           theme,
           themeInfo,

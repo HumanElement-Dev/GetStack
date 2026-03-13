@@ -107,7 +107,7 @@ The core functionality analyzes websites to detect WordPress, Wix, and Shopify t
 - **Score-based System**: Requires minimum score of 4 and at least 1 indicator
 - **SquarespaceInfo Schema**: Stored as `squarespace_info` jsonb column in `detection_requests` table, typed via `SquarespaceInfo` in `shared/schema.ts`
 - **Info Extraction**: When detected, extracts site title, description, template ID, version (7.0/7.1), language, site ID, OG image
-- **Feature Detection**: Detects Squarespace capabilities (Commerce, Blog, Scheduling, Member Areas, Podcast, Newsletter, Courses, Donations) from HTML content patterns
+- **Feature Detection**: Detects Squarespace capabilities (Store, Blog, Scheduling, Member Areas, Podcast, Newsletter, Courses, Donations) from HTML content patterns
 - **Site Categorization**: Infers category (E-commerce, Blog, Services, Media, Education, General) from detected features
 - **Dark Card Display**: Squarespace results show a black-themed SVG placeholder, purple "Site Details" card with version/template info, and blue "Detected Features" card
 
