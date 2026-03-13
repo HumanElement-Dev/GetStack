@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
-import { Search } from "lucide-react";
+import { Search, Puzzle, Eye, ShieldCheck } from "lucide-react";
+import { SiWordpress, SiWix, SiShopify, SiSquarespace } from "react-icons/si";
 
 export default function Welcome() {
   const [, setLocation] = useLocation();
@@ -64,23 +65,54 @@ export default function Welcome() {
           {/* Features Grid */}
           <div className="grid md:grid-cols-3 gap-8 mb-16">
             <div className="text-center p-6 rounded-lg border bg-card">
-              <i className="fas fa-search text-3xl text-primary mb-4"></i>
+              <div className="flex justify-center mb-4">
+                <Eye className="w-8 h-8 text-primary" />
+              </div>
               <h3 className="text-xl font-semibold mb-3">Instant Detection</h3>
-              <p className="text-muted-foreground">Get immediate results about whether a website runs on WordPress or Wix with detailed analysis.</p>
+              <p className="text-muted-foreground">Identify the platform behind any website in seconds — WordPress, Wix, Shopify, Squarespace, and more.</p>
             </div>
             
             <div className="text-center p-6 rounded-lg border bg-card">
-              <i className="fas fa-puzzle-piece text-3xl text-primary mb-4"></i>
+              <div className="flex justify-center mb-4">
+                <Puzzle className="w-8 h-8 text-primary" />
+              </div>
               <h3 className="text-xl font-semibold mb-3">Theme & Plugin Info</h3>
-              <p className="text-muted-foreground">Discover active themes, plugin counts, and WordPress/Wix versions when available.</p>
+              <p className="text-muted-foreground">Discover active themes, plugins, apps, features, and platform versions across all supported CMSs.</p>
             </div>
             
             <div className="text-center p-6 rounded-lg border bg-card">
-              <i className="fas fa-shield-alt text-3xl text-primary mb-4"></i>
+              <div className="flex justify-center mb-4">
+                <ShieldCheck className="w-8 h-8 text-primary" />
+              </div>
               <h3 className="text-xl font-semibold mb-3">Secure Analysis</h3>
               <p className="text-muted-foreground">
                 Safe, non-intrusive scanning that respects website security and privacy.
               </p>
+            </div>
+          </div>
+
+          {/* Supported Platforms */}
+          <div className="mb-16">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-bold text-foreground mb-2">Supported Platforms</h2>
+              <p className="text-muted-foreground">Deep detection for the web's most popular site builders</p>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[
+                { name: "WordPress", icon: SiWordpress, color: "#21759B", summary: "Theme, version & plugins" },
+                { name: "Wix", icon: SiWix, color: "#0C6EFC", summary: "Builder type, apps & templates" },
+                { name: "Shopify", icon: SiShopify, color: "#96BF48", summary: "Theme, store info & apps" },
+                { name: "Squarespace", icon: SiSquarespace, color: "#222222", summary: "Version, features & template" },
+              ].map((platform) => (
+                <div
+                  key={platform.name}
+                  className="flex flex-col items-center gap-3 p-5 rounded-lg border bg-card hover:shadow-md transition-shadow"
+                >
+                  <platform.icon className="w-8 h-8" style={{ color: platform.color }} />
+                  <span className="font-semibold text-foreground">{platform.name}</span>
+                  <span className="text-xs text-muted-foreground text-center">{platform.summary}</span>
+                </div>
+              ))}
             </div>
           </div>
 
