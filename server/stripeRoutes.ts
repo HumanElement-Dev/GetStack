@@ -77,7 +77,7 @@ export function registerStripeRoutes(app: Express) {
         line_items: [{ price: priceId, quantity: 1 }],
         mode: "subscription",
         success_url: `${protocol}://${host}/dashboard?upgraded=1`,
-        cancel_url: `${protocol}://${host}/pricing`,
+        cancel_url: `${protocol}://${host}/pricing?cancelled=1`,
       });
 
       res.json({ url: session.url });

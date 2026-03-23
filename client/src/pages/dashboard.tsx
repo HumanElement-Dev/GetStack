@@ -1,13 +1,13 @@
 import DashboardHeader from "@/components/dashboard-header";
 import Sidebar from "@/components/sidebar";
 import ResultsDisplay, { type DetectionResult } from "@/components/results-display";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useUserTier } from "@/hooks/use-tier";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Zap, LayoutDashboard, Globe, History } from "lucide-react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 
 function UpgradeWall() {
@@ -83,6 +83,31 @@ export default function Dashboard() {
   const { user, isLoading: authLoading, isAuthenticated } = useAuth();
   const { isPremium, isLoading: tierLoading } = useUserTier();
   const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const upgradeToastShown = useRef(false);
+
+  // Handle ?upgraded=1 coming back from Stripe checkout success
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("upgraded") !== "1") return;
+    // Clean up the query param immediately
+    window.history.replaceState({}, "", window.location.pathname);
+    if (upgradeToastShown.current) return;
+    upgradeToastShown.current = true;
+    toast({
+      title: "Welcome to Premium!",
+      description: "Your subscription is being activated. The dashboard will unlock shortly.",
+    });
+    // Poll tier status until premium is confirmed (webhook may take a moment)
+    let attempts = 0;
+    const interval = setInterval(async () => {
+      attempts++;
+      await queryClient.invalidateQueries({ queryKey: ["/api/stripe/status"] });
+      if (attempts >= 10) clearInterval(interval);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [toast, queryClient]);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {

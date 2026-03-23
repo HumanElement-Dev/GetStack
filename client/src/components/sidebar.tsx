@@ -10,7 +10,7 @@ export default function Sidebar() {
 
   const navItems = [
     { icon: Home, label: "Home", path: "/" },
-    { icon: Search, label: "Analyze", path: "/dashboard" },
+    { icon: Search, label: "Analyze", path: isPremium ? "/dashboard" : "/pricing" },
     ...(user?.role === "super_admin" ? [{ icon: ShieldCheck, label: "Admin", path: "/admin" }] : []),
   ];
 

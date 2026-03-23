@@ -7,9 +7,10 @@ import { useAuth } from "@/hooks/use-auth";
 import { useUserTier } from "@/hooks/use-tier";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { Check, Zap, Globe, LayoutDashboard, History, Shield } from "lucide-react";
+import { Check, Zap, Globe, LayoutDashboard, History, Shield, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { trackEvent } from "@/lib/analytics";
+import { useState, useEffect } from "react";
 
 const FEATURES_FREE = [
   "Unlimited one-off detections",
@@ -45,6 +46,16 @@ export default function Pricing() {
   const { isPremium, isLoading: tierLoading } = useUserTier();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const [showCancelledBanner, setShowCancelledBanner] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("cancelled") === "1") {
+      setShowCancelledBanner(true);
+      // Clean up query param without a page reload
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, []);
 
   const { data: productsData } = useQuery<{ data: StripeProduct[] }>({
     queryKey: ["/api/stripe/products-with-prices"],
@@ -126,6 +137,20 @@ export default function Pricing() {
       <Header />
       <main className="py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
+          {/* Checkout cancelled banner */}
+          {showCancelledBanner && (
+            <div className="mb-8 flex items-center justify-between gap-4 rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800 px-4 py-3 text-sm text-amber-800 dark:text-amber-200">
+              <span>Checkout was cancelled — no charge was made. You can upgrade whenever you're ready.</span>
+              <button
+                onClick={() => setShowCancelledBanner(false)}
+                className="shrink-0 rounded p-0.5 hover:bg-amber-100 dark:hover:bg-amber-900"
+                aria-label="Dismiss"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+
           {/* Heading */}
           <div className="text-center mb-14">
             <h1 className="text-4xl sm:text-5xl font-bold mb-4">Simple, honest pricing</h1>

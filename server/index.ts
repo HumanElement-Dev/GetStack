@@ -67,7 +67,7 @@ async function initStripe() {
     const databaseUrl = process.env.DATABASE_URL;
     if (!databaseUrl) return;
 
-    await runMigrations({ databaseUrl, schema: "stripe" });
+    await runMigrations({ databaseUrl });
     log("Stripe schema ready");
 
     const stripeSync = await getStripeSync();

@@ -288,8 +288,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   await setupAuth(app);
   registerAuthRoutes(app);
   
-  // Protected endpoint: Get user's pinned sites
-  app.get("/api/pins", isAuthenticated, async (req: any, res) => {
+  // Protected endpoint: Get user's pinned sites (premium only)
+  app.get("/api/pins", isAuthenticated, requireTier("premium"), async (req: any, res) => {
     try {
       const userId = req.user?.claims?.sub;
       const pins = await db.select().from(pinnedSites).where(eq(pinnedSites.userId, userId));
@@ -302,8 +302,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Protected endpoint: Add a pinned site
-  app.post("/api/pins", isAuthenticated, async (req: any, res) => {
+  // Protected endpoint: Add a pinned site (premium only)
+  app.post("/api/pins", isAuthenticated, requireTier("premium"), async (req: any, res) => {
     try {
       const userId = req.user?.claims?.sub;
       const { domain, name, cmsType } = req.body;
@@ -334,8 +334,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Protected endpoint: Delete a pinned site
-  app.delete("/api/pins/:id", isAuthenticated, async (req: any, res) => {
+  // Protected endpoint: Delete a pinned site (premium only)
+  app.delete("/api/pins/:id", isAuthenticated, requireTier("premium"), async (req: any, res) => {
     try {
       const userId = req.user?.claims?.sub;
       const pinId = req.params.id;
