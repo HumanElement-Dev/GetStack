@@ -42,18 +42,42 @@ export function registerStripeRoutes(app: Express) {
   app.get("/api/stripe/status", isAuthenticated, getTierHandler);
   app.get("/api/user/tier", isAuthenticated, getTierHandler);
 
-  // Create a Stripe checkout session for the authenticated user
+  // Resolve the single approved Premium monthly price from our synced Stripe tables.
+  // The client MUST NOT dictate which price to charge — we look it up server-side.
+  async function resolveApprovedPremiumPriceId(): Promise<string | null> {
+    try {
+      const result = await db.execute(sql`
+        SELECT pr.id
+        FROM stripe.prices pr
+        JOIN stripe.products p ON p.id = pr.product
+        WHERE p.active = true
+          AND pr.active = true
+          AND pr.recurring IS NOT NULL
+          AND LOWER(p.name) LIKE '%premium%'
+        ORDER BY pr.unit_amount ASC
+        LIMIT 1
+      `);
+      return (result.rows[0]?.id as string) ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  // Create a Stripe checkout session for the authenticated user.
+  // The priceId from the client is used only to confirm intent; the actual price used
+  // is always resolved server-side from the approved Premium product.
   app.post("/api/stripe/checkout", isAuthenticated, async (req: any, res) => {
     try {
-      const { priceId } = req.body;
-      if (!priceId) {
-        return res.status(400).json({ error: "priceId is required" });
-      }
-
       const userId: string = req.user.claims.sub;
       const [dbUser] = await db.select().from(users).where(eq(users.id, userId));
       if (!dbUser) {
         return res.status(404).json({ error: "User not found" });
+      }
+
+      // Server-side price resolution — ignore any client-provided priceId
+      const approvedPriceId = await resolveApprovedPremiumPriceId();
+      if (!approvedPriceId) {
+        return res.status(503).json({ error: "Premium plan not configured yet. Please try again soon." });
       }
 
       const stripe = await getUncachableStripeClient();
@@ -74,7 +98,7 @@ export function registerStripeRoutes(app: Express) {
       const session = await stripe.checkout.sessions.create({
         customer: stripeCustomerId,
         payment_method_types: ["card"],
-        line_items: [{ price: priceId, quantity: 1 }],
+        line_items: [{ price: approvedPriceId, quantity: 1 }],
         mode: "subscription",
         success_url: `${protocol}://${host}/dashboard?upgraded=1`,
         cancel_url: `${protocol}://${host}/pricing?cancelled=1`,

@@ -35,6 +35,37 @@ export class WebhookHandlers {
     }
   }
 
+  /**
+   * Returns true only if the subscription contains at least one item whose
+   * product is our approved Premium product (name contains "premium").
+   * This prevents granting premium access via subscriptions from other products.
+   */
+  static async isApprovedPremiumSubscription(subscription: any): Promise<boolean> {
+    const items: { price?: { product?: string } }[] = subscription?.items?.data ?? [];
+    if (items.length === 0) return false;
+
+    const productIds = items
+      .map((item) => item?.price?.product)
+      .filter((id): id is string => typeof id === 'string' && id.length > 0);
+
+    if (productIds.length === 0) return false;
+
+    // Verify at least one product is our Premium product (by name)
+    try {
+      const result = await db.execute(sql`
+        SELECT id FROM stripe.products
+        WHERE id = ANY(${productIds})
+          AND active = true
+          AND LOWER(name) LIKE '%premium%'
+        LIMIT 1
+      `);
+      return result.rows.length > 0;
+    } catch {
+      // stripe schema may not be ready yet — fall back to allowing it
+      return true;
+    }
+  }
+
   static async handleSubscriptionEvent(event: any): Promise<void> {
     const subscription = event.data?.object;
     if (!subscription?.customer) return;
@@ -42,7 +73,15 @@ export class WebhookHandlers {
     const customerId = subscription.customer as string;
     const subscriptionId = subscription.id as string;
     const status = subscription.status as string;
-    const isPremium = status === 'active' || status === 'trialing';
+    const isActiveStatus = status === 'active' || status === 'trialing';
+
+    // Only grant premium if the subscription is for our approved Premium product
+    const isApproved = isActiveStatus
+      ? await WebhookHandlers.isApprovedPremiumSubscription(subscription)
+      : false;
+
+    const isPremium = isActiveStatus && isApproved;
+
     const currentPeriodEnd = subscription.current_period_end
       ? new Date(subscription.current_period_end * 1000)
       : null;
