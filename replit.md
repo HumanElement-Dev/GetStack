@@ -29,10 +29,28 @@ The server uses Node.js with Express in a RESTful API pattern:
 The application uses Replit Auth for secure user authentication:
 - **Auth Provider**: Replit Auth integration (secure OAuth via Replit)
 - **Session Storage**: PostgreSQL-backed sessions via `connect-pg-simple`
-- **User Management**: Users stored in `users` table with Replit profile data
-- **Tier System**: Free tier (3 pinned sites) and Premium tier (100 pinned sites)
-- **Protected Routes**: Dashboard requires authentication; public detection tool is accessible to all
+- **User Management**: Users stored in `users` table with Replit profile data + `stripe_customer_id`
+- **Tier System**: Free (public tool only) and Premium ($9/month via Stripe, unlocks full dashboard)
+- **Protected Routes**: Dashboard requires Premium subscription; public /detect tool is free to all
 - **Rate Limiting**: Auth endpoints protected by `express-rate-limit`
+
+## Stripe Payments
+Stripe integration for subscription billing:
+- **Integration**: Replit-native Stripe connector (no manual API keys needed)
+- **Package**: `stripe` + `stripe-replit-sync` for webhook sync to PostgreSQL
+- **Product**: "GetStack Premium" at $9/month (seeded via `npx tsx scripts/seed-products.ts`)
+- **Webhook**: `/api/stripe/webhook` registered BEFORE express.json() (receives raw Buffer)
+- **Stripe Schema**: `stripe.*` tables auto-managed by stripe-replit-sync (products, prices, subscriptions, customers)
+- **Tier Check**: `GET /api/stripe/products-with-prices` → pricing page; `GET /api/user/tier` → subscription status
+- **Checkout**: `POST /api/stripe/checkout` creates Stripe checkout session, saves stripeCustomerId to users table
+- **Portal**: `POST /api/stripe/portal` opens Stripe billing portal for subscription management
+- **Super Admins**: Always get premium access regardless of subscription status
+
+### Key Stripe Files:
+- `server/stripeClient.ts` — Replit connector-based Stripe client (getUncachableStripeClient, getStripeSync)
+- `server/webhookHandlers.ts` — Processes raw Stripe webhooks via stripe-replit-sync
+- `server/stripeRoutes.ts` — All Stripe API endpoints registered on the Express app
+- `scripts/seed-products.ts` — Run once to create the Premium product in Stripe
 
 ### Key Auth Files:
 - `server/replit_integrations/auth/` - Auth setup and middleware
@@ -52,8 +70,10 @@ The application uses Replit Auth for secure user authentication:
 - `client/src/pages/dashboard.tsx` - Protected dashboard (redirects to login if unauthenticated)
 
 ### Tier-Based Features:
-- **Free Users**: 3 pinned sites limit
-- **Premium Users**: 100 pinned sites limit
+- **Free Users**: Public /detect tool only — no dashboard access
+- **Premium Users**: Full dashboard, save up to 100 sites, detection history
+- **Tier Check Logic**: Queries `stripe.subscriptions` for active/trialing subscription linked to user's `stripeCustomerId`; falls back to free if none found
+- **Pricing Page**: `/pricing` — dynamically loads plan from `GET /api/stripe/products-with-prices`, falls back to "$9" display
 
 ## Data Storage Solutions
 The application uses a flexible storage approach:
