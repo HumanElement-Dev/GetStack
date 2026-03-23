@@ -1,19 +1,23 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Menu, LogIn, Home, User, LogOut, LayoutDashboard } from "lucide-react";
+import { Menu, LogIn, Home, User, LogOut, LayoutDashboard, Zap, ShieldCheck } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/use-auth";
+import { useUserTier } from "@/hooks/use-tier";
 import { trackEvent } from "@/lib/analytics";
+import { Badge } from "@/components/ui/badge";
 
 export default function Header() {
   const [location] = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const { user, isAuthenticated, isLoading, logout } = useAuth();
+  const { isPremium } = useUserTier();
 
   const navItems = [
     { icon: Home, label: "Home", path: "/" },
+    { icon: Zap, label: "Pricing", path: "/pricing" },
   ];
 
   const getInitials = (firstName?: string, lastName?: string) => {
@@ -54,14 +58,34 @@ export default function Header() {
                   <div className="px-3 py-2">
                     <p className="font-medium">{user.firstName} {user.lastName}</p>
                     <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+                    {isPremium && (
+                      <Badge variant="secondary" className="mt-1 text-xs">Premium</Badge>
+                    )}
                   </div>
                   <DropdownMenuSeparator />
-                  <Link href="/dashboard">
-                    <DropdownMenuItem className="cursor-pointer">
-                      <LayoutDashboard className="w-4 h-4 mr-2" />
-                      Dashboard
-                    </DropdownMenuItem>
-                  </Link>
+                  {isPremium ? (
+                    <Link href="/dashboard">
+                      <DropdownMenuItem className="cursor-pointer">
+                        <LayoutDashboard className="w-4 h-4 mr-2" />
+                        Dashboard
+                      </DropdownMenuItem>
+                    </Link>
+                  ) : (
+                    <Link href="/pricing">
+                      <DropdownMenuItem className="cursor-pointer text-primary">
+                        <Zap className="w-4 h-4 mr-2" />
+                        Upgrade to Premium
+                      </DropdownMenuItem>
+                    </Link>
+                  )}
+                  {(user as any).role === "super_admin" && (
+                    <Link href="/admin">
+                      <DropdownMenuItem className="cursor-pointer">
+                        <ShieldCheck className="w-4 h-4 mr-2" />
+                        Admin
+                      </DropdownMenuItem>
+                    </Link>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="cursor-pointer text-destructive" onClick={() => logout()}>
                     <LogOut className="w-4 h-4 mr-2" />
@@ -127,12 +151,21 @@ export default function Header() {
                   {/* Dashboard/Login button in mobile menu */}
                   <div className="p-4 border-t border-border space-y-2">
                     {isAuthenticated ? (
-                      <Link href="/dashboard" onClick={() => setIsOpen(false)}>
-                        <div className="flex items-center justify-center space-x-2 w-full px-4 py-3 bg-primary hover:bg-blue-600 text-primary-foreground rounded-lg transition-colors cursor-pointer font-medium">
-                          <LayoutDashboard className="w-5 h-5" />
-                          <span>Go to Dashboard</span>
-                        </div>
-                      </Link>
+                      isPremium ? (
+                        <Link href="/dashboard" onClick={() => setIsOpen(false)}>
+                          <div className="flex items-center justify-center space-x-2 w-full px-4 py-3 bg-primary hover:bg-blue-600 text-primary-foreground rounded-lg transition-colors cursor-pointer font-medium">
+                            <LayoutDashboard className="w-5 h-5" />
+                            <span>Go to Dashboard</span>
+                          </div>
+                        </Link>
+                      ) : (
+                        <Link href="/pricing" onClick={() => setIsOpen(false)}>
+                          <div className="flex items-center justify-center space-x-2 w-full px-4 py-3 bg-primary hover:bg-blue-600 text-primary-foreground rounded-lg transition-colors cursor-pointer font-medium">
+                            <Zap className="w-5 h-5" />
+                            <span>Upgrade to Premium</span>
+                          </div>
+                        </Link>
+                      )
                     ) : (
                       <>
                         <Link href="/login" onClick={() => setIsOpen(false)}>
@@ -141,9 +174,9 @@ export default function Header() {
                             <span>Log In</span>
                           </div>
                         </Link>
-                        <Link href="/login" onClick={() => setIsOpen(false)}>
+                        <Link href="/pricing" onClick={() => setIsOpen(false)}>
                           <div className="flex items-center justify-center space-x-2 w-full px-4 py-3 bg-primary hover:bg-blue-600 text-primary-foreground rounded-lg transition-colors cursor-pointer font-medium">
-                            <span>Sign Up</span>
+                            <span>View Pricing</span>
                           </div>
                         </Link>
                       </>
@@ -156,10 +189,25 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-3">
+            {/* Nav links */}
+            {navItems.map((item) => (
+              <Link
+                key={item.label}
+                href={item.path}
+                className={`text-sm font-medium px-3 py-2 rounded-lg transition-colors ${
+                  location === item.path
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                }`}
+              >
+                {item.label}
+              </Link>
+            ))}
+
             {isAuthenticated && user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center space-x-2 focus:outline-none">
+                  <button className="flex items-center space-x-2 focus:outline-none ml-2">
                     <Avatar className="h-9 w-9 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all">
                       <AvatarImage src={user.profileImageUrl || undefined} alt={user.firstName || "User"} />
                       <AvatarFallback className="bg-primary text-primary-foreground text-sm">
@@ -172,14 +220,34 @@ export default function Header() {
                   <div className="px-3 py-2">
                     <p className="font-medium">{user.firstName} {user.lastName}</p>
                     <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+                    {isPremium && (
+                      <Badge variant="secondary" className="mt-1 text-xs">Premium</Badge>
+                    )}
                   </div>
                   <DropdownMenuSeparator />
-                  <Link href="/dashboard">
-                    <DropdownMenuItem className="cursor-pointer">
-                      <LayoutDashboard className="w-4 h-4 mr-2" />
-                      Dashboard
-                    </DropdownMenuItem>
-                  </Link>
+                  {isPremium ? (
+                    <Link href="/dashboard">
+                      <DropdownMenuItem className="cursor-pointer">
+                        <LayoutDashboard className="w-4 h-4 mr-2" />
+                        Dashboard
+                      </DropdownMenuItem>
+                    </Link>
+                  ) : (
+                    <Link href="/pricing">
+                      <DropdownMenuItem className="cursor-pointer text-primary">
+                        <Zap className="w-4 h-4 mr-2" />
+                        Upgrade to Premium
+                      </DropdownMenuItem>
+                    </Link>
+                  )}
+                  {(user as any).role === "super_admin" && (
+                    <Link href="/admin">
+                      <DropdownMenuItem className="cursor-pointer">
+                        <ShieldCheck className="w-4 h-4 mr-2" />
+                        Admin
+                      </DropdownMenuItem>
+                    </Link>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="cursor-pointer text-destructive" onClick={() => logout()}>
                     <LogOut className="w-4 h-4 mr-2" />
@@ -190,7 +258,7 @@ export default function Header() {
             ) : (
               <>
                 <Link href="/login" className="border border-primary text-primary hover:bg-primary/10 px-4 py-2 rounded-lg transition-colors duration-200 font-medium text-sm" data-testid="button-login">Log In</Link>
-                <Link href="/login" className="bg-primary hover:bg-blue-600 text-primary-foreground px-4 py-2 rounded-lg transition-colors duration-200 font-medium text-sm" data-testid="button-signup" onClick={() => trackEvent('signup_click', 'auth', 'header_signup')}>Sign Up</Link>
+                <Link href="/pricing" className="bg-primary hover:bg-blue-600 text-primary-foreground px-4 py-2 rounded-lg transition-colors duration-200 font-medium text-sm" data-testid="button-signup" onClick={() => trackEvent('signup_click', 'auth', 'header_signup')}>Get Premium</Link>
               </>
             )}
           </div>

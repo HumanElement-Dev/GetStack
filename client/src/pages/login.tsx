@@ -51,11 +51,11 @@ export default function Login() {
               <div className="space-y-3">
                 <div className="flex items-center gap-3 text-sm text-muted-foreground">
                   <Sparkles className="w-4 h-4 text-primary" />
-                  <span>Pin up to 3 sites for free</span>
+                  <span>Access your premium dashboard</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-muted-foreground">
                   <Clock className="w-4 h-4 text-primary" />
-                  <span>Track detection history</span>
+                  <span>Save & monitor up to 100 sites</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-muted-foreground">
                   <Shield className="w-4 h-4 text-primary" />

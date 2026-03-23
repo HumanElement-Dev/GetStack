@@ -1,10 +1,12 @@
 import { Link, useLocation } from "wouter";
-import { Home, Search, Settings, BarChart3, LogOut, ShieldCheck } from "lucide-react";
+import { Home, Search, LogOut, ShieldCheck, Zap } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { useUserTier } from "@/hooks/use-tier";
 
 export default function Sidebar() {
   const [location] = useLocation();
   const { user } = useAuth();
+  const { isPremium } = useUserTier();
 
   const navItems = [
     { icon: Home, label: "Home", path: "/" },
@@ -36,6 +38,16 @@ export default function Sidebar() {
             </Link>
           );
         })}
+
+        {/* Upgrade prompt for free users */}
+        {!isPremium && (
+          <Link href="/pricing">
+            <div className="flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors cursor-pointer text-primary hover:bg-primary/10 mt-2">
+              <Zap className="w-5 h-5" />
+              <span className="font-medium">Upgrade</span>
+            </div>
+          </Link>
+        )}
       </nav>
 
       {/* Leave Button */}

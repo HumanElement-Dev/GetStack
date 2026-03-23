@@ -128,16 +128,25 @@ export default function Welcome() {
           {/* Call to Action */}
           <div className="text-center bg-muted/30 rounded-lg p-8">
             <h2 className="text-2xl font-bold mb-4">Ready to analyze a website?</h2>
-            <p className="text-muted-foreground mb-6">Enter any domain or URL to start discovering its technology stack.</p>
-            <Link href="/dashboard">
-              <Button 
-                variant="outline" 
-                size="lg"
-                data-testid="button-start-analysis"
-              >
-                Start Analysis
-              </Button>
-            </Link>
+            <p className="text-muted-foreground mb-6">Enter any domain or URL to start discovering its technology stack — completely free, no account required.</p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Link href="/detect">
+                <Button 
+                  size="lg"
+                  data-testid="button-start-analysis"
+                >
+                  Start Free Analysis
+                </Button>
+              </Link>
+              <Link href="/pricing">
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                >
+                  View Premium Plans
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </main>
