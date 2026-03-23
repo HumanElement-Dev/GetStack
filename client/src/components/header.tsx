@@ -78,7 +78,7 @@ export default function Header() {
                       </DropdownMenuItem>
                     </Link>
                   )}
-                  {(user as any).role === "super_admin" && (
+                  {user.role === "super_admin" && (
                     <Link href="/admin">
                       <DropdownMenuItem className="cursor-pointer">
                         <ShieldCheck className="w-4 h-4 mr-2" />
@@ -240,7 +240,7 @@ export default function Header() {
                       </DropdownMenuItem>
                     </Link>
                   )}
-                  {(user as any).role === "super_admin" && (
+                  {user.role === "super_admin" && (
                     <Link href="/admin">
                       <DropdownMenuItem className="cursor-pointer">
                         <ShieldCheck className="w-4 h-4 mr-2" />

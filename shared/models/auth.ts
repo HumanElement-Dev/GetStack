@@ -23,6 +23,7 @@ export const users = pgTable("users", {
   profileImageUrl: varchar("profile_image_url"),
   role: varchar("role", { length: 20 }).notNull().default("user"),
   stripeCustomerId: varchar("stripe_customer_id"),
+  stripeSubscriptionId: varchar("stripe_subscription_id"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

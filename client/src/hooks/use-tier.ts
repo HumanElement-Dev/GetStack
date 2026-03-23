@@ -9,7 +9,7 @@ export type UserTier = {
 };
 
 async function fetchTier(): Promise<UserTier> {
-  const res = await fetch("/api/user/tier", { credentials: "include" });
+  const res = await fetch("/api/stripe/status", { credentials: "include" });
   if (!res.ok) return { tier: "free", status: "active" };
   return res.json();
 }
@@ -18,7 +18,7 @@ export function useUserTier() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
 
   const query = useQuery<UserTier>({
-    queryKey: ["/api/user/tier"],
+    queryKey: ["/api/stripe/status"],
     queryFn: fetchTier,
     enabled: isAuthenticated,
     staleTime: 1000 * 60 * 5,

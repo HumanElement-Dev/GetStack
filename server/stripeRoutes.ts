@@ -7,52 +7,42 @@ import { isAuthenticated } from "./replit_integrations/auth";
 import { getUncachableStripeClient } from "./stripeClient";
 
 export function registerStripeRoutes(app: Express) {
-  // Get current user's tier (free or premium)
-  app.get("/api/user/tier", isAuthenticated, async (req: any, res) => {
+  // Get current user's subscription status — reads from user_tiers (source of truth)
+  // Also available at GET /api/user/tier (alias kept for backwards compatibility)
+  async function getTierHandler(req: any, res: any) {
     try {
-      const userId = req.user.id;
+      const userId: string = req.user.claims.sub;
 
-      // Super admins always get premium access
-      if (req.user.role === "super_admin") {
+      // Look up the DB user to check role
+      const [dbUser] = await db.select().from(users).where(eq(users.id, userId));
+
+      // Super admins always get premium access regardless of subscription
+      if (dbUser?.role === "super_admin") {
         return res.json({ tier: "premium", status: "active", isSuperAdmin: true });
       }
 
-      const [user] = await db.select().from(users).where(eq(users.id, userId));
+      // Read from user_tiers — this is the app's source of truth, updated by webhooks
+      const [tier] = await db.select().from(userTiers).where(eq(userTiers.userId, userId));
 
-      if (!user?.stripeCustomerId) {
-        return res.json({ tier: "free", status: "active" });
-      }
-
-      // Query stripe.subscriptions for active subscription
-      try {
-        const result = await db.execute(sql`
-          SELECT status, current_period_end 
-          FROM stripe.subscriptions 
-          WHERE customer = ${user.stripeCustomerId} 
-            AND status IN ('active', 'trialing')
-          LIMIT 1
-        `);
-
-        if (result.rows.length > 0) {
-          const row = result.rows[0] as any;
-          return res.json({
-            tier: "premium",
-            status: row.status,
-            currentPeriodEnd: row.current_period_end,
-          });
-        }
-      } catch {
-        // stripe schema not yet available - fall through to free tier
+      if (tier && (tier.tier === "premium") && (tier.status === "active" || tier.status === "trialing")) {
+        return res.json({
+          tier: "premium",
+          status: tier.status,
+          currentPeriodEnd: tier.currentPeriodEnd,
+        });
       }
 
       return res.json({ tier: "free", status: "active" });
     } catch (error) {
       console.error("Error fetching user tier:", error);
-      res.status(500).json({ error: "Failed to fetch tier" });
+      res.status(500).json({ error: "Failed to fetch subscription status" });
     }
-  });
+  }
 
-  // Create a Stripe checkout session
+  app.get("/api/stripe/status", isAuthenticated, getTierHandler);
+  app.get("/api/user/tier", isAuthenticated, getTierHandler);
+
+  // Create a Stripe checkout session for the authenticated user
   app.post("/api/stripe/checkout", isAuthenticated, async (req: any, res) => {
     try {
       const { priceId } = req.body;
@@ -60,25 +50,26 @@ export function registerStripeRoutes(app: Express) {
         return res.status(400).json({ error: "priceId is required" });
       }
 
-      const [user] = await db.select().from(users).where(eq(users.id, req.user.id));
-      let stripeCustomerId = user?.stripeCustomerId;
+      const userId: string = req.user.claims.sub;
+      const [dbUser] = await db.select().from(users).where(eq(users.id, userId));
+      if (!dbUser) {
+        return res.status(404).json({ error: "User not found" });
+      }
 
       const stripe = await getUncachableStripeClient();
+      let stripeCustomerId = dbUser.stripeCustomerId;
 
       if (!stripeCustomerId) {
         const customer = await stripe.customers.create({
-          email: user?.email || undefined,
-          metadata: { userId: req.user.id },
+          email: dbUser.email ?? undefined,
+          metadata: { userId },
         });
         stripeCustomerId = customer.id;
-        await db
-          .update(users)
-          .set({ stripeCustomerId })
-          .where(eq(users.id, req.user.id));
+        await db.update(users).set({ stripeCustomerId }).where(eq(users.id, userId));
       }
 
       const host = req.get("host");
-      const protocol = req.headers["x-forwarded-proto"] || req.protocol;
+      const protocol = (req.headers["x-forwarded-proto"] as string) || req.protocol;
 
       const session = await stripe.checkout.sessions.create({
         customer: stripeCustomerId,
@@ -90,46 +81,49 @@ export function registerStripeRoutes(app: Express) {
       });
 
       res.json({ url: session.url });
-    } catch (error: any) {
-      console.error("Checkout error:", error);
-      res.status(500).json({ error: error.message || "Failed to create checkout session" });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Failed to create checkout session";
+      console.error("Checkout error:", message);
+      res.status(500).json({ error: message });
     }
   });
 
-  // Create a Stripe billing portal session (manage subscription)
+  // Open Stripe billing portal so the user can manage their subscription
   app.post("/api/stripe/portal", isAuthenticated, async (req: any, res) => {
     try {
-      const [user] = await db.select().from(users).where(eq(users.id, req.user.id));
+      const userId: string = req.user.claims.sub;
+      const [dbUser] = await db.select().from(users).where(eq(users.id, userId));
 
-      if (!user?.stripeCustomerId) {
-        return res.status(400).json({ error: "No Stripe customer found" });
+      if (!dbUser?.stripeCustomerId) {
+        return res.status(400).json({ error: "No Stripe customer found for this account" });
       }
 
       const stripe = await getUncachableStripeClient();
       const host = req.get("host");
-      const protocol = req.headers["x-forwarded-proto"] || req.protocol;
+      const protocol = (req.headers["x-forwarded-proto"] as string) || req.protocol;
 
       const session = await stripe.billingPortal.sessions.create({
-        customer: user.stripeCustomerId,
+        customer: dbUser.stripeCustomerId,
         return_url: `${protocol}://${host}/dashboard`,
       });
 
       res.json({ url: session.url });
-    } catch (error: any) {
-      console.error("Portal error:", error);
-      res.status(500).json({ error: error.message || "Failed to create portal session" });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Failed to open billing portal";
+      console.error("Portal error:", message);
+      res.status(500).json({ error: message });
     }
   });
 
-  // Get available products with prices (for pricing page)
+  // Return active products with their prices (used by the /pricing page)
   app.get("/api/stripe/products-with-prices", async (_req, res) => {
     try {
       const result = await db.execute(sql`
-        SELECT 
-          p.id as product_id,
-          p.name as product_name,
-          p.description as product_description,
-          pr.id as price_id,
+        SELECT
+          p.id   AS product_id,
+          p.name AS product_name,
+          p.description AS product_description,
+          pr.id  AS price_id,
           pr.unit_amount,
           pr.currency,
           pr.recurring
@@ -139,18 +133,19 @@ export function registerStripeRoutes(app: Express) {
         ORDER BY pr.unit_amount ASC
       `);
 
-      const productsMap = new Map<string, any>();
-      for (const row of result.rows as any[]) {
-        if (!productsMap.has(row.product_id)) {
-          productsMap.set(row.product_id, {
-            id: row.product_id,
-            name: row.product_name,
-            description: row.product_description,
+      const productsMap = new Map<string, { id: string; name: string; description: string; prices: object[] }>();
+      for (const row of result.rows as Record<string, unknown>[]) {
+        const productId = row.product_id as string;
+        if (!productsMap.has(productId)) {
+          productsMap.set(productId, {
+            id: productId,
+            name: row.product_name as string,
+            description: row.product_description as string,
             prices: [],
           });
         }
         if (row.price_id) {
-          productsMap.get(row.product_id).prices.push({
+          productsMap.get(productId)!.prices.push({
             id: row.price_id,
             unit_amount: row.unit_amount,
             currency: row.currency,
@@ -161,7 +156,7 @@ export function registerStripeRoutes(app: Express) {
 
       res.json({ data: Array.from(productsMap.values()) });
     } catch {
-      // stripe schema not yet set up
+      // stripe schema not yet set up — return empty so pricing page falls back to static display
       res.json({ data: [] });
     }
   });
