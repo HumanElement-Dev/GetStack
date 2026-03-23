@@ -7,29 +7,11 @@ import { useUserTier } from "@/hooks/use-tier";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Zap, LayoutDashboard, Globe, History } from "lucide-react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 
 function UpgradeWall() {
   const [, setLocation] = useLocation();
-  const { toast } = useToast();
-
-  const portalMutation = useMutation({
-    mutationFn: async () => {
-      const res = await fetch("/api/stripe/portal", {
-        method: "POST",
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error("Portal unavailable");
-      return res.json();
-    },
-    onSuccess: (data) => {
-      if (data.url) window.location.href = data.url;
-    },
-    onError: () => {
-      toast({ title: "Error", description: "Could not open billing portal", variant: "destructive" });
-    },
-  });
 
   return (
     <div className="flex-1 flex items-center justify-center p-8">
