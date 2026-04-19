@@ -124,8 +124,9 @@ Expanded Wix Template
 3.6
 Shopify Template scanning, feautre tags, names etc
 
-3.6.5
-Shopify Template scanning, feautre tags, names etc
-
+v3.6.5
+CMS cards now include health status and version intelligence, translating raw detection into meaningful signals around security and maintenance.
+- Added a WordPress Version Intelligence card that displays your site's version status, how far behind the latest release it is, and a preview of premium vulnerability insights.
+- Improved version status reporting to provide clearer, more detailed guidance — including direct links to upgrade options when your WordPress installation is out of date.
 
 
