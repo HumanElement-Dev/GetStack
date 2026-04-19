@@ -168,12 +168,13 @@ function WordPressVersionCard({ detectedVersion, latestVersion, status }: WordPr
                 </div>
               ))}
             </div>
-            <Link href="/pricing">
-              <button className="mt-1 w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-md bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors">
-                <Lock className="w-3 h-3" />
-                Unlock full vulnerability analysis
-                <ArrowRight className="w-3 h-3" />
-              </button>
+            <Link
+              href="/pricing"
+              className="mt-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors"
+            >
+              <Lock className="w-3 h-3" />
+              Unlock full vulnerability analysis
+              <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
         )}
