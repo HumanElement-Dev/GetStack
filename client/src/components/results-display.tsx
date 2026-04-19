@@ -4,8 +4,11 @@ import {
   Zap, Shield, ShieldCheck, FileText, Image, Globe, Code, 
   Rocket, Gauge, HardDrive, Lock, Smartphone, Copy, 
   Edit, ArrowRight, Puzzle, CreditCard, FileInput, Database,
+  AlertTriangle, CheckCircle2, ShieldAlert,
   type LucideIcon
 } from "lucide-react";
+import { Link } from "wouter";
+import { useUserTier } from "@/hooks/use-tier";
 
 const iconMap: Record<string, LucideIcon> = {
   'layout': Layout,
@@ -42,6 +45,8 @@ export interface DetectionResult {
   isWordPress: boolean | null;
   isSquarespace?: boolean | null;
   wordPressVersion?: string | null;
+  latestWordPressVersion?: string | null;
+  wordPressVersionStatus?: 'current' | 'outdated' | 'unknown' | null;
   theme?: string | null;
   themeInfo?: ThemeInfo | null;
   wixInfo?: WixInfo | null;
@@ -59,6 +64,124 @@ interface ResultsDisplayProps {
   isLoading: boolean;
   compact?: boolean;
 }
+
+// ─── WordPress Version Intelligence Card ─────────────────────────────────────
+interface WordPressVersionCardProps {
+  detectedVersion: string;
+  latestVersion: string | null | undefined;
+  status: 'current' | 'outdated' | 'unknown' | null | undefined;
+}
+
+function WordPressVersionCard({ detectedVersion, latestVersion, status }: WordPressVersionCardProps) {
+  const { isPremium } = useUserTier();
+  const isOutdated = status === 'outdated';
+  const isCurrent = status === 'current';
+
+  return (
+    <div className="space-y-3">
+      {/* Version header row */}
+      <div className="bg-white rounded-lg p-4 border border-green-200 space-y-3">
+        <div className="flex items-start justify-between gap-3 flex-wrap">
+          <div>
+            <p className="text-xs text-green-600 font-medium uppercase tracking-wide mb-1">WordPress Version</p>
+            <p className="text-lg font-bold text-green-900 font-mono" data-testid="text-version">
+              {detectedVersion}
+            </p>
+          </div>
+          {/* Status badge */}
+          {isCurrent && (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-100 text-green-700 text-xs font-semibold border border-green-200 shrink-0">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              Up to date
+            </span>
+          )}
+          {isOutdated && latestVersion && (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-semibold border border-amber-200 shrink-0">
+              <AlertTriangle className="w-3.5 h-3.5" />
+              Outdated — current is {latestVersion}
+            </span>
+          )}
+          {status === 'unknown' && (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-100 text-gray-500 text-xs font-semibold border border-gray-200 shrink-0">
+              Version status unknown
+            </span>
+          )}
+        </div>
+
+        {/* Risk flags for outdated installations */}
+        {isOutdated && (
+          <div className="space-y-2 pt-1 border-t border-green-100">
+            <div className="flex items-start gap-2.5">
+              <div className="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center shrink-0 mt-0.5">
+                <ShieldAlert className="w-3.5 h-3.5 text-amber-600" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-amber-700">Potential security risk</p>
+                <p className="text-xs text-gray-500 mt-0.5">Older versions may contain unpatched vulnerabilities that are publicly known.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-2.5">
+              <div className="w-6 h-6 rounded-full bg-blue-50 flex items-center justify-center shrink-0 mt-0.5">
+                <Zap className="w-3.5 h-3.5 text-blue-500" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-blue-700">Likely missing performance improvements</p>
+                <p className="text-xs text-gray-500 mt-0.5">Recent releases include speed optimisations and efficiency gains not present in this version.</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Up to date positive note */}
+        {isCurrent && (
+          <div className="flex items-center gap-2 pt-1 border-t border-green-100">
+            <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" />
+            <p className="text-xs text-green-600">Your installation is running the latest stable release.</p>
+          </div>
+        )}
+      </div>
+
+      {/* Premium insight teaser */}
+      <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50/60 overflow-hidden">
+        <div className="px-4 py-2.5 flex items-center gap-2 border-b border-gray-200/70">
+          <Lock className="w-3.5 h-3.5 text-gray-400" />
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Premium Insight</p>
+        </div>
+        {isPremium ? (
+          <div className="px-4 py-3">
+            <p className="text-xs text-gray-500 italic">
+              Detailed vulnerability analysis, CVE references, and fix recommendations are coming soon for premium users.
+            </p>
+          </div>
+        ) : (
+          <div className="px-4 py-3 space-y-2.5">
+            {/* Blurred placeholder rows */}
+            <div className="space-y-1.5 select-none" aria-hidden>
+              {[
+                { label: 'CVE-2024-XXXX', detail: 'Critical · Remote code execution' },
+                { label: 'CVE-2024-YYYY', detail: 'High · Privilege escalation' },
+                { label: 'Recommended upgrade', detail: 'Safe version: X.X.X' },
+              ].map((row) => (
+                <div key={row.label} className="flex items-center justify-between gap-2 blur-[4px] pointer-events-none">
+                  <span className="text-xs font-mono text-red-600">{row.label}</span>
+                  <span className="text-xs text-gray-500">{row.detail}</span>
+                </div>
+              ))}
+            </div>
+            <Link href="/pricing">
+              <button className="mt-1 w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-md bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors">
+                <Lock className="w-3 h-3" />
+                Unlock full vulnerability analysis
+                <ArrowRight className="w-3 h-3" />
+              </button>
+            </Link>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 export default function ResultsDisplay({ result, isLoading, compact = false }: ResultsDisplayProps) {
   if (isLoading) {
@@ -118,15 +241,13 @@ export default function ResultsDisplay({ result, isLoading, compact = false }: R
               <p className="text-sm md:text-base text-green-700 mb-4">
                 This website is running <span className="font-semibold">WordPress</span>
               </p>
-              {result.wordPressVersion && (
-                <div className="bg-white rounded-lg p-4 border border-green-200">
-                  <h4 className="font-medium text-green-800 mb-2">WordPress Version:</h4>
-                  <p className="text-sm text-green-700" data-testid="text-version">
-                    {result.wordPressVersion}
-                  </p>
-                </div>
-              )}
-              {!result.wordPressVersion && (
+              {result.wordPressVersion ? (
+                <WordPressVersionCard
+                  detectedVersion={result.wordPressVersion}
+                  latestVersion={result.latestWordPressVersion}
+                  status={result.wordPressVersionStatus}
+                />
+              ) : (
                 <div className="bg-white rounded-lg p-4 border border-green-200">
                   <p className="text-sm text-green-700">WordPress detected via standard indicators</p>
                 </div>

@@ -1471,6 +1471,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
           cmsType = 'squarespace';
         }
 
+        // Fetch latest WordPress version from WordPress.org (non-blocking, 3s timeout)
+        let latestWordPressVersion: string | null = null;
+        let wordPressVersionStatus: 'current' | 'outdated' | 'unknown' = 'unknown';
+        if (isWordPress && wordPressVersion) {
+          try {
+            const wpApiResponse = await fetch('https://api.wordpress.org/core/version-check/1.7/', {
+              signal: AbortSignal.timeout(3000),
+              headers: { 'User-Agent': 'GetStack/1.0' },
+            });
+            if (wpApiResponse.ok) {
+              const wpApiData = await wpApiResponse.json();
+              const latestOffer = wpApiData?.offers?.[0];
+              if (latestOffer?.version) {
+                latestWordPressVersion = latestOffer.version as string;
+                // Compare versions semantically
+                const parseParts = (v: string) => v.split('.').map((p: string) => parseInt(p, 10) || 0);
+                const detected = parseParts(wordPressVersion);
+                const latest = parseParts(latestWordPressVersion);
+                let isOutdated = false;
+                for (let i = 0; i < Math.max(detected.length, latest.length); i++) {
+                  const d = detected[i] ?? 0;
+                  const l = latest[i] ?? 0;
+                  if (d < l) { isOutdated = true; break; }
+                  if (d > l) { break; }
+                }
+                wordPressVersionStatus = isOutdated ? 'outdated' : 'current';
+              }
+            }
+          } catch {
+            // WP.org API unreachable — don't block the response
+            console.log('WordPress.org version check skipped (timeout/network)');
+          }
+        }
+
         // Store the detection result
         const detectionRequest = await storage.createDetectionRequest({
           domain: normalizedDomain,
@@ -1495,6 +1529,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           isWordPress,
           isSquarespace,
           wordPressVersion,
+          latestWordPressVersion,
+          wordPressVersionStatus,
           theme,
           themeInfo,
           wixInfo,
