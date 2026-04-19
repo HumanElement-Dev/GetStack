@@ -72,10 +72,26 @@ interface WordPressVersionCardProps {
   status: 'current' | 'outdated' | 'unknown' | null | undefined;
 }
 
+function getVersionGap(detected: string, latest: string): string {
+  const parse = (v: string) => v.split('.').map((p) => parseInt(p, 10) || 0);
+  const [dMaj, dMin] = parse(detected);
+  const [lMaj, lMin] = parse(latest);
+  if (lMaj > dMaj) {
+    const n = lMaj - dMaj;
+    return `${n} major version${n > 1 ? 's' : ''} behind`;
+  }
+  if (lMin > dMin) {
+    const n = lMin - dMin;
+    return `${n} minor version${n > 1 ? 's' : ''} behind`;
+  }
+  return 'behind the latest release';
+}
+
 function WordPressVersionCard({ detectedVersion, latestVersion, status }: WordPressVersionCardProps) {
   const { isPremium } = useUserTier();
   const isOutdated = status === 'outdated';
   const isCurrent = status === 'current';
+  const versionGap = isOutdated && latestVersion ? getVersionGap(detectedVersion, latestVersion) : null;
 
   return (
     <div className="space-y-3">
@@ -95,10 +111,10 @@ function WordPressVersionCard({ detectedVersion, latestVersion, status }: WordPr
               Up to date
             </span>
           )}
-          {isOutdated && latestVersion && (
+          {isOutdated && (
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-semibold border border-amber-200 shrink-0">
               <AlertTriangle className="w-3.5 h-3.5" />
-              Outdated — current is {latestVersion}
+              Outdated{versionGap ? ` · ${versionGap}` : latestVersion ? ` · current is ${latestVersion}` : ''}
             </span>
           )}
           {status === 'unknown' && (
@@ -108,35 +124,25 @@ function WordPressVersionCard({ detectedVersion, latestVersion, status }: WordPr
           )}
         </div>
 
-        {/* Risk flags for outdated installations */}
-        {isOutdated && (
-          <div className="space-y-2 pt-1 border-t border-green-100">
-            <div className="flex items-start gap-2.5">
-              <div className="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center shrink-0 mt-0.5">
-                <ShieldAlert className="w-3.5 h-3.5 text-amber-600" />
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-amber-700">Potential security risk</p>
-                <p className="text-xs text-gray-500 mt-0.5">Older versions may contain unpatched vulnerabilities that are publicly known.</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-2.5">
-              <div className="w-6 h-6 rounded-full bg-blue-50 flex items-center justify-center shrink-0 mt-0.5">
-                <Zap className="w-3.5 h-3.5 text-blue-500" />
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-blue-700">Likely missing performance improvements</p>
-                <p className="text-xs text-gray-500 mt-0.5">Recent releases include speed optimisations and efficiency gains not present in this version.</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Up to date positive note */}
-        {isCurrent && (
-          <div className="flex items-center gap-2 pt-1 border-t border-green-100">
-            <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" />
-            <p className="text-xs text-green-600">Your installation is running the latest stable release.</p>
+        {/* Interpretation layer */}
+        {(isCurrent || isOutdated) && (
+          <div className={`pt-2 border-t space-y-1 ${isOutdated ? 'border-amber-100' : 'border-green-100'}`}>
+            {isCurrent && (
+              <>
+                <p className="text-xs font-semibold text-green-700">Status: ✅ Up to date</p>
+                <p className="text-xs text-gray-500">→ No known core vulnerabilities</p>
+                <p className="text-xs text-gray-500">→ Actively maintained environment</p>
+              </>
+            )}
+            {isOutdated && (
+              <>
+                <p className="text-xs font-semibold text-amber-700">
+                  Status: ⚠️ Outdated{versionGap ? ` (${versionGap})` : ''}
+                </p>
+                <p className="text-xs text-gray-500">→ Potential security exposure</p>
+                <p className="text-xs text-gray-500">→ Missing recent performance updates</p>
+              </>
+            )}
           </div>
         )}
       </div>
