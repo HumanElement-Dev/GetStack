@@ -1,4 +1,5 @@
-import { getStripeSync } from './stripeClient';
+import Stripe from 'stripe';
+import { getStripeSync, getUncachableStripeClient } from './stripeClient';
 import { db } from './db';
 import { users } from '@shared/models/auth';
 import { userTiers } from '@shared/schema';
@@ -20,13 +21,30 @@ export class WebhookHandlers {
       );
     }
 
-    // Let stripe-replit-sync verify the signature and sync data to stripe.* tables
-    const sync = await getStripeSync();
-    await sync.processWebhook(payload, signature);
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    if (!webhookSecret) {
+      throw new Error('STRIPE_WEBHOOK_SECRET is not configured');
+    }
 
-    // Parse the verified payload and update user_tiers as source of truth
+    // Verify the webhook signature and parse the event
+    const stripe = await getUncachableStripeClient();
+    let event: Stripe.Event;
     try {
-      const event = JSON.parse(payload.toString());
+      event = stripe.webhooks.constructEvent(payload, signature, webhookSecret);
+    } catch (err: any) {
+      throw new Error(`Webhook signature verification failed: ${err.message}`);
+    }
+
+    // Also sync to stripe.* tables via stripe-replit-sync
+    try {
+      const sync = await getStripeSync();
+      await sync.processWebhook(payload, signature);
+    } catch {
+      // Non-fatal — stripe-replit-sync may use a different webhook secret
+    }
+
+    // Update user_tiers as source of truth
+    try {
       if (SUBSCRIPTION_EVENTS.has(event.type)) {
         await WebhookHandlers.handleSubscriptionEvent(event);
       }
