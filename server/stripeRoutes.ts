@@ -53,7 +53,7 @@ export function registerStripeRoutes(app: Express) {
         WHERE p.active = true
           AND pr.active = true
           AND pr.recurring IS NOT NULL
-          AND LOWER(p.name) LIKE '%premium%'
+          AND p.name = 'GTSTK Premium'
         ORDER BY pr.unit_amount ASC
         LIMIT 1
       `);

@@ -74,7 +74,7 @@ export class WebhookHandlers {
         SELECT id FROM stripe.products
         WHERE id = ANY(${productIds})
           AND active = true
-          AND LOWER(name) LIKE '%premium%'
+          AND name = 'GTSTK Premium'
         LIMIT 1
       `);
       return result.rows.length > 0;
