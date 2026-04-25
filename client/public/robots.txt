@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://getstack.app/sitemap.xml
+Sitemap: https://gtstk.dev/sitemap.xml

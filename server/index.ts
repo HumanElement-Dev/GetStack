@@ -31,7 +31,7 @@ app.use(express.urlencoded({ extended: false }));
 
 // Sitemap
 app.get("/sitemap.xml", (_req, res) => {
-  const base = "https://getstack.app";
+  const base = "https://gtstk.dev";
   const pages = [
     { url: "/", priority: "1.0", changefreq: "weekly" },
     { url: "/detect", priority: "0.9", changefreq: "weekly" },
