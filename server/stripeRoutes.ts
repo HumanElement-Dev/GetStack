@@ -118,16 +118,38 @@ export function registerStripeRoutes(app: Express) {
       const userId: string = req.user.claims.sub;
       const [dbUser] = await db.select().from(users).where(eq(users.id, userId));
 
-      if (!dbUser?.stripeCustomerId) {
-        return res.status(400).json({ error: "No Stripe customer found for this account" });
+      if (!dbUser) {
+        return res.status(404).json({ error: "User not found" });
       }
 
       const stripe = await getUncachableStripeClient();
+      let stripeCustomerId = dbUser.stripeCustomerId;
+
+      if (!stripeCustomerId) {
+        // Search for an existing Stripe customer by email to avoid duplicates
+        if (dbUser.email) {
+          const existing = await stripe.customers.list({ email: dbUser.email, limit: 1 });
+          if (existing.data.length > 0) {
+            stripeCustomerId = existing.data[0].id;
+          }
+        }
+        // If still no customer, create one
+        if (!stripeCustomerId) {
+          const customer = await stripe.customers.create({
+            email: dbUser.email ?? undefined,
+            metadata: { userId },
+          });
+          stripeCustomerId = customer.id;
+        }
+        // Persist for future requests
+        await db.update(users).set({ stripeCustomerId }).where(eq(users.id, userId));
+      }
+
       const host = req.get("host");
       const protocol = (req.headers["x-forwarded-proto"] as string) || req.protocol;
 
       const session = await stripe.billingPortal.sessions.create({
-        customer: dbUser.stripeCustomerId,
+        customer: stripeCustomerId,
         return_url: `${protocol}://${host}/dashboard`,
       });
 
