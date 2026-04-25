@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { Button } from "@/components/ui/button";
@@ -134,6 +135,10 @@ export default function Pricing() {
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans">
+      <Helmet>
+        <title>Pricing - GetStack</title>
+        <meta name="description" content="GetStack is free to use with no account needed. Upgrade to premium for site monitoring, detection history, and unlimited saved sites." />
+      </Helmet>
       <Header />
       <main className="py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">

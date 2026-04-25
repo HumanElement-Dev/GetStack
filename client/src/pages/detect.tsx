@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import DetectionForm from "@/components/detection-form";
@@ -73,6 +74,10 @@ export default function Detect() {
 
   return (
     <div className={`min-h-screen bg-background text-foreground font-sans transition-opacity duration-300 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
+      <Helmet>
+        <title>Detect CMS & Technology Stack - GetStack</title>
+        <meta name="description" content="Enter any website URL to instantly identify its CMS, theme, plugins, and technology stack. Supports WordPress, Shopify, Wix, and Squarespace." />
+      </Helmet>
       <Header />
       
       <main className="flex-1 py-12 px-4 sm:px-6 lg:px-8">

@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,10 @@ export default function Welcome() {
 
   return (
     <div className={`min-h-screen bg-background text-foreground font-sans transition-opacity duration-300 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
+      <Helmet>
+        <title>GetStack - Detect Any Website's CMS Instantly</title>
+        <meta name="description" content="Instantly detect if any website is built on WordPress, Shopify, Wix, or Squarespace. See themes, plugins, and apps in seconds — free, no account required." />
+      </Helmet>
       <Header />
       <main className="flex-1 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">

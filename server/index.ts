@@ -29,6 +29,24 @@ app.post(
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Sitemap
+app.get("/sitemap.xml", (_req, res) => {
+  const base = "https://getstack.app";
+  const pages = [
+    { url: "/", priority: "1.0", changefreq: "weekly" },
+    { url: "/detect", priority: "0.9", changefreq: "weekly" },
+    { url: "/pricing", priority: "0.7", changefreq: "monthly" },
+  ];
+  const urls = pages.map(({ url, priority, changefreq }) => `
+  <url>
+    <loc>${base}${url}</loc>
+    <changefreq>${changefreq}</changefreq>
+    <priority>${priority}</priority>
+  </url>`).join("");
+  res.header("Content-Type", "application/xml");
+  res.send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls}\n</urlset>`);
+});
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
