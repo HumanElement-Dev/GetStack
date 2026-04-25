@@ -129,4 +129,7 @@ CMS cards now include health status and version intelligence, translating raw de
 - Added a WordPress Version Intelligence card that displays your site's version status, how far behind the latest release it is, and a preview of premium vulnerability insights.
 - Improved version status reporting to provide clearer, more detailed guidance — including direct links to upgrade options when your WordPress installation is out of date.
 
-
+v3.6.6
+- Fixed a bug where the billing portal would fail for users whose premium status was set up without going through the standard checkout flow. The app now looks up or creates a Stripe customer automatically before opening the portal, so all premium users can manage their billing without errors.
+- Connected the app to the real Stripe account, replacing the Replit test integration. Payments, webhooks, and subscription management now run through live Stripe credentials.
+- Tightened product matching so that only the exact product "GTSTK Premium" can trigger a premium subscription. This prevents any other products in the Stripe account from accidentally granting access.
