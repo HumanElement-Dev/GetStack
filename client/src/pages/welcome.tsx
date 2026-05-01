@@ -130,6 +130,17 @@ export default function Welcome() {
             </div>
           </div>
 
+          {/* Also Detects */}
+          <div className="mb-16">
+            <div className="flex flex-wrap items-center gap-3 p-5 rounded-lg border bg-card">
+              <span className="text-sm font-semibold text-muted-foreground whitespace-nowrap">Also detects:</span>
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/50 border">
+                <Globe className="w-4 h-4 text-orange-500" />
+                <span className="text-sm font-medium text-foreground">Joomla</span>
+              </div>
+            </div>
+          </div>
+
           {/* Call to Action */}
           <div className="text-center bg-muted/30 rounded-lg p-8">
             <h2 className="text-2xl font-bold mb-4">Ready to analyze a website?</h2>
