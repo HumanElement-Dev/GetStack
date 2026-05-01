@@ -1218,7 +1218,6 @@ export default function ResultsDisplay({ result, isLoading, compact = false, sca
     };
 
     const joomlaVersionLabel = result.joomlaInfo?.version || null;
-    const joomlaTemplate = result.joomlaInfo?.template || null;
 
     return (
       <div className="space-y-4 md:space-y-6">
@@ -1250,67 +1249,6 @@ export default function ResultsDisplay({ result, isLoading, compact = false, sca
             </div>
           </div>
         </div>
-
-        {/* Joomla Site Details Card */}
-        {result.joomlaInfo && (
-          <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 md:p-6" data-testid="joomla-site-details">
-            <div className="flex flex-col sm:flex-row items-start gap-3 sm:space-x-4">
-              <div className="flex-shrink-0">
-                <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
-                  <Layout className="text-orange-600 w-5 h-5" />
-                </div>
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-orange-800 mb-3">Site Details</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {result.joomlaInfo.siteTitle && (
-                    <div className="bg-white rounded-lg p-3 border border-orange-200">
-                      <p className="text-xs text-orange-600 font-medium mb-1">Site Title</p>
-                      <p className="text-sm font-semibold text-orange-900 break-words">{result.joomlaInfo.siteTitle}</p>
-                    </div>
-                  )}
-                  {joomlaTemplate && (
-                    <div className="bg-white rounded-lg p-3 border border-orange-200">
-                      <p className="text-xs text-orange-600 font-medium mb-1">Template</p>
-                      <p className="text-sm font-semibold text-orange-900 break-words">{joomlaTemplate}</p>
-                    </div>
-                  )}
-                  {result.joomlaInfo.language && (
-                    <div className="bg-white rounded-lg p-3 border border-orange-200">
-                      <p className="text-xs text-orange-600 font-medium mb-1">Language</p>
-                      <p className="text-sm font-semibold text-orange-900">{result.joomlaInfo.language}</p>
-                    </div>
-                  )}
-                  {joomlaVersionLabel && (
-                    <div className="bg-white rounded-lg p-3 border border-orange-200">
-                      <p className="text-xs text-orange-600 font-medium mb-1">Joomla Version</p>
-                      <p className="text-sm font-semibold text-orange-900">{joomlaVersionLabel}</p>
-                    </div>
-                  )}
-                </div>
-                {result.joomlaInfo.siteDescription && (
-                  <div className="mt-3 bg-white rounded-lg p-3 border border-orange-200">
-                    <p className="text-xs text-orange-600 font-medium mb-1">Description</p>
-                    <p className="text-sm text-orange-800">{result.joomlaInfo.siteDescription}</p>
-                  </div>
-                )}
-
-                {/* Template preview placeholder */}
-                <div className="mt-4">
-                  <svg width="100%" height="160" viewBox="0 0 400 160" xmlns="http://www.w3.org/2000/svg" className="rounded-lg border border-orange-200">
-                    <rect width="400" height="160" fill="#fff7ed" />
-                    <rect x="0" y="0" width="400" height="36" fill="#ea580c" />
-                    <text x="200" y="23" textAnchor="middle" fill="white" fontSize="13" fontFamily="monospace" fontWeight="bold">Joomla!</text>
-                    <rect x="16" y="52" width="240" height="90" rx="4" fill="#fed7aa" />
-                    <rect x="268" y="52" width="116" height="42" rx="4" fill="#fdba74" />
-                    <rect x="268" y="100" width="116" height="42" rx="4" fill="#fdba74" />
-                    <text x="136" y="102" textAnchor="middle" fill="#9a3412" fontSize="11" fontFamily="sans-serif">{joomlaTemplate || 'Joomla Template'}</text>
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Detected Extensions Card */}
         {result.joomlaInfo?.detectedExtensions && result.joomlaInfo.detectedExtensions.length > 0 && (
