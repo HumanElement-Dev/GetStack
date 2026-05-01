@@ -133,3 +133,23 @@ v3.6.6
 - Fixed a bug where the billing portal would fail for users whose premium status was set up without going through the standard checkout flow. The app now looks up or creates a Stripe customer automatically before opening the portal, so all premium users can manage their billing without errors.
 - Connected the app to the real Stripe account, replacing the Replit test integration. Payments, webhooks, and subscription management now run through live Stripe credentials.
 - Tightened product matching so that only the exact product "GTSTK Premium" can trigger a premium subscription. This prevents any other products in the Stripe account from accidentally granting access.
+
+v3.7  
+##New Scan Experience##  
+- Replaced the generic loading spinner with a full scan engine animation while a site is being analyzed  
+- Shows a macOS-style terminal interface with the target domain, a live progress bar, and sequential log lines that play out step-by-step as the scan runs — giving a real sense of what's happening under the hood  
+
+##About Page##  
+- Added a new About page explaining what GetStack is, how it works, and who it's for
+- Linked from the main navigation header
+
+##Joomla Detection##  
+- GetStack can now identify websites built on Joomla, the world's second most popular CMS
+- Detection uses multiple signals: generator meta tag, Joomla-specific HTTP headers, JavaScript globals, component and media paths, and routing markers — with a confidence scoring system to avoid false positives
+- When Joomla is detected, results show the version number (if exposed) and any identifiable extensions/modules running on the site
+
+##Home Page##
+- Added an "Also detects:" strip below the main Supported Platforms grid, currently listing Joomla — designed to grow as more platforms are added
+
+##"Platform Not Recognized" message##
+- Updated the fallback result to mention Joomla alongside WordPress, Wix, Shopify, and Squarespace  
