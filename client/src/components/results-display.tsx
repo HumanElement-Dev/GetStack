@@ -1,3 +1,4 @@
+import ScanEngine from "@/components/scan-engine";
 import type { Plugin, ThemeInfo, WixInfo, ShopifyInfo, SquarespaceInfo } from "@shared/schema";
 import { 
   Layout, ShoppingCart, Mail, Search, TrendingUp, 
@@ -63,6 +64,7 @@ interface ResultsDisplayProps {
   result: DetectionResult | null;
   isLoading: boolean;
   compact?: boolean;
+  scanDomain?: string;
 }
 
 // ─── WordPress Version Intelligence Card ─────────────────────────────────────
@@ -190,16 +192,9 @@ function WordPressVersionCard({ detectedVersion, latestVersion, status }: WordPr
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
-export default function ResultsDisplay({ result, isLoading, compact = false }: ResultsDisplayProps) {
+export default function ResultsDisplay({ result, isLoading, compact = false, scanDomain }: ResultsDisplayProps) {
   if (isLoading) {
-    return (
-      <div className="bg-card border border-border rounded-xl shadow-sm p-4 md:p-8 mb-4 md:mb-8" data-testid="loading-state">
-        <div className="flex items-center justify-center space-x-3">
-          <div className="animate-spin rounded-full h-6 w-6 border-2 border-primary border-t-transparent"></div>
-          <span className="text-foreground font-medium text-sm md:text-base">Analyzing website...</span>
-        </div>
-      </div>
-    );
+    return <ScanEngine domain={scanDomain || "target"} />;
   }
 
   if (!result) {

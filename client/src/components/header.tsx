@@ -17,8 +17,9 @@ export default function Header() {
 
   const navItems = [
     { icon: Home, label: "Home", path: "/" },
-    { icon: Zap, label: "Pricing", path: "/pricing" },
     { icon: User, label: "About", path: "/about" },
+    { icon: Zap, label: "Pricing", path: "/pricing" },
+    
   ];
 
   const getInitials = (firstName?: string, lastName?: string) => {

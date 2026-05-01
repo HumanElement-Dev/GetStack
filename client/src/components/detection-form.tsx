@@ -16,10 +16,11 @@ interface DetectionFormProps {
   onResult: (result: DetectionResult | null) => void;
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
+  onScanStart?: (domain: string) => void;
   inline?: boolean;
 }
 
-export default function DetectionForm({ onResult, isLoading, setIsLoading, inline = false }: DetectionFormProps) {
+export default function DetectionForm({ onResult, isLoading, setIsLoading, onScanStart, inline = false }: DetectionFormProps) {
   const { toast } = useToast();
   const [inputIcon, setInputIcon] = useState("fas fa-globe");
 
@@ -35,7 +36,8 @@ export default function DetectionForm({ onResult, isLoading, setIsLoading, inlin
       const response = await apiRequest("POST", "/api/detect-wordpress", data);
       return response.json();
     },
-    onMutate: () => {
+    onMutate: (data) => {
+      onScanStart?.(data.domain);
       setIsLoading(true);
       onResult(null);
     },

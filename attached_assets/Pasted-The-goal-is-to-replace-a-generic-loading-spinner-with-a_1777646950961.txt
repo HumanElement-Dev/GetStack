@@ -1,0 +1,83 @@
+The goal is to replace a generic loading spinner with an experience that feels like a live system analysis engine — intelligent, precise, and slightly technical, but still clean and accessible.
+
+🧠 Core Concept
+
+The interface should feel like:
+
+“We are actively dissecting this website in real time.”
+
+Not a loader — a process unfolding.
+
+🧩 Layout Requirements
+Centered scan panel/card
+Clean, minimal UI (white or light background)
+Subtle depth (soft shadows, rounded corners)
+Typography: modern, clean (Apple / Linear / Stripe inspired)
+
+Inside the panel:
+
+Header
+“GetStack Scan Engine”
+Subtle, not loud
+Target
+“Scanning: example.com”
+Progress Indicator
+Replace spinner with:
+progress bar OR segmented bar OR animated scan line
+Should feel active and evolving
+Live Scan Log (MOST IMPORTANT)
+Sequential lines that appear over time
+Simulates real-time analysis
+⚙️ Scan Log Content (progressively revealed)
+
+Use structured, technical but readable language:
+
+“Initializing scan…”
+“Resolving domain… ✔”
+“Detecting CMS… ✔ WordPress”
+“Inspecting theme structure… ✔ Astra (confidence: 87%)”
+“Mapping plugin ecosystem…”
+“→ Elementor detected”
+“→ Yoast SEO detected”
+“Analyzing frontend assets…”
+“Building stack profile…”
+
+Lines should appear one by one (every ~400–800ms)
+
+📊 Additional Elements
+
+Include:
+
+Progress percentage (real or simulated)
+Optional confidence meter
+“Theme detection confidence: 82%”
+Optional “signals detected” section
+“+ Cloudflare detected”
+“+ WooCommerce hooks found”
+🎨 Visual Style
+Clean, minimal, high-end SaaS aesthetic
+Subtle motion (fade-in lines, smooth progress updates)
+Avoid flashy or gamified visuals
+No generic spinners
+Inspired by:
+developer tools
+terminal systems
+but refined and UI-friendly (not hacker cliché)
+🧬 Tone / Copy Style
+Calm, precise, intelligent
+Slightly technical but not overwhelming
+Avoid buzzwords
+Avoid “Loading…” or generic phrases
+🚫 What to Avoid
+Basic spinner loaders
+Static “Analyzing website…” text
+Empty states with no feedback
+Overly dark “hacker” UI (keep it modern and clean)
+🎯 End Goal
+
+Create a scanning experience that:
+
+Feels faster (even if it isn’t)
+Feels smarter
+Builds trust and curiosity
+Differentiates GetStack from other theme detectors

@@ -14,6 +14,9 @@ export default function Detect() {
   const [isLoading, setIsLoading] = useState<boolean>(
     () => !!new URLSearchParams(window.location.search).get("url")
   );
+  const [scanDomain, setScanDomain] = useState<string>(() =>
+    new URLSearchParams(window.location.search).get("url") || ""
+  );
   const [mounted, setMounted] = useState(false);
   const search = useSearch();
   const { toast } = useToast();
@@ -34,6 +37,7 @@ export default function Detect() {
   }, [search]);
 
   const runDetection = async (domain: string) => {
+    setScanDomain(domain);
     setIsLoading(true);
     setResult(null);
     
@@ -97,12 +101,13 @@ export default function Detect() {
             <DetectionForm 
               onResult={setResult} 
               isLoading={isLoading} 
-              setIsLoading={setIsLoading} 
+              setIsLoading={setIsLoading}
+              onScanStart={setScanDomain}
             />
           </div>
 
           {/* Results Display */}
-          <ResultsDisplay result={result} isLoading={isLoading} />
+          <ResultsDisplay result={result} isLoading={isLoading} scanDomain={scanDomain} />
 
           {/* Feature Section - only show when no results */}
           {!result && <FeatureSection />}
