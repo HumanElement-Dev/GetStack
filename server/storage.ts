@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type DetectionRequest, type InsertDetectionRequest, type ThemeInfo, type WixInfo, type ShopifyInfo, type SquarespaceInfo } from "@shared/schema";
+import { type User, type InsertUser, type DetectionRequest, type InsertDetectionRequest, type ThemeInfo, type WixInfo, type ShopifyInfo, type SquarespaceInfo, type JoomlaInfo } from "@shared/schema";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
@@ -48,6 +48,7 @@ export class MemStorage implements IStorage {
       wixInfo: (insertRequest.wixInfo ?? null) as WixInfo | null,
       shopifyInfo: (insertRequest.shopifyInfo ?? null) as ShopifyInfo | null,
       squarespaceInfo: (insertRequest.squarespaceInfo ?? null) as SquarespaceInfo | null,
+      joomlaInfo: (insertRequest.joomlaInfo ?? null) as JoomlaInfo | null,
       pluginCount: insertRequest.pluginCount ?? null,
       plugins: (insertRequest.plugins ?? null) as DetectionRequest['plugins'],
       technologies: insertRequest.technologies ?? null,

@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { detectionRequestSchema, type Plugin, type ThemeInfo, type WixInfo, type SquarespaceInfo, userTiers, pinnedSites } from "@shared/schema";
+import { detectionRequestSchema, type Plugin, type ThemeInfo, type WixInfo, type SquarespaceInfo, type JoomlaInfo, userTiers, pinnedSites } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { readFileSync, existsSync } from "fs";
 import { fileURLToPath } from "url";
@@ -407,6 +407,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         let wixInfo: WixInfo | null = null;
         let shopifyInfo: import("@shared/schema").ShopifyInfo | null = null;
         let squarespaceInfo: SquarespaceInfo | null = null;
+        let joomlaInfo: JoomlaInfo | null = null;
         let pluginCount = null;
         let plugins: Plugin[] = [];
         let technologies: string[] = [];
@@ -1455,10 +1456,125 @@ export async function registerRoutes(app: Express): Promise<Server> {
               }
             }
 
+            // === Joomla Detection ===
+            if (!isWordPress && !isWix && !isShopify && !isSquarespace) {
+              let joomlaScore = 0;
+              const joomlaIndicators: string[] = [];
+
+              // Meta generator tag (most reliable)
+              if (/<meta[^>]+name=["']generator["'][^>]+content=["']Joomla/i.test(content)) {
+                joomlaScore += 5;
+                joomlaIndicators.push('Joomla generator meta tag');
+              }
+
+              // X-Powered-By or X-Content-Encoded-By header
+              const poweredByHeader = fullResponse.headers.get('x-powered-by') || '';
+              const contentEncodedBy = fullResponse.headers.get('x-content-encoded-by') || '';
+              if (/joomla/i.test(poweredByHeader) || /joomla/i.test(contentEncodedBy)) {
+                joomlaScore += 5;
+                joomlaIndicators.push('Joomla header');
+              }
+
+              // Joomla JS object
+              if (/\bJoomla\s*\.\s*(submitbutton|getOptions|extend|renderMessages)/i.test(content)) {
+                joomlaScore += 4;
+                joomlaIndicators.push('Joomla JS object');
+              }
+
+              // Core media paths (Joomla-specific)
+              if (/\/media\/jui\//i.test(content) || /\/media\/system\//i.test(content)) {
+                joomlaScore += 3;
+                joomlaIndicators.push('Joomla media paths');
+              }
+
+              // Component paths
+              if (/\/components\/com_/i.test(content)) {
+                joomlaScore += 3;
+                joomlaIndicators.push('Joomla component paths');
+              }
+
+              // Joomla session cookie
+              if (/joomla_user_state/i.test(content)) {
+                joomlaScore += 3;
+                joomlaIndicators.push('Joomla session cookie reference');
+              }
+
+              // /administrator/ reference in links
+              if (/href=["'][^"']*\/administrator\//i.test(content)) {
+                joomlaScore += 2;
+                joomlaIndicators.push('Joomla administrator link');
+              }
+
+              // Body class or template reference
+              if (/class=["'][^"']*com_content/i.test(content) || /itemid=/i.test(content)) {
+                joomlaScore += 2;
+                joomlaIndicators.push('Joomla template/routing markers');
+              }
+
+              console.log(`\n=== Joomla Detection for ${normalizedDomain} ===`);
+              console.log(`Score: ${joomlaScore}`);
+              console.log(`Indicators: [${joomlaIndicators.join(', ')}]`);
+              console.log(`=====================================\n`);
+
+              if (joomlaScore >= 4 && joomlaIndicators.length >= 1) {
+                const extractedJoomlaInfo: JoomlaInfo = {};
+
+                // Version from meta generator
+                const versionMatch = content.match(/<meta[^>]+name=["']generator["'][^>]+content=["']Joomla!\s*([\d.]+)/i);
+                if (versionMatch) {
+                  extractedJoomlaInfo.version = versionMatch[1];
+                }
+
+                // Template from body class or CSS path
+                const templateClassMatch = content.match(/class=["'][^"']*t3-template-([\w-]+)/i)
+                  || content.match(/\/templates\/([\w-]+)\//i);
+                if (templateClassMatch) {
+                  extractedJoomlaInfo.template = templateClassMatch[1];
+                }
+
+                // Language
+                const langMatch = content.match(/<html[^>]+lang=["']([^"']+)["']/i);
+                if (langMatch) {
+                  extractedJoomlaInfo.language = langMatch[1];
+                }
+
+                // Site title
+                const ogTitleMatch = content.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)["']/i)
+                  || content.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:title["']/i);
+                const titleTagMatch = content.match(/<title[^>]*>([^<]+)<\/title>/i);
+                if (ogTitleMatch) {
+                  extractedJoomlaInfo.siteTitle = ogTitleMatch[1].trim();
+                } else if (titleTagMatch) {
+                  extractedJoomlaInfo.siteTitle = titleTagMatch[1].trim().replace(/\s*[-–|].*$/, '');
+                }
+
+                // Meta description
+                const metaDescMatch = content.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i)
+                  || content.match(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']description["']/i);
+                if (metaDescMatch) {
+                  extractedJoomlaInfo.siteDescription = metaDescMatch[1].trim();
+                }
+
+                // Detect extensions from component paths
+                const extMatches = content.matchAll(/\/components\/(com_[\w]+)/gi);
+                const extensions = [...new Set([...extMatches].map(m => m[1]))];
+                const modMatches = content.matchAll(/\/modules\/(mod_[\w]+)/gi);
+                const modules = [...new Set([...modMatches].map(m => m[1]))];
+                if (extensions.length || modules.length) {
+                  extractedJoomlaInfo.detectedExtensions = [...extensions, ...modules].slice(0, 10);
+                }
+
+                joomlaInfo = extractedJoomlaInfo;
+                console.log('Joomla info extracted:', JSON.stringify(joomlaInfo, null, 2));
+              }
+            }
+
           } catch (contentError) {
             console.error('Error fetching content:', contentError);
           }
         }
+
+        const isJoomla = !!joomlaInfo;
 
         // Set CMS type based on detection
         if (isWordPress) {
@@ -1469,6 +1585,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           cmsType = 'shopify';
         } else if (isSquarespace) {
           cmsType = 'squarespace';
+        } else if (isJoomla) {
+          cmsType = 'joomla';
         }
 
         // Fetch latest WordPress version from WordPress.org (non-blocking, 3s timeout)
@@ -1516,6 +1634,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           wixInfo,
           shopifyInfo,
           squarespaceInfo,
+          joomlaInfo,
           pluginCount,
           plugins,
           technologies,
@@ -1528,6 +1647,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           cmsType,
           isWordPress,
           isSquarespace,
+          isJoomla,
           wordPressVersion,
           latestWordPressVersion,
           wordPressVersionStatus,
@@ -1536,6 +1656,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           wixInfo,
           shopifyInfo,
           squarespaceInfo,
+          joomlaInfo,
           pluginCount,
           plugins,
           technologies,

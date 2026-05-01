@@ -1,5 +1,5 @@
 import ScanEngine from "@/components/scan-engine";
-import type { Plugin, ThemeInfo, WixInfo, ShopifyInfo, SquarespaceInfo } from "@shared/schema";
+import type { Plugin, ThemeInfo, WixInfo, ShopifyInfo, SquarespaceInfo, JoomlaInfo } from "@shared/schema";
 import { 
   Layout, ShoppingCart, Mail, Search, TrendingUp, 
   Zap, Shield, ShieldCheck, FileText, Image, Globe, Code, 
@@ -53,6 +53,7 @@ export interface DetectionResult {
   wixInfo?: WixInfo | null;
   shopifyInfo?: ShopifyInfo | null;
   squarespaceInfo?: SquarespaceInfo | null;
+  joomlaInfo?: JoomlaInfo | null;
   pluginCount?: string | null;
   plugins?: Plugin[];
   technologies?: string[];
@@ -1200,6 +1201,155 @@ export default function ResultsDisplay({ result, isLoading, compact = false, sca
     );
   }
 
+  // Joomla detected
+  if (result.cmsType === 'joomla') {
+    const joomlaExtensionMeta: Record<string, { icon: LucideIcon; description: string }> = {
+      'com_content':   { icon: FileText,     description: 'Core articles & content management' },
+      'com_users':     { icon: Shield,       description: 'User management & authentication' },
+      'com_contact':   { icon: Mail,         description: 'Contact forms & directories' },
+      'com_search':    { icon: Search,       description: 'Site-wide search' },
+      'com_k2':        { icon: Layout,       description: 'K2 advanced content component' },
+      'com_virtuemart': { icon: ShoppingCart, description: 'VirtueMart e-commerce store' },
+      'com_hikashop':  { icon: ShoppingCart, description: 'HikaShop e-commerce' },
+      'com_jevents':   { icon: Zap,          description: 'JEvents calendar & events' },
+      'com_phocagallery': { icon: Image,     description: 'Phoca image gallery' },
+      'mod_menu':      { icon: Layout,       description: 'Navigation menu module' },
+      'mod_search':    { icon: Search,       description: 'Search module' },
+    };
+
+    const joomlaVersionLabel = result.joomlaInfo?.version || null;
+    const joomlaTemplate = result.joomlaInfo?.template || null;
+
+    return (
+      <div className="space-y-4 md:space-y-6">
+        {/* Joomla Confirmation Card */}
+        <div className="bg-green-50 border border-green-200 rounded-xl p-4 md:p-6" data-testid="joomla-detected">
+          <div className="flex flex-col sm:flex-row items-start gap-3 sm:space-x-4">
+            <div className="flex-shrink-0">
+              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                <Globe className="text-green-600 w-5 h-5" />
+              </div>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-xl md:text-2xl font-bold text-green-800 mb-2 break-all" data-testid="text-domain">
+                {result.domain}
+              </h3>
+              <p className="text-sm md:text-base text-green-700 mb-4">
+                This website is running <span className="font-semibold">Joomla!</span>
+              </p>
+              <div className="bg-white rounded-lg p-3 md:p-4 border border-green-200">
+                <p className="text-sm text-green-700">
+                  Joomla! CMS detected
+                  {joomlaVersionLabel && (
+                    <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
+                      v{joomlaVersionLabel}
+                    </span>
+                  )}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Joomla Site Details Card */}
+        {result.joomlaInfo && (
+          <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 md:p-6" data-testid="joomla-site-details">
+            <div className="flex flex-col sm:flex-row items-start gap-3 sm:space-x-4">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                  <Layout className="text-orange-600 w-5 h-5" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-orange-800 mb-3">Site Details</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {result.joomlaInfo.siteTitle && (
+                    <div className="bg-white rounded-lg p-3 border border-orange-200">
+                      <p className="text-xs text-orange-600 font-medium mb-1">Site Title</p>
+                      <p className="text-sm font-semibold text-orange-900 break-words">{result.joomlaInfo.siteTitle}</p>
+                    </div>
+                  )}
+                  {joomlaTemplate && (
+                    <div className="bg-white rounded-lg p-3 border border-orange-200">
+                      <p className="text-xs text-orange-600 font-medium mb-1">Template</p>
+                      <p className="text-sm font-semibold text-orange-900 break-words">{joomlaTemplate}</p>
+                    </div>
+                  )}
+                  {result.joomlaInfo.language && (
+                    <div className="bg-white rounded-lg p-3 border border-orange-200">
+                      <p className="text-xs text-orange-600 font-medium mb-1">Language</p>
+                      <p className="text-sm font-semibold text-orange-900">{result.joomlaInfo.language}</p>
+                    </div>
+                  )}
+                  {joomlaVersionLabel && (
+                    <div className="bg-white rounded-lg p-3 border border-orange-200">
+                      <p className="text-xs text-orange-600 font-medium mb-1">Joomla Version</p>
+                      <p className="text-sm font-semibold text-orange-900">{joomlaVersionLabel}</p>
+                    </div>
+                  )}
+                </div>
+                {result.joomlaInfo.siteDescription && (
+                  <div className="mt-3 bg-white rounded-lg p-3 border border-orange-200">
+                    <p className="text-xs text-orange-600 font-medium mb-1">Description</p>
+                    <p className="text-sm text-orange-800">{result.joomlaInfo.siteDescription}</p>
+                  </div>
+                )}
+
+                {/* Template preview placeholder */}
+                <div className="mt-4">
+                  <svg width="100%" height="160" viewBox="0 0 400 160" xmlns="http://www.w3.org/2000/svg" className="rounded-lg border border-orange-200">
+                    <rect width="400" height="160" fill="#fff7ed" />
+                    <rect x="0" y="0" width="400" height="36" fill="#ea580c" />
+                    <text x="200" y="23" textAnchor="middle" fill="white" fontSize="13" fontFamily="monospace" fontWeight="bold">Joomla!</text>
+                    <rect x="16" y="52" width="240" height="90" rx="4" fill="#fed7aa" />
+                    <rect x="268" y="52" width="116" height="42" rx="4" fill="#fdba74" />
+                    <rect x="268" y="100" width="116" height="42" rx="4" fill="#fdba74" />
+                    <text x="136" y="102" textAnchor="middle" fill="#9a3412" fontSize="11" fontFamily="sans-serif">{joomlaTemplate || 'Joomla Template'}</text>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Detected Extensions Card */}
+        {result.joomlaInfo?.detectedExtensions && result.joomlaInfo.detectedExtensions.length > 0 && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 md:p-6" data-testid="joomla-extensions">
+            <div className="flex flex-col sm:flex-row items-start gap-3 sm:space-x-4">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                  <Puzzle className="text-red-600 w-5 h-5" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-red-800 mb-3">Detected Extensions</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {result.joomlaInfo.detectedExtensions.map((ext) => {
+                    const meta = joomlaExtensionMeta[ext];
+                    const Icon = meta?.icon || Puzzle;
+                    return (
+                      <div key={ext} className="bg-white rounded-lg p-3 border border-red-200 flex items-start gap-3">
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#fee2e2' }}>
+                          <Icon className="w-4 h-4" style={{ color: '#b91c1c' }} />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-red-900 font-mono">{ext}</p>
+                          {meta?.description && (
+                            <p className="text-xs text-red-700 mt-0.5">{meta.description}</p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   // Platform not recognized
   return (
     <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 md:p-6 mb-4 md:mb-8" data-testid="platform-not-detected">
@@ -1214,7 +1364,7 @@ export default function ResultsDisplay({ result, isLoading, compact = false, sca
             Platform Not Recognized
           </h3>
           <p className="text-sm md:text-base text-amber-700 mb-4" data-testid="text-domain">
-            <span className="font-medium break-all">{result.domain}</span> does not appear to be running WordPress, Wix, Shopify, or Squarespace
+            <span className="font-medium break-all">{result.domain}</span> does not appear to be running WordPress, Wix, Shopify, Squarespace, or Joomla
           </p>
           {result.technologies && result.technologies.length > 0 && (
             <div className="bg-white rounded-lg p-3 md:p-4 border border-amber-200">

@@ -118,6 +118,17 @@ export const squarespaceInfoSchema = z.object({
 
 export type SquarespaceInfo = z.infer<typeof squarespaceInfoSchema>;
 
+export const joomlaInfoSchema = z.object({
+  version: z.string().optional(),
+  template: z.string().optional(),
+  language: z.string().optional(),
+  siteTitle: z.string().optional(),
+  siteDescription: z.string().optional(),
+  detectedExtensions: z.array(z.string()).optional(),
+});
+
+export type JoomlaInfo = z.infer<typeof joomlaInfoSchema>;
+
 export const detectionRequests = pgTable("detection_requests", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   domain: text("domain").notNull(),
@@ -129,6 +140,7 @@ export const detectionRequests = pgTable("detection_requests", {
   wixInfo: jsonb("wix_info").$type<WixInfo>(),
   shopifyInfo: jsonb("shopify_info").$type<ShopifyInfo>(),
   squarespaceInfo: jsonb("squarespace_info").$type<SquarespaceInfo>(),
+  joomlaInfo: jsonb("joomla_info").$type<JoomlaInfo>(),
   pluginCount: text("plugin_count"),
   plugins: jsonb("plugins").$type<Plugin[]>(),
   technologies: text("technologies").array(),
