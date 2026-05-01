@@ -11,6 +11,7 @@ import Dashboard from "@/pages/dashboard";
 import Login from "@/pages/login";
 import Admin from "@/pages/admin";
 import Pricing from "@/pages/pricing";
+import About from "@/pages/about";
 import { useEffect } from "react";
 import { initGA } from "./lib/analytics";
 import { useAnalytics } from "./hooks/use-analytics";
@@ -25,6 +26,7 @@ function Router() {
       <Route path="/login" component={Login} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/pricing" component={Pricing} />
+      <Route path="/about" component={About} />
       <Route path="/admin" component={Admin} />
       <Route component={NotFound} />
     </Switch>
