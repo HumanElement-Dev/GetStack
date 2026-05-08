@@ -1,9 +1,10 @@
+import { useState } from "react";
 import ScanEngine from "@/components/scan-engine";
 import type { Plugin, ThemeInfo, WixInfo, ShopifyInfo, SquarespaceInfo, JoomlaInfo } from "@shared/schema";
 import { 
   Layout, ShoppingCart, Mail, Search, TrendingUp, 
   Zap, Shield, ShieldCheck, FileText, Image, Globe, Code, 
-  Rocket, Gauge, HardDrive, Lock, Smartphone, Copy, 
+  Rocket, Gauge, HardDrive, Lock, Smartphone, Copy, Check,
   Edit, ArrowRight, Puzzle, CreditCard, FileInput, Database,
   AlertTriangle, CheckCircle2, ShieldAlert,
   type LucideIcon
@@ -193,6 +194,40 @@ function WordPressVersionCard({ detectedVersion, latestVersion, status }: WordPr
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
+function ShareBar({ resultId }: { resultId: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    const url = `${window.location.origin}/result/${resultId}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  return (
+    <div className="flex items-center justify-between gap-3 px-4 py-2.5 rounded-lg border bg-muted/30 text-sm">
+      <span className="text-muted-foreground text-xs">Share these results</span>
+      <button
+        onClick={handleCopy}
+        className="flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
+      >
+        {copied ? (
+          <>
+            <Check className="w-3.5 h-3.5" />
+            Copied!
+          </>
+        ) : (
+          <>
+            <Copy className="w-3.5 h-3.5" />
+            Copy link
+          </>
+        )}
+      </button>
+    </div>
+  );
+}
+
 export default function ResultsDisplay({ result, isLoading, compact = false, scanDomain }: ResultsDisplayProps) {
   if (isLoading) {
     return <ScanEngine domain={scanDomain || "target"} />;
@@ -230,6 +265,7 @@ export default function ResultsDisplay({ result, isLoading, compact = false, sca
     return (
       <div className="space-y-4 md:space-y-6">
         {/* WordPress Confirmation Card */}
+        <ShareBar resultId={result.id} />
         <div className="bg-green-50 border border-green-200 rounded-xl p-4 md:p-6" data-testid="wordpress-detected">
           <div className="flex flex-col sm:flex-row items-start gap-3 sm:space-x-4">
             <div className="flex-shrink-0">
@@ -541,6 +577,7 @@ export default function ResultsDisplay({ result, isLoading, compact = false, sca
     return (
       <div className="space-y-4 md:space-y-6">
         {/* Wix Confirmation Card */}
+        <ShareBar resultId={result.id} />
         <div className="bg-green-50 border border-green-200 rounded-xl p-4 md:p-6" data-testid="wix-detected">
           <div className="flex flex-col sm:flex-row items-start gap-3 sm:space-x-4">
             <div className="flex-shrink-0">
@@ -751,6 +788,7 @@ export default function ResultsDisplay({ result, isLoading, compact = false, sca
     return (
       <div className="space-y-4 md:space-y-6">
         {/* Shopify Confirmation Card */}
+        <ShareBar resultId={result.id} />
         <div className="bg-green-50 border border-green-200 rounded-xl p-4 md:p-6" data-testid="shopify-detected">
           <div className="flex flex-col sm:flex-row items-start gap-3 sm:space-x-4">
             <div className="flex-shrink-0">
@@ -1012,6 +1050,7 @@ export default function ResultsDisplay({ result, isLoading, compact = false, sca
     return (
       <div className="space-y-4 md:space-y-6">
         {/* Squarespace Confirmation Card */}
+        <ShareBar resultId={result.id} />
         <div className="bg-green-50 border border-green-200 rounded-xl p-4 md:p-6" data-testid="squarespace-detected">
           <div className="flex flex-col sm:flex-row items-start gap-3 sm:space-x-4">
             <div className="flex-shrink-0">
@@ -1222,6 +1261,7 @@ export default function ResultsDisplay({ result, isLoading, compact = false, sca
     return (
       <div className="space-y-4 md:space-y-6">
         {/* Joomla Confirmation Card */}
+        <ShareBar resultId={result.id} />
         <div className="bg-green-50 border border-green-200 rounded-xl p-4 md:p-6" data-testid="joomla-detected">
           <div className="flex flex-col sm:flex-row items-start gap-3 sm:space-x-4">
             <div className="flex-shrink-0">

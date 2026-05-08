@@ -1698,6 +1698,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get a single detection result by ID (for shareable links)
+  app.get("/api/result/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const result = await storage.getDetectionRequest(id);
+      if (!result) {
+        return res.status(404).json({ error: 'Result not found' });
+      }
+      res.json(result);
+    } catch (error) {
+      console.error('Error fetching result:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
   // Get detection history for a domain
   app.get("/api/detection-history/:domain", async (req, res) => {
     try {
