@@ -12,6 +12,7 @@ import Login from "@/pages/login";
 import Admin from "@/pages/admin";
 import Pricing from "@/pages/pricing";
 import About from "@/pages/about";
+import Contact from "@/pages/contact";
 import { useEffect } from "react";
 import { initGA } from "./lib/analytics";
 import { useAnalytics } from "./hooks/use-analytics";
@@ -27,6 +28,7 @@ function Router() {
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/pricing" component={Pricing} />
       <Route path="/about" component={About} />
+      <Route path="/contact" component={Contact} />
       <Route path="/admin" component={Admin} />
       <Route component={NotFound} />
     </Switch>
