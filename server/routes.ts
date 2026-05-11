@@ -387,15 +387,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       try {
-        // Perform WordPress detection
-        const response = await fetch(urlToCheck, {
-          method: 'HEAD',
-          headers: {
-            'User-Agent': 'GetStack WordPress Detector/1.0',
-          },
-          signal: AbortSignal.timeout(10000), // 10 second timeout
-        });
-
         let isWordPress = false;
         let isWix = false;
         let isShopify = false;
@@ -413,36 +404,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         let technologies: string[] = [];
         const pluginVersions = new Map<string, string>();
 
-        // Check for WordPress indicators in headers (very specific)
-        const generator = response.headers.get('x-generator') || response.headers.get('generator');
-        if (generator && /^WordPress\s+[\d\.]+/i.test(generator)) {
-          isWordPress = true;
-          const versionMatch = generator.match(/WordPress\s+([\d\.]+)/i);
-          if (versionMatch) {
-            wordPressVersion = versionMatch[1];
-          }
-          console.log(`WordPress detected via header: ${generator}`);
-        }
-
-        // Check for WordPress in X-Powered-By header (must be exact)
-        const poweredBy = response.headers.get('x-powered-by');
-        if (poweredBy && /^WordPress/i.test(poweredBy)) {
-          isWordPress = true;
-          console.log(`WordPress detected via X-Powered-By: ${poweredBy}`);
-        }
-
-        // Always try GET request for content analysis to get theme/plugin details
-        // This ensures we can show the second card even when WordPress is detected via headers
-        let contentAnalyzed = false;
-        if (true) { // Always fetch content for details
-          try {
+        // Single GET request — headers + content in one round trip
+        try {
             const fullResponse = await fetch(urlToCheck, {
               method: 'GET',
               headers: {
                 'User-Agent': 'GetStack WordPress Detector/1.0',
               },
-              signal: AbortSignal.timeout(15000),
+              signal: AbortSignal.timeout(20000),
             });
+
+            // Check WordPress header signals from the GET response
+            const generator = fullResponse.headers.get('x-generator') || fullResponse.headers.get('generator');
+            if (generator && /^WordPress\s+[\d\.]+/i.test(generator)) {
+              isWordPress = true;
+              const versionMatch = generator.match(/WordPress\s+([\d\.]+)/i);
+              if (versionMatch) wordPressVersion = versionMatch[1];
+              console.log(`WordPress detected via header: ${generator}`);
+            }
+            const poweredBy = fullResponse.headers.get('x-powered-by');
+            if (poweredBy && /^WordPress/i.test(poweredBy)) {
+              isWordPress = true;
+              console.log(`WordPress detected via X-Powered-By: ${poweredBy}`);
+            }
 
             const content = await fullResponse.text();
             
@@ -1572,7 +1556,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           } catch (contentError) {
             console.error('Error fetching content:', contentError);
           }
-        }
 
         const isJoomla = !!joomlaInfo;
 
