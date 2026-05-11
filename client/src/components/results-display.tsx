@@ -49,6 +49,8 @@ export interface DetectionResult {
   wordPressVersion?: string | null;
   latestWordPressVersion?: string | null;
   wordPressVersionStatus?: 'current' | 'outdated' | 'unknown' | null;
+  wpScore?: number | null;
+  detectedIndicators?: string[] | null;
   theme?: string | null;
   themeInfo?: ThemeInfo | null;
   wixInfo?: WixInfo | null;
@@ -287,8 +289,28 @@ export default function ResultsDisplay({ result, isLoading, compact = false, sca
                   status={result.wordPressVersionStatus}
                 />
               ) : (
-                <div className="bg-white rounded-lg p-4 border border-green-200">
-                  <p className="text-sm text-green-700">WordPress detected via standard indicators</p>
+                <div className="bg-white rounded-lg p-4 border border-green-200 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></div>
+                    <p className="text-sm font-semibold text-green-800">WordPress confirmed — version not publicly exposed</p>
+                  </div>
+                  <p className="text-xs text-green-700 leading-relaxed">
+                    This site has removed the WordPress version from its HTML (a recommended security practice). 
+                    The version cannot be determined remotely without admin access.
+                  </p>
+                  {result.detectedIndicators && result.detectedIndicators.length > 0 && (
+                    <div>
+                      <p className="text-xs font-medium text-green-800 mb-1.5">Detection signals found:</p>
+                      <ul className="space-y-1">
+                        {result.detectedIndicators.map((indicator, i) => (
+                          <li key={i} className="flex items-center gap-1.5 text-xs text-green-700">
+                            <div className="w-1 h-1 rounded-full bg-green-400 flex-shrink-0"></div>
+                            {indicator}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

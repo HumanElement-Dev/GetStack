@@ -403,6 +403,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         let plugins: Plugin[] = [];
         let technologies: string[] = [];
         const pluginVersions = new Map<string, string>();
+        let wpScore = 0;
+        let detectedIndicators: string[] = [];
 
         // Single GET request — headers + content in one round trip
         try {
@@ -431,8 +433,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const content = await fullResponse.text();
             
             // Very strict WordPress detection - require concrete evidence
-            let wpScore = 0;
-            const detectedIndicators = [];
             
             // Only the most reliable WordPress indicators
             
@@ -491,7 +491,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
               isWordPress = true;
               wordPressVersion = generatorMatch[1];
             }
-            
+
+            // Fallback 1: detect WP version from /wp-includes/ core script ?ver= params.
+            // WP core assets share the same version; third-party libs appear once only,
+            // so require 2+ occurrences of the same version to confirm it's WP's.
+            if (!wordPressVersion && isWordPress) {
+              const wpCoreVersionCounts: Record<string, number> = {};
+              const wpIncludesRe = /\/wp-includes\/(?!js\/jquery\/|js\/underscore|js\/backbone)[^"'\s>]*\?ver=([\d]+\.[\d]+(?:\.[\d]+)?)/g;
+              let m: RegExpExecArray | null;
+              while ((m = wpIncludesRe.exec(content)) !== null) {
+                const v = m[1];
+                wpCoreVersionCounts[v] = (wpCoreVersionCounts[v] || 0) + 1;
+              }
+              const topEntry = Object.entries(wpCoreVersionCounts).sort((a, b) => b[1] - a[1])[0];
+              if (topEntry && topEntry[1] >= 2) {
+                wordPressVersion = topEntry[0];
+                console.log(`WordPress version inferred from wp-includes scripts: ${wordPressVersion} (seen ${topEntry[1]}x)`);
+              }
+            }
+
+            // Fallback 2: WordPress RSS feed always includes a generator tag with the version.
+            // Many security-hardened sites remove the generator meta tag from HTML but
+            // forget to remove it from the RSS feed, making this a reliable secondary source.
+            if (!wordPressVersion && isWordPress) {
+              try {
+                const feedUrl = `${urlToCheck.replace(/\/$/, '')}/feed/`;
+                const feedResponse = await fetch(feedUrl, {
+                  method: 'GET',
+                  headers: { 'User-Agent': 'GetStack WordPress Detector/1.0' },
+                  signal: AbortSignal.timeout(5000),
+                });
+                if (feedResponse.ok) {
+                  const feedContent = await feedResponse.text();
+                  const feedVersionMatch = feedContent.match(/<generator>[^<]*wordpress\.org[^<]*[?&]v=([\d.]+)[^<]*<\/generator>/i);
+                  if (feedVersionMatch) {
+                    wordPressVersion = feedVersionMatch[1];
+                    console.log(`WordPress version inferred from RSS feed: ${wordPressVersion}`);
+                  }
+                }
+              } catch {
+                // Feed fetch failed silently — not critical
+              }
+            }
+
             // Log detection details for debugging
             console.log(`\n=== WordPress Detection for ${normalizedDomain} ===`);
             console.log(`Score: ${wpScore}`);
@@ -1634,6 +1676,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           wordPressVersion,
           latestWordPressVersion,
           wordPressVersionStatus,
+          wpScore,
+          detectedIndicators,
           theme,
           themeInfo,
           wixInfo,
