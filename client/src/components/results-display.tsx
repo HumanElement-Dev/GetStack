@@ -153,44 +153,48 @@ function WordPressVersionCard({ detectedVersion, latestVersion, status }: WordPr
         )}
       </div>
 
-      {/* Premium insight teaser */}
-      <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50/60 overflow-hidden">
-        <div className="px-4 py-2.5 flex items-center gap-2 border-b border-gray-200/70">
-          <Lock className="w-3.5 h-3.5 text-gray-400" />
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Premium Insight</p>
-        </div>
-        {isPremium ? (
-          <div className="px-4 py-3">
-            <p className="text-xs text-gray-500 italic">
-              Detailed vulnerability analysis, CVE references, and fix recommendations are coming soon for premium users.
-            </p>
-          </div>
-        ) : (
-          <div className="px-4 py-3 space-y-2.5">
-            {/* Blurred placeholder rows */}
-            <div className="space-y-1.5 select-none" aria-hidden>
-              {[
-                { label: 'CVE-2024-XXXX', detail: 'Critical · Remote code execution' },
-                { label: 'CVE-2024-YYYY', detail: 'High · Privilege escalation' },
-                { label: 'Recommended upgrade', detail: 'Safe version: X.X.X' },
-              ].map((row) => (
-                <div key={row.label} className="flex items-center justify-between gap-2 blur-[4px] pointer-events-none">
-                  <span className="text-xs font-mono text-red-600">{row.label}</span>
-                  <span className="text-xs text-gray-500">{row.detail}</span>
-                </div>
-              ))}
-            </div>
-            <Link
-              href="/pricing"
-              className="mt-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors"
-            >
-              <Lock className="w-3 h-3" />
-              Unlock full vulnerability analysis
-              <ArrowRight className="w-3 h-3" />
-            </Link>
-          </div>
-        )}
+    </div>
+  );
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
+function PremiumInsightCTA({ isPremium }: { isPremium: boolean }) {
+  return (
+    <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50/60 overflow-hidden">
+      <div className="px-4 py-2.5 flex items-center gap-2 border-b border-gray-200/70">
+        <Lock className="w-3.5 h-3.5 text-gray-400" />
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Premium Insight</p>
       </div>
+      {isPremium ? (
+        <div className="px-4 py-3">
+          <p className="text-xs text-gray-500 italic">
+            Detailed vulnerability analysis, CVE references, and fix recommendations are coming soon for premium users.
+          </p>
+        </div>
+      ) : (
+        <div className="px-4 py-3 space-y-2.5">
+          <div className="space-y-1.5 select-none" aria-hidden>
+            {[
+              { label: 'CVE-2024-XXXX', detail: 'Critical · Remote code execution' },
+              { label: 'CVE-2024-YYYY', detail: 'High · Privilege escalation' },
+              { label: 'Recommended upgrade', detail: 'Safe version: X.X.X' },
+            ].map((row) => (
+              <div key={row.label} className="flex items-center justify-between gap-2 blur-[4px] pointer-events-none">
+                <span className="text-xs font-mono text-red-600">{row.label}</span>
+                <span className="text-xs text-gray-500">{row.detail}</span>
+              </div>
+            ))}
+          </div>
+          <Link
+            href="/pricing"
+            className="mt-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors"
+          >
+            <Lock className="w-3 h-3" />
+            Unlock full vulnerability analysis
+            <ArrowRight className="w-3 h-3" />
+          </Link>
+        </div>
+      )}
     </div>
   );
 }
@@ -316,6 +320,9 @@ export default function ResultsDisplay({ result, isLoading, compact = false, sca
             </div>
           </div>
         </div>
+
+        {/* Premium CTA — always visible for WordPress results */}
+        <PremiumInsightCTA isPremium={isPremium} />
 
         {/* Theme Details Card */}
         {(result.theme || result.themeInfo) && (

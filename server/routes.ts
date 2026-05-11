@@ -104,18 +104,15 @@ function enrichPluginData(slugs: string[], versions: Map<string, string> = new M
 // Parse WordPress theme style.css header to extract metadata
 function parseThemeStyleCss(cssContent: string): Partial<ThemeInfo> {
   const info: Partial<ThemeInfo> = {};
-  
-  // WordPress style.css header format:
-  // Theme Name: Theme Name
-  // Theme URI: https://example.com
-  // Author: Author Name
-  // Author URI: https://author.com
-  // Description: Theme description
-  // Version: 1.0.0
-  // Template: parent-theme-slug (for child themes)
-  // License: GPL v2 or later
-  // Tags: tag1, tag2, tag3
-  
+
+  // WordPress style.css always begins with a /* ... */ comment block containing
+  // the theme metadata. We must parse ONLY that block — not the rest of the file —
+  // to avoid matching CSS properties or comments that look like header fields.
+  const headerBlockMatch = cssContent.match(/^\/\*([\s\S]*?)\*\//);
+  const headerBlock = headerBlockMatch ? headerBlockMatch[1] : '';
+
+  if (!headerBlock) return info;
+
   const patterns: Record<string, keyof ThemeInfo> = {
     'Theme Name': 'name',
     'Theme URI': 'themeUri',
@@ -126,10 +123,10 @@ function parseThemeStyleCss(cssContent: string): Partial<ThemeInfo> {
     'License': 'license',
     'Template': 'parentTheme',
   };
-  
+
   for (const [cssKey, infoKey] of Object.entries(patterns)) {
-    const regex = new RegExp(`${cssKey}\\s*:\\s*(.+?)(?:\\r?\\n|$)`, 'i');
-    const match = cssContent.match(regex);
+    const regex = new RegExp(`^[ \\t]*${cssKey}\\s*:\\s*(.+?)\\s*$`, 'im');
+    const match = headerBlock.match(regex);
     if (match && match[1]) {
       const value = match[1].trim();
       if (infoKey === 'parentTheme') {
@@ -140,13 +137,13 @@ function parseThemeStyleCss(cssContent: string): Partial<ThemeInfo> {
       }
     }
   }
-  
+
   // Parse tags
-  const tagsMatch = cssContent.match(/Tags\s*:\s*(.+?)(?:\r?\n|$)/i);
+  const tagsMatch = headerBlock.match(/^[ \t]*Tags\s*:\s*(.+?)\s*$/im);
   if (tagsMatch && tagsMatch[1]) {
     info.tags = tagsMatch[1].split(',').map(tag => tag.trim()).filter(Boolean);
   }
-  
+
   return info;
 }
 
@@ -513,14 +510,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Fallback 2: WordPress RSS feed always includes a generator tag with the version.
             // Many security-hardened sites remove the generator meta tag from HTML but
             // forget to remove it from the RSS feed, making this a reliable secondary source.
+            // Timeout is kept very short (3 s) so a missing/slow feed never blocks the scan.
             if (!wordPressVersion && isWordPress) {
               try {
                 const feedUrl = `${urlToCheck.replace(/\/$/, '')}/feed/`;
+                const feedController = new AbortController();
+                const feedTimer = setTimeout(() => feedController.abort(), 3000);
                 const feedResponse = await fetch(feedUrl, {
                   method: 'GET',
                   headers: { 'User-Agent': 'GetStack WordPress Detector/1.0' },
-                  signal: AbortSignal.timeout(5000),
+                  signal: feedController.signal,
                 });
+                clearTimeout(feedTimer);
                 if (feedResponse.ok) {
                   const feedContent = await feedResponse.text();
                   const feedVersionMatch = feedContent.match(/<generator>[^<]*wordpress\.org[^<]*[?&]v=([\d.]+)[^<]*<\/generator>/i);
@@ -530,7 +531,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   }
                 }
               } catch {
-                // Feed fetch failed silently — not critical
+                // Feed fetch failed or timed out — not critical
               }
             }
 
