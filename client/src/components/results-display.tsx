@@ -235,6 +235,8 @@ function ShareBar({ resultId }: { resultId: string }) {
 }
 
 export default function ResultsDisplay({ result, isLoading, compact = false, scanDomain }: ResultsDisplayProps) {
+  const { isPremium } = useUserTier();
+
   if (isLoading) {
     return <ScanEngine domain={scanDomain || "target"} />;
   }
