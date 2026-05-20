@@ -14,8 +14,6 @@ import Pricing from "@/pages/pricing";
 import About from "@/pages/about";
 import Contact from "@/pages/contact";
 import SharedResult from "@/pages/result";
-import { useEffect } from "react";
-import { initGA } from "./lib/analytics";
 import { useAnalytics } from "./hooks/use-analytics";
 
 function Router() {
@@ -38,14 +36,6 @@ function Router() {
 }
 
 function App() {
-  useEffect(() => {
-    if (!import.meta.env.VITE_GA_MEASUREMENT_ID) {
-      console.warn('Missing Google Analytics Measurement ID');
-    } else {
-      initGA();
-    }
-  }, []);
-
   return (
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
