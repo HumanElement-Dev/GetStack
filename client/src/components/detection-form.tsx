@@ -45,7 +45,14 @@ export default function DetectionForm({ onResult, isLoading, setIsLoading, onSca
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       onResult(data);
-      
+
+      // GA4 custom event — scan_submitted
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'scan_submitted', {
+          platform_detected: data.cmsType || 'none',
+        });
+      }
+
       trackEvent('detection_complete', 'detection', data.domain, data.isWordPress ? 1 : 0);
       
       toast({

@@ -188,6 +188,14 @@ function PremiumInsightCTA({ isPremium }: { isPremium: boolean }) {
           <Link
             href="/pricing"
             className="mt-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors"
+            onClick={() => {
+              // GA4 custom event — premium_unlock_clicked
+              if (typeof window !== 'undefined' && window.gtag) {
+                window.gtag('event', 'premium_unlock_clicked', {
+                  source: 'vulnerability_block',
+                });
+              }
+            }}
           >
             <Lock className="w-3 h-3" />
             Unlock full vulnerability analysis
@@ -200,7 +208,7 @@ function PremiumInsightCTA({ isPremium }: { isPremium: boolean }) {
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
-function ShareBar({ resultId }: { resultId: string }) {
+function ShareBar({ resultId, platform }: { resultId: string; platform?: string | null }) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
@@ -208,6 +216,13 @@ function ShareBar({ resultId }: { resultId: string }) {
     navigator.clipboard.writeText(url).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+
+      // GA4 custom event — share_link_generated
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'share_link_generated', {
+          platform_detected: platform || 'none',
+        });
+      }
     });
   };
 
@@ -273,7 +288,7 @@ export default function ResultsDisplay({ result, isLoading, compact = false, sca
     return (
       <div className="space-y-4 md:space-y-6">
         {/* WordPress Confirmation Card */}
-        <ShareBar resultId={result.id} />
+        <ShareBar resultId={result.id} platform={result.cmsType} />
         <div className="bg-green-50 border border-green-200 rounded-xl p-4 md:p-6" data-testid="wordpress-detected">
           <div className="flex flex-col sm:flex-row items-start gap-3 sm:space-x-4">
             <div className="flex-shrink-0">
@@ -608,7 +623,7 @@ export default function ResultsDisplay({ result, isLoading, compact = false, sca
     return (
       <div className="space-y-4 md:space-y-6">
         {/* Wix Confirmation Card */}
-        <ShareBar resultId={result.id} />
+        <ShareBar resultId={result.id} platform={result.cmsType} />
         <div className="bg-green-50 border border-green-200 rounded-xl p-4 md:p-6" data-testid="wix-detected">
           <div className="flex flex-col sm:flex-row items-start gap-3 sm:space-x-4">
             <div className="flex-shrink-0">
@@ -819,7 +834,7 @@ export default function ResultsDisplay({ result, isLoading, compact = false, sca
     return (
       <div className="space-y-4 md:space-y-6">
         {/* Shopify Confirmation Card */}
-        <ShareBar resultId={result.id} />
+        <ShareBar resultId={result.id} platform={result.cmsType} />
         <div className="bg-green-50 border border-green-200 rounded-xl p-4 md:p-6" data-testid="shopify-detected">
           <div className="flex flex-col sm:flex-row items-start gap-3 sm:space-x-4">
             <div className="flex-shrink-0">
@@ -1081,7 +1096,7 @@ export default function ResultsDisplay({ result, isLoading, compact = false, sca
     return (
       <div className="space-y-4 md:space-y-6">
         {/* Squarespace Confirmation Card */}
-        <ShareBar resultId={result.id} />
+        <ShareBar resultId={result.id} platform={result.cmsType} />
         <div className="bg-green-50 border border-green-200 rounded-xl p-4 md:p-6" data-testid="squarespace-detected">
           <div className="flex flex-col sm:flex-row items-start gap-3 sm:space-x-4">
             <div className="flex-shrink-0">
@@ -1292,7 +1307,7 @@ export default function ResultsDisplay({ result, isLoading, compact = false, sca
     return (
       <div className="space-y-4 md:space-y-6">
         {/* Joomla Confirmation Card */}
-        <ShareBar resultId={result.id} />
+        <ShareBar resultId={result.id} platform={result.cmsType} />
         <div className="bg-green-50 border border-green-200 rounded-xl p-4 md:p-6" data-testid="joomla-detected">
           <div className="flex flex-col sm:flex-row items-start gap-3 sm:space-x-4">
             <div className="flex-shrink-0">
