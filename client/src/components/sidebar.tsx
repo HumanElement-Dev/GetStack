@@ -157,6 +157,12 @@ export default function SitesSidebar({ collapsed, selectedSiteId, onSelectSite, 
               Scan a site then click&nbsp;
               <Plus className="inline w-3 h-3" /> to save it here.
             </p>
+            <Link href="/">
+              <button className="mt-4 flex items-center gap-1.5 mx-auto px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors">
+                <Plus className="w-3.5 h-3.5" />
+                Add site
+              </button>
+            </Link>
           </div>
         ) : (
           pins.map((site) => {
