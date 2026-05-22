@@ -26,15 +26,6 @@ function getInitial(domain: string) {
   return domain.replace(/^(https?:\/\/)?(www\.)?/, "").charAt(0).toUpperCase();
 }
 
-function CmsBadge({ cmsType }: { cmsType: string | null }) {
-  if (!cmsType) return null;
-  const color = CMS_COLORS[cmsType.toLowerCase()] ?? "bg-muted-foreground/40";
-  return (
-    <span className={`text-[9px] font-bold text-white px-1.5 py-0.5 rounded uppercase tracking-wide ${color}`}>
-      {cmsType.slice(0, 3)}
-    </span>
-  );
-}
 
 export default function SitesSidebar({ collapsed, selectedSiteId, onSelectSite, currentResult }: SitesSidebarProps) {
   const { toast } = useToast();
@@ -157,9 +148,6 @@ export default function SitesSidebar({ collapsed, selectedSiteId, onSelectSite, 
                     <p className="text-sm font-medium truncate leading-tight">
                       {site.name || site.domain}
                     </p>
-                    <div className="mt-0.5">
-                      <CmsBadge cmsType={site.cmsType} />
-                    </div>
                   </div>
                 </button>
 

@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useUserTier } from "@/hooks/use-tier";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Zap, LayoutDashboard, Globe, History } from "lucide-react";
+import { Zap, LayoutDashboard, Globe, History, RefreshCw } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import type { PinnedSite } from "@shared/schema";
@@ -53,11 +53,40 @@ function UpgradeWall() {
   );
 }
 
+const CMS_COLORS: Record<string, string> = {
+  wordpress: "bg-blue-600",
+  wix: "bg-purple-600",
+  shopify: "bg-green-600",
+  squarespace: "bg-gray-700",
+  joomla: "bg-orange-600",
+};
+
+function SiteOverview({ site }: { site: PinnedSite }) {
+  const initial = site.domain.replace(/^(https?:\/\/)?(www\.)?/, "").charAt(0).toUpperCase();
+  const color = CMS_COLORS[site.cmsType?.toLowerCase() ?? ""] ?? "bg-muted-foreground/40";
+
+  return (
+    <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-center p-8">
+      <div className={`w-16 h-16 rounded-2xl ${color} flex items-center justify-center text-white text-2xl font-bold mb-5`}>
+        {initial}
+      </div>
+      <h2 className="text-xl font-semibold text-foreground mb-1">{site.name || site.domain}</h2>
+      {site.cmsType && (
+        <p className="text-sm text-muted-foreground mb-6 capitalize">{site.cmsType}</p>
+      )}
+      <p className="text-sm text-muted-foreground max-w-xs">
+        Hit <span className="font-medium text-foreground">Analyze</span> in the search bar above to load the latest results for this site.
+      </p>
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const [result, setResult] = useState<DetectionResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedSite, setSelectedSite] = useState<PinnedSite | null>(null);
   const [siteView, setSiteView] = useState("dashboard");
+  const [scanUrl, setScanUrl] = useState<string | undefined>(undefined);
 
   const { user, isLoading: authLoading, isAuthenticated } = useAuth();
   const { isPremium, isLoading: tierLoading } = useUserTier();
@@ -105,6 +134,10 @@ export default function Dashboard() {
   const handleSelectSite = (site: PinnedSite) => {
     setSelectedSite(site);
     setSiteView("dashboard");
+    setScanUrl(site.domain);
+    if (result?.domain !== site.domain) {
+      setResult(null);
+    }
   };
 
   const handleBackToSites = () => {
@@ -119,6 +152,7 @@ export default function Dashboard() {
             onResult={setResult}
             isLoading={isLoading}
             setIsLoading={setIsLoading}
+            defaultUrl={scanUrl}
           />
           <div className="flex flex-1 min-h-0">
             {/* Primary sidebar — desktop only */}
@@ -144,7 +178,11 @@ export default function Dashboard() {
             )}
 
             <main className="flex-1 p-4 md:p-8 overflow-auto">
-              <ResultsDisplay result={result} isLoading={isLoading} compact={true} />
+              {selectedSite && !result && !isLoading ? (
+                <SiteOverview site={selectedSite} />
+              ) : (
+                <ResultsDisplay result={result} isLoading={isLoading} compact={true} />
+              )}
             </main>
           </div>
         </>

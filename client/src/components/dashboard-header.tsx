@@ -19,9 +19,10 @@ interface DashboardHeaderProps {
   onResult: (result: DetectionResult | null) => void;
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
+  defaultUrl?: string;
 }
 
-export default function DashboardHeader({ onResult, isLoading, setIsLoading }: DashboardHeaderProps) {
+export default function DashboardHeader({ onResult, isLoading, setIsLoading, defaultUrl }: DashboardHeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, logout } = useAuth();
 
@@ -104,6 +105,7 @@ export default function DashboardHeader({ onResult, isLoading, setIsLoading }: D
           isLoading={isLoading}
           setIsLoading={setIsLoading}
           inline
+          defaultUrl={defaultUrl}
         />
       </div>
 

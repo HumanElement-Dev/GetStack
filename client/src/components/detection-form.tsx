@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,9 +18,10 @@ interface DetectionFormProps {
   setIsLoading: (loading: boolean) => void;
   onScanStart?: (domain: string) => void;
   inline?: boolean;
+  defaultUrl?: string;
 }
 
-export default function DetectionForm({ onResult, isLoading, setIsLoading, onScanStart, inline = false }: DetectionFormProps) {
+export default function DetectionForm({ onResult, isLoading, setIsLoading, onScanStart, inline = false, defaultUrl }: DetectionFormProps) {
   const { toast } = useToast();
   const [inputIcon, setInputIcon] = useState("fas fa-globe");
 
@@ -30,6 +31,12 @@ export default function DetectionForm({ onResult, isLoading, setIsLoading, onSca
       domain: "",
     },
   });
+
+  useEffect(() => {
+    if (defaultUrl) {
+      form.reset({ domain: defaultUrl });
+    }
+  }, [defaultUrl]);
 
   const detectionMutation = useMutation({
     mutationFn: async (data: DetectionRequestInput) => {
