@@ -1,3 +1,5 @@
+import { Link } from "wouter";
+
 export default function Footer() {
   return (
     <footer className="border-t border-border bg-muted/30 py-8 mt-16">
@@ -9,6 +11,11 @@ export default function Footer() {
             </div>
             <span className="text-foreground font-medium">GetStack</span>
           </div>
+          <nav className="flex items-center gap-5 text-sm text-muted-foreground">
+            <Link href="/faq" className="hover:text-foreground transition-colors">FAQ</Link>
+            <Link href="/about" className="hover:text-foreground transition-colors">About</Link>
+            <Link href="/contact" className="hover:text-foreground transition-colors">Contact</Link>
+          </nav>
           <p className="text-sm text-muted-foreground">
             © 2026 GetStack. A{" "}
             <a 

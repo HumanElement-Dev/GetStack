@@ -13,6 +13,7 @@ import Admin from "@/pages/admin";
 import Pricing from "@/pages/pricing";
 import About from "@/pages/about";
 import Contact from "@/pages/contact";
+import FAQ from "@/pages/faq";
 import SharedResult from "@/pages/result";
 import { useAnalytics } from "./hooks/use-analytics";
 
@@ -28,6 +29,7 @@ function Router() {
       <Route path="/pricing" component={Pricing} />
       <Route path="/about" component={About} />
       <Route path="/contact" component={Contact} />
+      <Route path="/faq" component={FAQ} />
       <Route path="/result/:id" component={SharedResult} />
       <Route path="/admin" component={Admin} />
       <Route component={NotFound} />
