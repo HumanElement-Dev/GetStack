@@ -23,7 +23,7 @@ export default function Contact() {
               <p className="text-muted-foreground leading-relaxed">
                 If you have any feedback, bug reports or queries about this site, please email{" "}
                 <a
-                  href="mailto:hello@humanelement.agency"
+                  href="mailto:Gtstk@humanelement.agency"
                   className="text-primary font-medium hover:underline"
                 >Gtstk@humanelement.agency</a>
               </p>

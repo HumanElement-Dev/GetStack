@@ -17,17 +17,15 @@ export default function About() {
           <h2 className="text-xl font-semibold text-foreground mb-4">Why was GetStack Created?</h2>
 
           <div className="space-y-5 text-muted-foreground leading-relaxed">
+            <p>Finding a great WordPress theme can be challenging. When you come across a website you love, it’s not always clear which theme powers it - especially if there’s no theme credit or developer link in the footer.</p>
             <p>
-              People are always on the lookout for a good WordPress theme. Often when they find a WordPress site they really like, it isn't always obvious which theme is being used (particularly if there is no WordPress theme link or name in the footer).
+              While it's possible to dig through the HTML source code to uncover that information, most people either don't know how or simply don't want to spend the time.
             </p>
             <p>
-              If you know what to do, you can look at the HTML source and hunt out the information, but most people either don't know how or don't want to do that.
+              That's why this free tool exists: to make it easy to identify the WordPress theme and plugins used on any website. With just a quick search, you can discover the tools behind a site you admire and use that inspiration to build something uniquely your own.
             </p>
             <p>
-              This free service was created in order to make it really easy for you to get all the details of what WordPress theme and what WordPress plugins are being used on a site, so that you can create your own perfect WordPress site.
-            </p>
-            <p>
-              You can also view who are the most popular WordPress theme providers and most popular WordPress plugins based on the WordPress sites that people have searched on.
+              You can also explore the most popular WordPress theme providers and plugins, based on the websites people search for most often.
             </p>
           </div>
         </div>
