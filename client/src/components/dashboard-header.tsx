@@ -5,7 +5,13 @@ import type { DetectionResult } from "@/components/results-display";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import MobileSidebar from "@/components/mobile-sidebar";
 import { useState } from "react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -19,6 +25,8 @@ export default function DashboardHeader({ onResult, isLoading, setIsLoading }: D
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, logout } = useAuth();
 
+  const isAdmin = (user as any)?.role === "super_admin";
+
   const getInitials = (firstName?: string, lastName?: string) => {
     const first = firstName?.charAt(0) || "";
     const last = lastName?.charAt(0) || "";
@@ -31,7 +39,7 @@ export default function DashboardHeader({ onResult, isLoading, setIsLoading }: D
         {/* Mobile Menu Button */}
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
           <SheetTrigger asChild>
-            <button 
+            <button
               className="p-2 rounded-lg hover:bg-muted transition-colors md:hidden"
               data-testid="button-mobile-menu"
             >
@@ -53,12 +61,9 @@ export default function DashboardHeader({ onResult, isLoading, setIsLoading }: D
           </div>
         </Link>
 
-        {/* Actions - visible on mobile next to logo */}
+        {/* Mobile right actions */}
         <div className="flex items-center space-x-2 md:hidden">
-          <button 
-            className="p-2 rounded-lg hover:bg-muted transition-colors"
-            data-testid="button-notifications-mobile"
-          >
+          <button className="p-2 rounded-lg hover:bg-muted transition-colors" data-testid="button-notifications-mobile">
             <Bell className="w-5 h-5 text-muted-foreground" />
           </button>
           <DropdownMenu>
@@ -78,54 +83,48 @@ export default function DashboardHeader({ onResult, isLoading, setIsLoading }: D
                 <p className="text-sm text-muted-foreground truncate">{user?.email}</p>
               </div>
               <DropdownMenuSeparator />
-              <Link href="/">
-                <DropdownMenuItem className="cursor-pointer">
-                  <Home className="w-4 h-4 mr-2" />
-                  Home
-                </DropdownMenuItem>
-              </Link>
-              <Link href="/dashboard">
-                <DropdownMenuItem className="cursor-pointer">
-                  <LayoutDashboard className="w-4 h-4 mr-2" />
-                  Dashboard
-                </DropdownMenuItem>
-              </Link>
-              {(user as any)?.role === "super_admin" && (
-                <Link href="/admin">
-                  <DropdownMenuItem className="cursor-pointer">
-                    <ShieldCheck className="w-4 h-4 mr-2" />
-                    Admin
-                  </DropdownMenuItem>
-                </Link>
+              <Link href="/"><DropdownMenuItem className="cursor-pointer"><Home className="w-4 h-4 mr-2" />Home</DropdownMenuItem></Link>
+              <Link href="/dashboard"><DropdownMenuItem className="cursor-pointer"><LayoutDashboard className="w-4 h-4 mr-2" />Dashboard</DropdownMenuItem></Link>
+              {isAdmin && (
+                <Link href="/admin"><DropdownMenuItem className="cursor-pointer"><ShieldCheck className="w-4 h-4 mr-2" />Admin</DropdownMenuItem></Link>
               )}
               <DropdownMenuSeparator />
               <DropdownMenuItem className="cursor-pointer text-destructive" onClick={() => logout()}>
-                <LogOut className="w-4 h-4 mr-2" />
-                Sign Out
+                <LogOut className="w-4 h-4 mr-2" />Sign Out
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
 
-      {/* Search/Detection Form - inline, full width on mobile */}
+      {/* Search / Detection form */}
       <div className="flex-1 w-full md:max-w-2xl">
-        <DetectionForm 
-          onResult={onResult} 
-          isLoading={isLoading} 
+        <DetectionForm
+          onResult={onResult}
+          isLoading={isLoading}
           setIsLoading={setIsLoading}
           inline
         />
       </div>
 
-      {/* Actions - hidden on mobile, visible on desktop */}
-      <div className="hidden md:flex items-center space-x-2">
-        <button 
-          className="p-2 rounded-lg hover:bg-muted transition-colors"
-          data-testid="button-notifications"
-        >
+      {/* Desktop right actions */}
+      <div className="hidden md:flex items-center gap-2">
+        {/* Admin shortcut — super_admin only */}
+        {isAdmin && (
+          <Link href="/admin">
+            <button
+              title="Admin Panel"
+              className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+            >
+              <ShieldCheck className="w-5 h-5" />
+            </button>
+          </Link>
+        )}
+
+        <button className="p-2 rounded-lg hover:bg-muted transition-colors" data-testid="button-notifications">
           <Bell className="w-5 h-5 text-muted-foreground" />
         </button>
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="focus:outline-none">
@@ -143,30 +142,14 @@ export default function DashboardHeader({ onResult, isLoading, setIsLoading }: D
               <p className="text-sm text-muted-foreground truncate">{user?.email}</p>
             </div>
             <DropdownMenuSeparator />
-            <Link href="/">
-              <DropdownMenuItem className="cursor-pointer">
-                <Home className="w-4 h-4 mr-2" />
-                Home
-              </DropdownMenuItem>
-            </Link>
-            <Link href="/dashboard">
-              <DropdownMenuItem className="cursor-pointer">
-                <LayoutDashboard className="w-4 h-4 mr-2" />
-                Dashboard
-              </DropdownMenuItem>
-            </Link>
-            {(user as any)?.role === "super_admin" && (
-              <Link href="/admin">
-                <DropdownMenuItem className="cursor-pointer">
-                  <ShieldCheck className="w-4 h-4 mr-2" />
-                  Admin
-                </DropdownMenuItem>
-              </Link>
+            <Link href="/"><DropdownMenuItem className="cursor-pointer"><Home className="w-4 h-4 mr-2" />Home</DropdownMenuItem></Link>
+            <Link href="/dashboard"><DropdownMenuItem className="cursor-pointer"><LayoutDashboard className="w-4 h-4 mr-2" />Dashboard</DropdownMenuItem></Link>
+            {isAdmin && (
+              <Link href="/admin"><DropdownMenuItem className="cursor-pointer"><ShieldCheck className="w-4 h-4 mr-2" />Admin</DropdownMenuItem></Link>
             )}
             <DropdownMenuSeparator />
             <DropdownMenuItem className="cursor-pointer text-destructive" onClick={() => logout()}>
-              <LogOut className="w-4 h-4 mr-2" />
-              Sign Out
+              <LogOut className="w-4 h-4 mr-2" />Sign Out
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -1,5 +1,6 @@
 import DashboardHeader from "@/components/dashboard-header";
-import Sidebar from "@/components/sidebar";
+import SitesSidebar from "@/components/sidebar";
+import SiteDetailSidebar from "@/components/site-detail-sidebar";
 import ResultsDisplay, { type DetectionResult } from "@/components/results-display";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/use-auth";
@@ -9,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Zap, LayoutDashboard, Globe, History } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import type { PinnedSite } from "@shared/schema";
 
 function UpgradeWall() {
   const [, setLocation] = useLocation();
@@ -39,19 +41,11 @@ function UpgradeWall() {
           </div>
         </div>
 
-        <Button
-          className="w-full mb-3"
-          size="lg"
-          onClick={() => setLocation("/pricing")}
-        >
+        <Button className="w-full mb-3" size="lg" onClick={() => setLocation("/pricing")}>
           <Zap className="w-4 h-4 mr-2" />
           View Plans & Upgrade
         </Button>
-        <Button
-          variant="ghost"
-          className="w-full text-sm"
-          onClick={() => setLocation("/detect")}
-        >
+        <Button variant="ghost" className="w-full text-sm" onClick={() => setLocation("/detect")}>
           Continue with free detection tool
         </Button>
       </div>
@@ -62,6 +56,9 @@ function UpgradeWall() {
 export default function Dashboard() {
   const [result, setResult] = useState<DetectionResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedSite, setSelectedSite] = useState<PinnedSite | null>(null);
+  const [siteView, setSiteView] = useState("dashboard");
+
   const { user, isLoading: authLoading, isAuthenticated } = useAuth();
   const { isPremium, isLoading: tierLoading } = useUserTier();
   const [, setLocation] = useLocation();
@@ -73,7 +70,6 @@ export default function Dashboard() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("upgraded") !== "1") return;
-    // Clean up the query param immediately
     window.history.replaceState({}, "", window.location.pathname);
     if (upgradeToastShown.current) return;
     upgradeToastShown.current = true;
@@ -81,7 +77,6 @@ export default function Dashboard() {
       title: "Welcome to Premium!",
       description: "Your subscription is being activated. The dashboard will unlock shortly.",
     });
-    // Poll tier status until premium is confirmed (webhook may take a moment)
     let attempts = 0;
     const interval = setInterval(async () => {
       attempts++;
@@ -105,9 +100,16 @@ export default function Dashboard() {
     );
   }
 
-  if (!isAuthenticated) {
-    return null;
-  }
+  if (!isAuthenticated) return null;
+
+  const handleSelectSite = (site: PinnedSite) => {
+    setSelectedSite(site);
+    setSiteView("dashboard");
+  };
+
+  const handleBackToSites = () => {
+    setSelectedSite(null);
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -118,18 +120,36 @@ export default function Dashboard() {
             isLoading={isLoading}
             setIsLoading={setIsLoading}
           />
-          <div className="flex flex-1">
-            <div className="hidden md:block">
-              <Sidebar />
+          <div className="flex flex-1 min-h-0">
+            {/* Primary sidebar — desktop only */}
+            <div className="hidden md:flex">
+              <SitesSidebar
+                collapsed={!!selectedSite}
+                selectedSiteId={selectedSite?.id ?? null}
+                onSelectSite={handleSelectSite}
+                currentResult={result}
+              />
             </div>
-            <main className="flex-1 p-4 md:p-8">
+
+            {/* Contextual site-detail sidebar */}
+            {selectedSite && (
+              <div className="hidden md:flex">
+                <SiteDetailSidebar
+                  site={selectedSite}
+                  activeView={siteView}
+                  onViewChange={setSiteView}
+                  onBack={handleBackToSites}
+                />
+              </div>
+            )}
+
+            <main className="flex-1 p-4 md:p-8 overflow-auto">
               <ResultsDisplay result={result} isLoading={isLoading} compact={true} />
             </main>
           </div>
         </>
       ) : (
         <>
-          {/* Minimal header for upgrade wall */}
           <header className="w-full border-b border-border bg-background px-6 py-4 flex items-center gap-3">
             <div className="w-7 h-7 rounded-lg flex items-center justify-center">
               <i className="fas fa-layer-group text-base text-foreground"></i>
@@ -137,9 +157,6 @@ export default function Dashboard() {
             <span className="font-semibold text-foreground">GetStack</span>
           </header>
           <div className="flex flex-1">
-            <div className="hidden md:block">
-              <Sidebar />
-            </div>
             <UpgradeWall />
           </div>
         </>
