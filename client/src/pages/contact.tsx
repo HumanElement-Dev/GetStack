@@ -25,9 +25,7 @@ export default function Contact() {
                 <a
                   href="mailto:hello@humanelement.agency"
                   className="text-primary font-medium hover:underline"
-                >
-                  hello@humanelement.agency
-                </a>
+                >Gtstk@humanelement.agency</a>
               </p>
             </div>
           </div>
