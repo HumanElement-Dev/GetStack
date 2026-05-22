@@ -131,7 +131,7 @@ export default function DetectionForm({ onResult, isLoading, setIsLoading, onSca
                     <Input
                       {...field}
                       type="text"
-                      placeholder="Enter website URL to analyze..."
+                      placeholder="Add website URL to analyze..."
                       className="pl-10 bg-background"
                       data-testid="input-domain"
                       onChange={(e) => {
@@ -174,7 +174,7 @@ export default function DetectionForm({ onResult, isLoading, setIsLoading, onSca
                     <Input
                       {...field}
                       type="text"
-                      placeholder="Enter website URL here"
+                      placeholder="Add website URL here"
                       className="pr-10"
                       data-testid="input-domain"
                       onChange={(e) => {

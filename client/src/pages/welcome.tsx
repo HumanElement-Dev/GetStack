@@ -59,7 +59,7 @@ export default function Welcome() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-lg mx-auto">
               <Input
                 type="text"
-                placeholder="Enter website URL..."
+                placeholder="Add website URL..."
                 value={website}
                 onChange={(e) => setWebsite(e.target.value)}
                 onKeyDown={handleKeyDown}

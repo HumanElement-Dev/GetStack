@@ -1,4 +1,5 @@
-import { Plus, LogOut, Globe, Trash2 } from "lucide-react";
+import { useEffect, useRef } from "react";
+import { LogOut, Globe, Trash2 } from "lucide-react";
 import { Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -38,6 +39,7 @@ function CmsBadge({ cmsType }: { cmsType: string | null }) {
 export default function SitesSidebar({ collapsed, selectedSiteId, onSelectSite, currentResult }: SitesSidebarProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const lastAutoPinnedRef = useRef<string | null>(null);
 
   const { data } = useQuery<{ pins: PinnedSite[]; allowed: boolean; current: number; limit: number }>({
     queryKey: ["/api/pins"],
@@ -51,10 +53,9 @@ export default function SitesSidebar({ collapsed, selectedSiteId, onSelectSite, 
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/pins"] });
-      toast({ title: "Site pinned", description: "Added to your websites list." });
+      toast({ title: "Site saved", description: "Added to your websites list." });
     },
-    onError: (e: any) => {
-      toast({ title: "Could not pin site", description: e.message, variant: "destructive" });
+    onError: () => {
     },
   });
 
@@ -70,11 +71,17 @@ export default function SitesSidebar({ collapsed, selectedSiteId, onSelectSite, 
     },
   });
 
-  const isAlreadyPinned = currentResult
-    ? pins.some((p) => p.domain === currentResult.domain)
-    : false;
-
-  const canPin = !!currentResult && !isAlreadyPinned;
+  useEffect(() => {
+    if (!currentResult) return;
+    const domain = currentResult.domain;
+    if (lastAutoPinnedRef.current === domain) return;
+    const alreadyPinned = pins.some((p) => p.domain === domain);
+    if (alreadyPinned) return;
+    const atLimit = data ? !data.allowed : false;
+    if (atLimit) return;
+    lastAutoPinnedRef.current = domain;
+    pinMutation.mutate({ domain, cmsType: currentResult.cmsType ?? undefined });
+  }, [currentResult, pins, data]);
 
   // ── Collapsed (icon-only) mode ─────────────────────────────────────────────
   if (collapsed) {
@@ -95,22 +102,6 @@ export default function SitesSidebar({ collapsed, selectedSiteId, onSelectSite, 
           </button>
         ))}
 
-        {canPin && (
-          <button
-            onClick={() =>
-              pinMutation.mutate({
-                domain: currentResult!.domain,
-                cmsType: currentResult!.cmsType ?? undefined,
-              })
-            }
-            disabled={pinMutation.isPending}
-            title="Pin this site"
-            className="w-9 h-9 rounded-lg flex items-center justify-center text-primary hover:bg-primary/10 transition-colors mt-1 border border-dashed border-primary/40"
-          >
-            <Plus className="w-4 h-4" />
-          </button>
-        )}
-
         <div className="flex-1" />
 
         <Link href="/">
@@ -130,21 +121,6 @@ export default function SitesSidebar({ collapsed, selectedSiteId, onSelectSite, 
         <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Websites
         </span>
-        {canPin && (
-          <button
-            onClick={() =>
-              pinMutation.mutate({
-                domain: currentResult!.domain,
-                cmsType: currentResult!.cmsType ?? undefined,
-              })
-            }
-            disabled={pinMutation.isPending}
-            title="Pin current site"
-            className="p-1 rounded hover:bg-muted text-primary transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-          </button>
-        )}
       </div>
 
       {/* Sites list */}
@@ -152,17 +128,10 @@ export default function SitesSidebar({ collapsed, selectedSiteId, onSelectSite, 
         {pins.length === 0 ? (
           <div className="px-3 py-10 text-center">
             <Globe className="w-7 h-7 mx-auto mb-3 text-muted-foreground/30" />
-            <p className="text-xs text-muted-foreground">No websites pinned yet.</p>
+            <p className="text-xs text-muted-foreground">No websites saved yet.</p>
             <p className="text-xs text-muted-foreground/70 mt-1">
-              Scan a site then click&nbsp;
-              <Plus className="inline w-3 h-3" /> to save it here.
+              Scan a site and it will appear here automatically.
             </p>
-            <Link href="/">
-              <button className="mt-4 flex items-center gap-1.5 mx-auto px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors">
-                <Plus className="w-3.5 h-3.5" />
-                Add site
-              </button>
-            </Link>
           </div>
         ) : (
           pins.map((site) => {
