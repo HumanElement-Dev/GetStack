@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { detectionRequestSchema, type Plugin, type ThemeInfo, type WixInfo, type SquarespaceInfo, type JoomlaInfo, userTiers, pinnedSites } from "@shared/schema";
+import { users } from "@shared/models/auth";
 import { fromZodError } from "zod-validation-error";
 import { readFileSync, existsSync } from "fs";
 import { fileURLToPath } from "url";
@@ -244,7 +245,13 @@ function requireTier(tier: "free" | "premium") {
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized" });
     }
-    
+
+    // Super admins bypass all tier requirements
+    const [dbUser] = await db.select().from(users).where(eq(users.id, userId));
+    if (dbUser?.role === "super_admin") {
+      return next();
+    }
+
     const [userTier] = await db.select().from(userTiers).where(eq(userTiers.userId, userId));
     
     // If no tier exists, create a free tier for the user
