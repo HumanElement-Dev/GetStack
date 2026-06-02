@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "h4mpG8Nf4G3Gneic9MB0a"
+uri = "file://CHANGELOG.md"
+type = "text"
+title = "CHANGELOG.md"
