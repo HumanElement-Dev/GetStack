@@ -5,7 +5,7 @@ Production domain: [gtstk.dev](https://gtstk.dev)
 
 ---
 
-## [Unreleased]
+## v3.8
 
 ### Added
 - **Blog system** — `/blog` index and `/blog/:slug` article reader with clean typography, OG meta tags, and a CTA card. Content stored as typed TypeScript objects in `client/src/content/blog.ts` (no CMS or new packages required).
@@ -23,12 +23,6 @@ Production domain: [gtstk.dev](https://gtstk.dev)
 
 ### Removed
 - **CmsBadge** ("wor" label) removed from the dashboard sidebar.
-
----
-
-## v3.8
-
-- Added Blog page and system (this release).
 
 ---
 
