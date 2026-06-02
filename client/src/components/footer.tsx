@@ -43,6 +43,7 @@ export default function Footer() {
             <div>
               <h3 className="text-sm font-semibold text-foreground mb-3">Support</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><Link href="/blog" className="hover:text-foreground transition-colors">Blog</Link></li>
                 <li><Link href="/faq" className="hover:text-foreground transition-colors">FAQ</Link></li>
               </ul>
             </div>
