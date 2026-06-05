@@ -2,6 +2,7 @@ import DashboardHeader from "@/components/dashboard-header";
 import SitesSidebar from "@/components/sidebar";
 import SiteDetailSidebar from "@/components/site-detail-sidebar";
 import ResultsDisplay, { type DetectionResult } from "@/components/results-display";
+import ThemeView from "@/components/theme-view";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useUserTier } from "@/hooks/use-tier";
@@ -178,7 +179,9 @@ export default function Dashboard() {
             )}
 
             <main className="flex-1 p-4 md:p-8 overflow-auto">
-              {selectedSite && !result && !isLoading ? (
+              {siteView === "theme" ? (
+                <ThemeView result={result} />
+              ) : selectedSite && !result && !isLoading ? (
                 <SiteOverview site={selectedSite} />
               ) : (
                 <ResultsDisplay result={result} isLoading={isLoading} compact={true} />

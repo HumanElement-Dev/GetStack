@@ -15,7 +15,7 @@ const NAV_SECTIONS = [
   ],
   [
     { id: "cms-stack", icon: Layers, label: "CMS Stack", enabled: true },
-    { id: "theme", icon: Palette, label: "Theme", enabled: false },
+    { id: "theme", icon: Palette, label: "Theme", enabled: true },
     { id: "plugins", icon: Plug, label: "Plugins", enabled: false },
   ],
   [
