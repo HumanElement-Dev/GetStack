@@ -13,10 +13,6 @@ Production domain: [gtstk.dev](https://gtstk.dev)
 - **Blog link** added to footer Support column.
 - **FAQ page** added to main navigation.
 - **"What it's becoming" and "Who builds it"** sections added to the About page.
-- **Privacy Policy** page at `/privacy-policy` — covers data collection, usage, sharing, cookies, retention, and user rights.
-- **Terms of Service** page at `/terms-of-service` — acceptable use, subscriptions, intellectual property, and liability.
-- **Disclaimer** page at `/disclaimer` — accuracy of results, no-warranty notice, and third-party site guidance.
-- **Legal link row** added to footer between the main columns and copyright bar (Disclaimer · Privacy Policy · Terms of Service).
 
 ### Changed
 - **Footer** restructured into a 4-column layout (Tool, Company, Support, Legal) with a slim copyright bar at the bottom.
@@ -27,6 +23,16 @@ Production domain: [gtstk.dev](https://gtstk.dev)
 
 ### Removed
 - **CmsBadge** ("wor" label) removed from the dashboard sidebar.
+
+---
+
+## v3.8.5
+
+### Added
+- **Privacy Policy** page at `/privacy-policy` — covers data collection, usage, sharing, cookies, retention, and user rights.
+- **Terms of Service** page at `/terms-of-service` — acceptable use, subscriptions, intellectual property, and liability.
+- **Disclaimer** page at `/disclaimer` — accuracy of results, no-warranty notice, and third-party site guidance.
+- **Legal link row** added to footer between the main columns and copyright bar (Disclaimer · Privacy Policy · Terms of Service).
 
 ---
 
