@@ -17,6 +17,9 @@ import FAQ from "@/pages/faq";
 import SharedResult from "@/pages/result";
 import Blog from "@/pages/blog";
 import BlogPost from "@/pages/blog-post";
+import PrivacyPolicy from "@/pages/privacy-policy";
+import TermsOfService from "@/pages/terms-of-service";
+import Disclaimer from "@/pages/disclaimer";
 import { useAnalytics } from "./hooks/use-analytics";
 
 function Router() {
@@ -34,6 +37,9 @@ function Router() {
       <Route path="/faq" component={FAQ} />
       <Route path="/blog/:slug" component={BlogPost} />
       <Route path="/blog" component={Blog} />
+      <Route path="/privacy-policy" component={PrivacyPolicy} />
+      <Route path="/terms-of-service" component={TermsOfService} />
+      <Route path="/disclaimer" component={Disclaimer} />
       <Route path="/result/:id" component={SharedResult} />
       <Route path="/admin" component={Admin} />
       <Route component={NotFound} />

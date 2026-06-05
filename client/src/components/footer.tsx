@@ -51,6 +51,15 @@ export default function Footer() {
         </div>
       </div>
 
+      {/* Legal link row */}
+      <div className="bg-muted/40 border-t border-border py-3">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap justify-center gap-x-6 gap-y-1 text-xs text-muted-foreground">
+          <Link href="/disclaimer" className="hover:text-foreground transition-colors">Disclaimer</Link>
+          <Link href="/privacy-policy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
+          <Link href="/terms-of-service" className="hover:text-foreground transition-colors">Terms of Service</Link>
+        </div>
+      </div>
+
       {/* Bottom bar */}
       <div className="bg-muted/50 border-t border-border py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-2 text-sm text-muted-foreground">
