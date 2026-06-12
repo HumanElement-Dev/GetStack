@@ -5,6 +5,13 @@ Production domain: [gtstk.dev](https://gtstk.dev)
 
 ---
 
+## v3.8.6
+
+### Fixed
+- **IP & Infrastructure tab** — "Could not resolve IP" error was a stale cached failure from a previous query URL bug. Fixed by setting `staleTime: 0` and `retry: 1` on the IP lookup query so it always re-fetches fresh on mount. Added server-side `console.log` for DNS resolution debugging.
+
+---
+
 ## v3.8.5
 
 ### Added

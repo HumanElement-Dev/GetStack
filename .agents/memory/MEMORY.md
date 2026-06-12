@@ -1,0 +1,1 @@
+- [TanStack Query stale error caching](tanstack-stale-error.md) — global staleTime:Infinity + retry:false caches errors permanently; override per-query for volatile/auth-gated endpoints.
