@@ -7,6 +7,9 @@ Production domain: [gtstk.dev](https://gtstk.dev)
 
 ## v3.8.6
 
+### Added
+- **IP Lookup** — Premium users can now look up the resolved IP address of any scanned domain directly from the "IP & Infrastructure" dashboard tab. Uses Node's built-in DNS resolver server-side; no third-party API required.
+
 ### Fixed
 - **IP & Infrastructure tab** — "Could not resolve IP" error was a stale cached failure from a previous query URL bug. Fixed by setting `staleTime: 0` and `retry: 1` on the IP lookup query so it always re-fetches fresh on mount. Added server-side `console.log` for DNS resolution debugging.
 - **Google auth bug** fixed.
