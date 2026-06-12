@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import { lookup as dnsLookup } from "dns/promises";
 import { storage } from "./storage";
 import { detectionRequestSchema, type Plugin, type ThemeInfo, type WixInfo, type SquarespaceInfo, type JoomlaInfo, userTiers, pinnedSites } from "@shared/schema";
 import { users } from "@shared/models/auth";
@@ -1760,6 +1761,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         error: 'Failed to fetch detection history',
         details: error instanceof Error ? error.message : 'Unknown error'
       });
+    }
+  });
+
+  // IP lookup — premium only
+  app.get("/api/ip-lookup", isAuthenticated, requireTier("premium"), async (req: any, res) => {
+    const domain = (req.query.domain as string)?.replace(/^https?:\/\//, "").replace(/\/.*$/, "").trim();
+    if (!domain) return res.status(400).json({ error: "domain is required" });
+    try {
+      const { address } = await dnsLookup(domain);
+      res.json({ ip: address });
+    } catch {
+      res.status(404).json({ error: "Could not resolve domain" });
     }
   });
 

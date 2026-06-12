@@ -4,6 +4,7 @@ import SiteDetailSidebar from "@/components/site-detail-sidebar";
 import ResultsDisplay, { type DetectionResult } from "@/components/results-display";
 import ThemeView from "@/components/theme-view";
 import DashboardView from "@/components/dashboard-view";
+import IpView from "@/components/ip-view";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useUserTier } from "@/hooks/use-tier";
@@ -180,7 +181,9 @@ export default function Dashboard() {
             )}
 
             <main className="flex-1 p-4 md:p-8 overflow-auto">
-              {siteView === "theme" ? (
+              {siteView === "infrastructure" ? (
+                <IpView domain={result?.domain ?? selectedSite?.domain} />
+              ) : siteView === "theme" ? (
                 <ThemeView result={result} />
               ) : siteView === "dashboard" && result ? (
                 <DashboardView result={result} site={selectedSite ?? undefined} />

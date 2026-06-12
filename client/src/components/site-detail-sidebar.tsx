@@ -20,7 +20,7 @@ const NAV_SECTIONS = [
   ],
   [
     { id: "hosting", icon: Globe, label: "Hosting", enabled: false },
-    { id: "infrastructure", icon: Server, label: "IP & Infrastructure", enabled: false },
+    { id: "infrastructure", icon: Server, label: "IP & Infrastructure", enabled: true },
     { id: "dns", icon: Wifi, label: "DNS", enabled: false },
   ],
   [
