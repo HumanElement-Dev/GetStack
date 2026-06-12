@@ -240,6 +240,36 @@ function isValidRedirect(url: string): boolean {
 }
 
 // Middleware to require a specific tier
+/**
+ * SSRF protection — returns true if the hostname should be blocked.
+ * Covers: RFC-1918 private ranges, loopback, link-local (including cloud
+ * metadata 169.254.169.254), IPv6-mapped loopback, and private DNS suffixes.
+ */
+function isBlockedDomain(hostname: string): boolean {
+  const h = hostname.toLowerCase().trim();
+
+  // Private DNS suffixes
+  if (/\.(local|internal|test|localhost)$/.test(h) || h === "localhost") return true;
+
+  // IPv4 private / reserved ranges
+  const ipv4Private = /^(
+    10\.|
+    172\.(1[6-9]|2[0-9]|3[01])\.|
+    192\.168\.|
+    127\.|
+    169\.254\.|
+    0\.0\.0\.0
+  )/x;
+  // Build as a single clean regex (no verbose mode in JS)
+  const ipv4PrivateRe = /^(10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.|127\.|169\.254\.|0\.0\.0\.0)/;
+  if (ipv4PrivateRe.test(h)) return true;
+
+  // IPv6 private / loopback / link-local
+  if (/^(::1$|::ffff:127\.|fc00:|fe80:|::ffff:10\.|::ffff:192\.168\.|::ffff:172\.(1[6-9]|2[0-9]|3[01])\.)/i.test(h)) return true;
+
+  return false;
+}
+
 function requireTier(tier: "free" | "premium") {
   return async (req: any, res: any, next: any) => {
     const userId = req.user?.claims?.sub;
