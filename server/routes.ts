@@ -1767,11 +1767,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // IP lookup — premium only
   app.get("/api/ip-lookup", isAuthenticated, requireTier("premium"), async (req: any, res) => {
     const domain = (req.query.domain as string)?.replace(/^https?:\/\//, "").replace(/\/.*$/, "").trim();
+    console.log(`[ip-lookup] domain param: "${domain}"`);
     if (!domain) return res.status(400).json({ error: "domain is required" });
     try {
       const { address } = await dnsLookup(domain);
+      console.log(`[ip-lookup] resolved ${domain} -> ${address}`);
       res.json({ ip: address });
-    } catch {
+    } catch (err) {
+      console.error(`[ip-lookup] DNS error for "${domain}":`, err);
       res.status(404).json({ error: "Could not resolve domain" });
     }
   });

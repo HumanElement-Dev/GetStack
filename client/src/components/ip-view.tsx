@@ -14,6 +14,8 @@ export default function IpView({ domain }: IpViewProps) {
   const { data, isLoading, isError } = useQuery<{ ip: string }>({
     queryKey: [`/api/ip-lookup?domain=${cleanDomain}`],
     enabled: !!cleanDomain,
+    staleTime: 0,
+    retry: 1,
   });
 
   const handleCopy = () => {
