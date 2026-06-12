@@ -12,7 +12,7 @@ Production domain: [gtstk.dev](https://gtstk.dev)
 
 ### Fixed
 - **IP & Infrastructure tab** — "Could not resolve IP" error was a stale cached failure from a previous query URL bug. Fixed by setting `staleTime: 0` and `retry: 1` on the IP lookup query so it always re-fetches fresh on mount. Added server-side `console.log` for DNS resolution debugging.
-- **Google auth bug** fixed.
+- **Google auth duplicate account error** — signing in with Google when an account with the same email already existed (via Replit Auth) caused a `duplicate key` database error. Google login now detects the existing account by email and merges into it instead of creating a second row.
 
 ---
 

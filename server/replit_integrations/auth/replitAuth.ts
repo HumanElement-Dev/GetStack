@@ -151,16 +151,42 @@ export async function setupAuth(app: Express) {
             const email = profile.emails?.[0]?.value;
             const googleId = `google_${profile.id}`;
 
-            await authStorage.upsertUser({
-              id: googleId,
-              email: email || null,
-              firstName: profile.name?.givenName || null,
-              lastName: profile.name?.familyName || null,
-              profileImageUrl: profile.photos?.[0]?.value || null,
-            });
+            // If a user already exists with this email (e.g. via Replit Auth),
+            // merge into that account instead of creating a duplicate row.
+            let userId = googleId;
+            if (email) {
+              const existing = await authStorage.getUserByEmail(email);
+              if (existing) {
+                userId = existing.id;
+                // Update profile fields on the existing account
+                await authStorage.upsertUser({
+                  id: existing.id,
+                  email,
+                  firstName: profile.name?.givenName || existing.firstName || null,
+                  lastName: profile.name?.familyName || existing.lastName || null,
+                  profileImageUrl: profile.photos?.[0]?.value || existing.profileImageUrl || null,
+                });
+              } else {
+                await authStorage.upsertUser({
+                  id: googleId,
+                  email,
+                  firstName: profile.name?.givenName || null,
+                  lastName: profile.name?.familyName || null,
+                  profileImageUrl: profile.photos?.[0]?.value || null,
+                });
+              }
+            } else {
+              await authStorage.upsertUser({
+                id: googleId,
+                email: null,
+                firstName: profile.name?.givenName || null,
+                lastName: profile.name?.familyName || null,
+                profileImageUrl: profile.photos?.[0]?.value || null,
+              });
+            }
 
             const sessionUser = {
-              claims: { sub: googleId },
+              claims: { sub: userId },
               authProvider: "google",
               expires_at: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
             };
