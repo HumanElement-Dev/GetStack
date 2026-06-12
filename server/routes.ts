@@ -248,24 +248,14 @@ function isValidRedirect(url: string): boolean {
 function isBlockedDomain(hostname: string): boolean {
   const h = hostname.toLowerCase().trim();
 
-  // Private DNS suffixes
-  if (/\.(local|internal|test|localhost)$/.test(h) || h === "localhost") return true;
+  // Private DNS suffixes and bare "localhost"
+  if (h === "localhost" || /\.(local|internal|test)$/.test(h)) return true;
 
-  // IPv4 private / reserved ranges
-  const ipv4Private = /^(
-    10\.|
-    172\.(1[6-9]|2[0-9]|3[01])\.|
-    192\.168\.|
-    127\.|
-    169\.254\.|
-    0\.0\.0\.0
-  )/x;
-  // Build as a single clean regex (no verbose mode in JS)
-  const ipv4PrivateRe = /^(10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.|127\.|169\.254\.|0\.0\.0\.0)/;
-  if (ipv4PrivateRe.test(h)) return true;
+  // IPv4 private / reserved ranges (including 169.254.x.x cloud metadata and 0.0.0.0)
+  if (/^(10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.|127\.|169\.254\.|0\.0\.0\.0)/.test(h)) return true;
 
-  // IPv6 private / loopback / link-local
-  if (/^(::1$|::ffff:127\.|fc00:|fe80:|::ffff:10\.|::ffff:192\.168\.|::ffff:172\.(1[6-9]|2[0-9]|3[01])\.)/i.test(h)) return true;
+  // IPv6 loopback, link-local, ULA, and IPv6-mapped IPv4 private ranges
+  if (/^(::1$|::ffff:127\.|::ffff:10\.|::ffff:192\.168\.|::ffff:172\.(1[6-9]|2[0-9]|3[01])\.|::ffff:169\.254\.|fc00:|fe80:)/i.test(h)) return true;
 
   return false;
 }
@@ -410,11 +400,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const normalizedDomain = domain.replace(/^https?:\/\//, '').replace(/\/$/, '');
       const urlToCheck = normalizedDomain.startsWith('http') ? normalizedDomain : `https://${normalizedDomain}`;
 
-      // Basic SSRF protection - reject private IP ranges
+      // SSRF protection — reject private IPs, cloud metadata, and internal hostnames
       const hostname = new URL(urlToCheck).hostname;
-      const isPrivateIP = /^(10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.|127\.|localhost|::1|fc00:|fe80:)/i.test(hostname);
-      
-      if (isPrivateIP) {
+      if (isBlockedDomain(hostname)) {
         return res.status(400).json({
           error: 'Invalid domain - private IP addresses are not allowed',
           details: 'Please use a public domain name'
@@ -1799,6 +1787,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const domain = (req.query.domain as string)?.replace(/^https?:\/\//, "").replace(/\/.*$/, "").trim();
     console.log(`[ip-lookup] domain param: "${domain}"`);
     if (!domain) return res.status(400).json({ error: "domain is required" });
+
+    // SSRF protection — same rules as the detect endpoint
+    if (isBlockedDomain(domain)) {
+      return res.status(400).json({
+        error: "Invalid domain - private IP addresses are not allowed",
+        details: "Please use a public domain name",
+      });
+    }
+
     try {
       const { address } = await dnsLookup(domain);
       console.log(`[ip-lookup] resolved ${domain} -> ${address}`);

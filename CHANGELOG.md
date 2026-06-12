@@ -5,6 +5,13 @@ Production domain: [gtstk.dev](https://gtstk.dev)
 
 ---
 
+## v3.8.7
+
+### Security
+- **SSRF hardening** — Replaced the incomplete private-IP regex in `/api/detect` with a shared `isBlockedDomain()` helper that now also covers `169.254.169.254` (cloud metadata), `0.0.0.0`, `::ffff:` IPv6-mapped loopback, and private DNS suffixes (`.local`, `.internal`, `.test`). The same guard is now applied to `/api/ip-lookup`, which previously had no SSRF protection at all.
+
+---
+
 ## v3.8.6
 
 ### Added
