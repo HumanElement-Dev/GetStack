@@ -12,7 +12,7 @@ export default function IpView({ domain }: IpViewProps) {
   const cleanDomain = domain?.replace(/^https?:\/\//, "").replace(/\/.*$/, "") ?? null;
 
   const { data, isLoading, isError } = useQuery<{ ip: string }>({
-    queryKey: ["/api/ip-lookup", cleanDomain],
+    queryKey: [`/api/ip-lookup?domain=${cleanDomain}`],
     enabled: !!cleanDomain,
   });
 
