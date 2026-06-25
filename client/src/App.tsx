@@ -12,6 +12,7 @@ import Login from "@/pages/login";
 import Admin from "@/pages/admin";
 import Pricing from "@/pages/pricing";
 import About from "@/pages/about";
+import UseCases from "@/pages/use-cases";
 import Contact from "@/pages/contact";
 import FAQ from "@/pages/faq";
 import SharedResult from "@/pages/result";
@@ -33,6 +34,7 @@ function Router() {
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/pricing" component={Pricing} />
       <Route path="/about" component={About} />
+      <Route path="/use-cases" component={UseCases} />
       <Route path="/contact" component={Contact} />
       <Route path="/faq" component={FAQ} />
       <Route path="/blog/:slug" component={BlogPost} />

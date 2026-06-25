@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Menu, LogIn, Home, User, LogOut, LayoutDashboard, Zap, ShieldCheck, Mail, HelpCircle } from "lucide-react";
+import { Menu, LogIn, Home, User, LogOut, LayoutDashboard, Zap, ShieldCheck, Mail, HelpCircle, Briefcase } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -18,6 +18,7 @@ export default function Header() {
   const navItems = [
     { icon: Home, label: "Home", path: "/" },
     { icon: User, label: "About", path: "/about" },
+    { icon: Briefcase, label: "Use Cases", path: "/use-cases" },
     { icon: Zap, label: "Pricing", path: "/pricing" },
     { icon: HelpCircle, label: "FAQ", path: "/faq" },
     { icon: Mail, label: "Contact", path: "/contact" },

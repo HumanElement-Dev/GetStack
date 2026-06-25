@@ -5,6 +5,13 @@ Production domain: [gtstk.dev](https://gtstk.dev)
 
 ---
 
+## v3.8.8
+
+### Added
+- **Use Cases page** at `/use-cases` — three sections (Before the pitch, Client onboarding, Competitive research) plus a CTA. Added to site navigation and sitemap.
+
+---
+
 ## v3.8.7
 
 ### Security
