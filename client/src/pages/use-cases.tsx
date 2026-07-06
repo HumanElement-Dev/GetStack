@@ -37,6 +37,27 @@ export default function UseCases() {
                 <p>You're scoping a competitor or studying a site you admire. What are they running? Which tools are in their stack? Are they on a page builder or custom-built? GetStack surfaces the full technology layer — CMS, theme, plugins, frameworks — so you can benchmark, borrow ideas, or simply satisfy your curiosity.</p>
               </div>
             </section>
+
+            <section>
+              <h2 className="text-xl font-semibold text-foreground mb-4">Freelancer: researching a prospect</h2>
+              <div className="text-muted-foreground leading-relaxed">
+                <p>You found a prospect worth pitching. Before you write a single word of your proposal, scan their site. You'll know what platform they're on, whether the WordPress install is years out of date, which plugins are active, and whether the theme is off-the-shelf or custom. That context shapes your pitch — and signals to the client that you actually looked before reaching out.</p>
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-xl font-semibold text-foreground mb-4">Agency: auditing a client</h2>
+              <div className="text-muted-foreground leading-relaxed">
+                <p>Your team is taking over a site from another agency. You need a fast, accurate read on what's there before anyone touches the codebase. GetStack gives you the platform, theme, active plugins, and version status in one pass — the kind of baseline your project manager can drop straight into a kickoff doc. No surprises two weeks in when someone discovers a plugin conflict or a long-unsupported theme.</p>
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-xl font-semibold text-foreground mb-4">Developer: checking a competitor</h2>
+              <div className="text-muted-foreground leading-relaxed">
+                <p>You want to know how a competing product or well-executed site is actually built. Are they on a hosted CMS or self-hosted? Custom stack or a popular framework? GetStack cuts through the surface and shows you the real technology layer — so you can make informed decisions about your own build, or just confirm your assumptions about how they shipped so fast.</p>
+              </div>
+            </section>
           </div>
 
           {/* CTA */}
