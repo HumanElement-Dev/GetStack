@@ -41,6 +41,11 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://gtstk.dev/blog/wordpress-vs-shopify-how-to-tell-which-one-a-site-is-running</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://gtstk.dev/blog/how-to-tell-what-any-website-is-built-with</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
