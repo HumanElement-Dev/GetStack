@@ -113,7 +113,7 @@ export default function Welcome() {
               <h2 className="text-2xl font-bold text-foreground mb-2">Supported Platforms</h2>
               <p className="text-muted-foreground">Deep detection for the web's most popular site builders</p>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
               {platforms.map((platform) => {
                 const Icon = platform.icon || Globe;
                 return (
