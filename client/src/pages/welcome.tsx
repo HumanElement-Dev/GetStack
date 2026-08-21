@@ -17,7 +17,6 @@ const platforms: { name: string; icon: PlatformIcon; color: string; summary: str
   { name: "Wix", icon: SiWix, color: "#0C6EFC", summary: "Builder type, apps & templates" },
   { name: "Shopify", icon: SiShopify, color: "#96BF48", summary: "Theme, store info & apps" },
   { name: "Squarespace", icon: SiSquarespace, color: "#222222", summary: "Version, features & template" },
-  { name: "Drupal", icon: SiDrupal, color: "#0678BE", summary: "Theme, modules & version" },
 ];
 
 export default function Welcome() {
