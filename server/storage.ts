@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type DetectionRequest, type InsertDetectionRequest, type ThemeInfo, type WixInfo, type ShopifyInfo, type SquarespaceInfo, type JoomlaInfo } from "@shared/schema";
+import { type User, type UpsertUser as InsertUser, type DetectionRequest, type InsertDetectionRequest, type ThemeInfo, type WixInfo, type ShopifyInfo, type SquarespaceInfo, type JoomlaInfo, type DrupalInfo } from "@shared/schema";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
@@ -24,14 +24,26 @@ export class MemStorage implements IStorage {
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    // Current auth identities are email/provider based and no longer have usernames.
+    void username;
+    return undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
-    const user: User = { ...insertUser, id };
+    const now = new Date();
+    const user: User = {
+      id,
+      email: insertUser.email ?? null,
+      firstName: insertUser.firstName ?? null,
+      lastName: insertUser.lastName ?? null,
+      profileImageUrl: insertUser.profileImageUrl ?? null,
+      role: insertUser.role ?? "user",
+      stripeCustomerId: insertUser.stripeCustomerId ?? null,
+      stripeSubscriptionId: insertUser.stripeSubscriptionId ?? null,
+      createdAt: insertUser.createdAt ?? now,
+      updatedAt: insertUser.updatedAt ?? now,
+    };
     this.users.set(id, user);
     return user;
   }
@@ -49,6 +61,7 @@ export class MemStorage implements IStorage {
       shopifyInfo: (insertRequest.shopifyInfo ?? null) as ShopifyInfo | null,
       squarespaceInfo: (insertRequest.squarespaceInfo ?? null) as SquarespaceInfo | null,
       joomlaInfo: (insertRequest.joomlaInfo ?? null) as JoomlaInfo | null,
+      drupalInfo: (insertRequest.drupalInfo ?? null) as DrupalInfo | null,
       pluginCount: insertRequest.pluginCount ?? null,
       plugins: (insertRequest.plugins ?? null) as DetectionRequest['plugins'],
       technologies: insertRequest.technologies ?? null,

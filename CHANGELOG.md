@@ -5,6 +5,13 @@ Production domain: [gtstk.dev](https://gtstk.dev)
 
 ---
 
+## v3.8.9
+
+### Added
+- **Drupal detection** — GetStack now identifies Drupal sites from public page signals and reports any exposed theme, version, language, metadata, and module assets. Drupal is included across scan results, shared reports, dashboard labels, and supported-platform messaging.
+
+---
+
 ## v3.8.8
 
 ### Added

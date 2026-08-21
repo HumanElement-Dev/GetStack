@@ -1,6 +1,6 @@
 import { useState } from "react";
 import ScanEngine from "@/components/scan-engine";
-import type { Plugin, ThemeInfo, WixInfo, ShopifyInfo, SquarespaceInfo, JoomlaInfo } from "@shared/schema";
+import type { Plugin, ThemeInfo, WixInfo, ShopifyInfo, SquarespaceInfo, JoomlaInfo, DrupalInfo } from "@shared/schema";
 import { 
   Layout, ShoppingCart, Mail, Search, TrendingUp, 
   Zap, Shield, ShieldCheck, FileText, Image, Globe, Code, 
@@ -57,6 +57,7 @@ export interface DetectionResult {
   shopifyInfo?: ShopifyInfo | null;
   squarespaceInfo?: SquarespaceInfo | null;
   joomlaInfo?: JoomlaInfo | null;
+  drupalInfo?: DrupalInfo | null;
   pluginCount?: string | null;
   plugins?: Plugin[];
   technologies?: string[];
@@ -1361,6 +1362,104 @@ export default function ResultsDisplay({ result, isLoading, compact = false, sca
                           {meta?.description && (
                             <p className="text-xs text-red-700 mt-0.5">{meta.description}</p>
                           )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Drupal detected
+  if (result.cmsType === 'drupal') {
+    const drupalExtensionMeta: Record<string, { icon: LucideIcon; description: string }> = {
+      webform: { icon: FileText, description: 'Form builder and submissions' },
+      views: { icon: Layout, description: 'Query-driven content displays' },
+      pathauto: { icon: Edit, description: 'Automatic URL aliases' },
+      metatag: { icon: Search, description: 'Metadata and search optimization' },
+      paragraphs: { icon: Layout, description: 'Reusable content components' },
+      commerce: { icon: ShoppingCart, description: 'E-commerce functionality' },
+      media: { icon: Image, description: 'Media management' },
+      redirect: { icon: ArrowRight, description: 'URL redirects' },
+      search_api: { icon: Search, description: 'Search indexing framework' },
+    };
+    const details = [
+      { label: 'Version', value: result.drupalInfo?.version ? `v${result.drupalInfo.version}` : null },
+      { label: 'Theme', value: result.drupalInfo?.theme },
+      { label: 'Language', value: result.drupalInfo?.language },
+    ].filter((detail): detail is { label: string; value: string } => Boolean(detail.value));
+
+    return (
+      <div className="space-y-4 md:space-y-6">
+        <ShareBar resultId={result.id} platform={result.cmsType} />
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 md:p-6" data-testid="drupal-detected">
+          <div className="flex flex-col sm:flex-row items-start gap-3 sm:space-x-4">
+            <div className="flex-shrink-0">
+              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                <Globe className="text-blue-600 w-5 h-5" />
+              </div>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-xl md:text-2xl font-bold text-blue-900 mb-2 break-all" data-testid="text-domain">
+                {result.domain}
+              </h3>
+              <p className="text-sm md:text-base text-blue-800 mb-4">
+                This website is running <span className="font-semibold">Drupal</span>
+              </p>
+              <div className="bg-white rounded-lg p-3 md:p-4 border border-blue-200 space-y-3">
+                <p className="text-sm font-medium text-blue-900">Drupal CMS detected</p>
+                {details.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {details.map((detail) => (
+                      <span key={detail.label} className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-medium">
+                        {detail.label}: {detail.value}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {(result.drupalInfo?.siteTitle || result.drupalInfo?.siteDescription) && (
+                  <div className="pt-3 border-t border-blue-100">
+                    {result.drupalInfo.siteTitle && (
+                      <p className="text-sm font-semibold text-blue-950">{result.drupalInfo.siteTitle}</p>
+                    )}
+                    {result.drupalInfo.siteDescription && (
+                      <p className="text-sm text-blue-800 mt-1">{result.drupalInfo.siteDescription}</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {result.drupalInfo?.detectedExtensions && result.drupalInfo.detectedExtensions.length > 0 && (
+          <div className="bg-violet-50 border border-violet-200 rounded-xl p-4 md:p-6" data-testid="drupal-extensions">
+            <div className="flex flex-col sm:flex-row items-start gap-3 sm:space-x-4">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 bg-violet-100 rounded-full flex items-center justify-center">
+                  <Puzzle className="text-violet-600 w-5 h-5" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-violet-900 mb-1">Detected Modules</h3>
+                <p className="text-xs text-violet-700 mb-3">Modules with assets visible on this public page</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {result.drupalInfo.detectedExtensions.map((extension) => {
+                    const meta = drupalExtensionMeta[extension];
+                    const Icon = meta?.icon || Puzzle;
+                    return (
+                      <div key={extension} className="bg-white rounded-lg p-3 border border-violet-200 flex items-start gap-3">
+                        <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center flex-shrink-0">
+                          <Icon className="w-4 h-4 text-violet-700" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-violet-950 font-mono">{extension}</p>
+                          {meta?.description && <p className="text-xs text-violet-700 mt-0.5">{meta.description}</p>}
                         </div>
                       </div>
                     );

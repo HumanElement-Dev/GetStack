@@ -26,6 +26,7 @@ function detectPlatform(result: DetectionResult): { label: string; color: string
   if (result.shopifyInfo) return { label: "Shopify", color: "text-green-700", bg: "bg-green-50 border-green-200" };
   if (result.squarespaceInfo) return { label: "Squarespace", color: "text-gray-700", bg: "bg-gray-50 border-gray-200" };
   if (result.joomlaInfo) return { label: "Joomla", color: "text-orange-700", bg: "bg-orange-50 border-orange-200" };
+  if (result.drupalInfo) return { label: "Drupal", color: "text-blue-800", bg: "bg-blue-50 border-blue-200" };
   if (result.cmsType) return { label: result.cmsType, color: "text-foreground", bg: "bg-muted border-border" };
   return { label: "Unknown", color: "text-muted-foreground", bg: "bg-muted border-border" };
 }

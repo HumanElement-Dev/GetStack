@@ -15,7 +15,7 @@ import { useState, useEffect } from "react";
 
 const FEATURES_FREE = [
   "Unlimited one-off detections",
-  "WordPress, Wix, Shopify & Squarespace",
+  "WordPress, Wix, Shopify, Squarespace, Joomla & Drupal",
   "Theme, plugin & app detection",
   "Technology stack analysis",
 ];

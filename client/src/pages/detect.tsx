@@ -80,7 +80,7 @@ export default function Detect() {
     <div className={`min-h-screen bg-background text-foreground font-sans transition-opacity duration-300 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
       <Helmet>
         <title>Detect CMS & Technology Stack - GetStack</title>
-        <meta name="description" content="Enter any website URL to instantly identify its CMS, theme, plugins, and technology stack. Supports WordPress, Shopify, Wix, and Squarespace." />
+        <meta name="description" content="Enter any website URL to instantly identify its CMS, theme, plugins, modules, and technology stack. Supports WordPress, Shopify, Wix, Squarespace, Joomla, and Drupal." />
       </Helmet>
       <Header />
       
@@ -89,10 +89,10 @@ export default function Detect() {
           {/* Hero Section - hidden while loading or after results appear */}
           <div className={`text-center mb-12 transition-all duration-500 ${(result || isLoading) ? 'opacity-0 h-0 mb-0 overflow-hidden' : 'opacity-100'}`}>
             <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-4">
-              Is this website running WordPress?
+              What is this website built with?
             </h1>
             <p className="text-lg text-muted-foreground max-w-lg mx-auto">
-              Enter a domain or URL to quickly detect if a website is built with WordPress
+              Enter a domain or URL to identify its CMS, theme, plugins, modules, and technology stack
             </p>
           </div>
 

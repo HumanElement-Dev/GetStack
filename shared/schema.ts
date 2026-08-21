@@ -129,10 +129,21 @@ export const joomlaInfoSchema = z.object({
 
 export type JoomlaInfo = z.infer<typeof joomlaInfoSchema>;
 
+export const drupalInfoSchema = z.object({
+  version: z.string().optional(),
+  theme: z.string().optional(),
+  language: z.string().optional(),
+  siteTitle: z.string().optional(),
+  siteDescription: z.string().optional(),
+  detectedExtensions: z.array(z.string()).optional(),
+});
+
+export type DrupalInfo = z.infer<typeof drupalInfoSchema>;
+
 export const detectionRequests = pgTable("detection_requests", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   domain: text("domain").notNull(),
-  cmsType: text("cms_type"), // 'wordpress', 'wix', 'shopify', 'squarespace', or null
+  cmsType: text("cms_type"), // 'wordpress', 'wix', 'shopify', 'squarespace', 'joomla', 'drupal', or null
   isWordPress: boolean("is_wordpress"), // keeping for backward compatibility
   wordPressVersion: text("wordpress_version"),
   theme: text("theme"),
@@ -141,6 +152,7 @@ export const detectionRequests = pgTable("detection_requests", {
   shopifyInfo: jsonb("shopify_info").$type<ShopifyInfo>(),
   squarespaceInfo: jsonb("squarespace_info").$type<SquarespaceInfo>(),
   joomlaInfo: jsonb("joomla_info").$type<JoomlaInfo>(),
+  drupalInfo: jsonb("drupal_info").$type<DrupalInfo>(),
   pluginCount: text("plugin_count"),
   plugins: jsonb("plugins").$type<Plugin[]>(),
   technologies: text("technologies").array(),

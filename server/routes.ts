@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { lookup as dnsLookup } from "dns/promises";
 import { storage } from "./storage";
-import { detectionRequestSchema, type Plugin, type ThemeInfo, type WixInfo, type SquarespaceInfo, type JoomlaInfo, userTiers, pinnedSites } from "@shared/schema";
+import { detectionRequestSchema, type Plugin, type ThemeInfo, type WixInfo, type SquarespaceInfo, type JoomlaInfo, type DrupalInfo, userTiers, pinnedSites } from "@shared/schema";
 import { users } from "@shared/models/auth";
 import { fromZodError } from "zod-validation-error";
 import { readFileSync, existsSync } from "fs";
@@ -422,6 +422,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         let shopifyInfo: import("@shared/schema").ShopifyInfo | null = null;
         let squarespaceInfo: SquarespaceInfo | null = null;
         let joomlaInfo: JoomlaInfo | null = null;
+        let drupalInfo: DrupalInfo | null = null;
         let pluginCount = null;
         let plugins: Plugin[] = [];
         let technologies: string[] = [];
@@ -1610,9 +1611,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
                 // Detect extensions from component paths
                 const extMatches = content.matchAll(/\/components\/(com_[\w]+)/gi);
-                const extensions = [...new Set([...extMatches].map(m => m[1]))];
+                const extensions = Array.from(new Set(Array.from(extMatches, (match) => match[1])));
                 const modMatches = content.matchAll(/\/modules\/(mod_[\w]+)/gi);
-                const modules = [...new Set([...modMatches].map(m => m[1]))];
+                const modules = Array.from(new Set(Array.from(modMatches, (match) => match[1])));
                 if (extensions.length || modules.length) {
                   extractedJoomlaInfo.detectedExtensions = [...extensions, ...modules].slice(0, 10);
                 }
@@ -1622,11 +1623,120 @@ export async function registerRoutes(app: Express): Promise<Server> {
               }
             }
 
+            // === Drupal Detection ===
+            // Inspect only the response already fetched above. We never request Drupal
+            // admin routes, module directories, or other non-public endpoints.
+            if (!isWordPress && !isWix && !isShopify && !isSquarespace && !joomlaInfo) {
+              let drupalScore = 0;
+              const drupalIndicators: string[] = [];
+              const headerGenerator = fullResponse.headers.get('x-generator') || fullResponse.headers.get('generator') || '';
+              const drupalCacheHeader = fullResponse.headers.get('x-drupal-cache');
+              const drupalDynamicCacheHeader = fullResponse.headers.get('x-drupal-dynamic-cache');
+
+              // Public generator metadata and Drupal-specific headers are definitive.
+              const generatorMeta = content.match(/<meta[^>]+name=["']generator["'][^>]+content=["']([^"']*Drupal[^"']*)["']/i)
+                || content.match(/<meta[^>]+content=["']([^"']*Drupal[^"']*)["'][^>]+name=["']generator["']/i);
+              if (generatorMeta) {
+                drupalScore += 5;
+                drupalIndicators.push('Drupal generator meta tag');
+              }
+              if (/\bdrupal\b/i.test(headerGenerator)) {
+                drupalScore += 5;
+                drupalIndicators.push('Drupal generator header');
+              }
+              if (drupalCacheHeader !== null || drupalDynamicCacheHeader !== null) {
+                drupalScore += 4;
+                drupalIndicators.push('Drupal cache header');
+              }
+
+              // These are all framework-specific frontend signals. A single one is
+              // enough to confirm Drupal without relying on generic asset patterns.
+              if (/\bdrupalSettings\b|\bDrupal\s*\.\s*settings\b/i.test(content)) {
+                drupalScore += 4;
+                drupalIndicators.push('Drupal settings object');
+              }
+              if (/\bdata-drupal-selector\s*=/i.test(content)) {
+                drupalScore += 4;
+                drupalIndicators.push('Drupal selector attribute');
+              }
+              if (/\bDrupal\s*\.\s*behaviors\b/i.test(content)) {
+                drupalScore += 3;
+                drupalIndicators.push('Drupal behaviors');
+              }
+
+              // Core/site asset paths are useful supporting evidence, but cannot
+              // identify Drupal independently because paths can be copied or proxied.
+              if (/(?:\/|^)core\/(?:assets|misc|modules|themes)\//i.test(content)) {
+                drupalScore += 2;
+                drupalIndicators.push('Drupal core asset path');
+              }
+              if (/(?:\/|^)sites\/(?:default|all)\/(?:files|modules|themes)\//i.test(content)) {
+                drupalScore += 2;
+                drupalIndicators.push('Drupal site asset path');
+              }
+
+              console.log(`\n=== Drupal Detection for ${normalizedDomain} ===`);
+              console.log(`Score: ${drupalScore}`);
+              console.log(`Indicators: [${drupalIndicators.join(', ')}]`);
+              console.log(`=====================================\n`);
+
+              if (drupalScore >= 4 && drupalIndicators.length >= 1) {
+                const extractedDrupalInfo: DrupalInfo = {};
+
+                // Version is only reported when explicitly exposed in public metadata.
+                const versionMatch = generatorMeta?.[1].match(/\bDrupal(?:\s+|\/)?([0-9]+(?:\.[0-9]+){1,3})\b/i)
+                  || headerGenerator.match(/\bDrupal(?:\s+|\/)?([0-9]+(?:\.[0-9]+){1,3})\b/i);
+                if (versionMatch) {
+                  extractedDrupalInfo.version = versionMatch[1];
+                }
+
+                // Capture publicly loaded custom/contributed theme paths only.
+                const themeMatch = content.match(/\/themes\/(?:custom|contrib)\/([a-z0-9_-]+)\//i)
+                  || content.match(/\/sites\/(?:default|all)\/themes\/([a-z0-9_-]+)\//i);
+                if (themeMatch) {
+                  extractedDrupalInfo.theme = themeMatch[1];
+                }
+
+                const langMatch = content.match(/<html[^>]+lang=["']([^"']+)["']/i);
+                if (langMatch) {
+                  extractedDrupalInfo.language = langMatch[1];
+                }
+
+                const ogTitleMatch = content.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)["']/i)
+                  || content.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:title["']/i);
+                const titleTagMatch = content.match(/<title[^>]*>([^<]+)<\/title>/i);
+                if (ogTitleMatch) {
+                  extractedDrupalInfo.siteTitle = ogTitleMatch[1].trim();
+                } else if (titleTagMatch) {
+                  extractedDrupalInfo.siteTitle = titleTagMatch[1].trim().replace(/\s*[-–|].*$/, '');
+                }
+
+                const metaDescMatch = content.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i)
+                  || content.match(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']description["']/i);
+                if (metaDescMatch) {
+                  extractedDrupalInfo.siteDescription = metaDescMatch[1].trim();
+                }
+
+                // Report only modules that expose an asset in the public page.
+                const extensionMatches = Array.from(content.matchAll(/\/modules\/(?:contrib|custom)\/([a-z0-9_-]+)\//gi))
+                  .concat(Array.from(content.matchAll(/\/sites\/(?:default|all)\/modules\/(?:contrib|custom)\/([a-z0-9_-]+)\//gi)))
+                  .concat(Array.from(content.matchAll(/\/sites\/(?:default|all)\/modules\/([a-z0-9_-]+)\//gi)));
+                const extensions = Array.from(new Set(extensionMatches.map((match) => match[1])));
+                if (extensions.length > 0) {
+                  extractedDrupalInfo.detectedExtensions = extensions.slice(0, 10);
+                }
+
+                drupalInfo = extractedDrupalInfo;
+                console.log('Drupal info extracted:', JSON.stringify(drupalInfo, null, 2));
+              }
+            }
+
           } catch (contentError) {
             console.error('Error fetching content:', contentError);
           }
 
         const isJoomla = !!joomlaInfo;
+        const isDrupal = !!drupalInfo;
 
         // Set CMS type based on detection
         if (isWordPress) {
@@ -1639,6 +1749,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           cmsType = 'squarespace';
         } else if (isJoomla) {
           cmsType = 'joomla';
+        } else if (isDrupal) {
+          cmsType = 'drupal';
         }
 
         // Fetch latest WordPress version from WordPress.org (non-blocking, 3s timeout)
@@ -1687,6 +1799,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           shopifyInfo,
           squarespaceInfo,
           joomlaInfo,
+          drupalInfo,
           pluginCount,
           plugins,
           technologies,
@@ -1700,6 +1813,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           isWordPress,
           isSquarespace,
           isJoomla,
+          isDrupal,
           wordPressVersion,
           latestWordPressVersion,
           wordPressVersionStatus,
@@ -1711,6 +1825,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           shopifyInfo,
           squarespaceInfo,
           joomlaInfo,
+          drupalInfo,
           pluginCount,
           plugins,
           technologies,

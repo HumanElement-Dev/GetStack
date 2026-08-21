@@ -62,6 +62,7 @@ const CMS_COLORS: Record<string, string> = {
   shopify: "bg-green-600",
   squarespace: "bg-gray-700",
   joomla: "bg-orange-600",
+  drupal: "bg-blue-700",
 };
 
 function SiteOverview({ site }: { site: PinnedSite }) {

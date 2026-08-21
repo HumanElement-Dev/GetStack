@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
 import { Search, Puzzle, Eye, ShieldCheck, Globe } from "lucide-react";
-import { SiWordpress, SiWix, SiShopify, SiSquarespace } from "react-icons/si";
+import { SiWordpress, SiWix, SiShopify, SiSquarespace, SiDrupal } from "react-icons/si";
 import type { IconType } from "react-icons";
 import type { LucideIcon } from "lucide-react";
 
@@ -17,6 +17,7 @@ const platforms: { name: string; icon: PlatformIcon; color: string; summary: str
   { name: "Wix", icon: SiWix, color: "#0C6EFC", summary: "Builder type, apps & templates" },
   { name: "Shopify", icon: SiShopify, color: "#96BF48", summary: "Theme, store info & apps" },
   { name: "Squarespace", icon: SiSquarespace, color: "#222222", summary: "Version, features & template" },
+  { name: "Drupal", icon: SiDrupal, color: "#0678BE", summary: "Theme, modules & version" },
 ];
 
 export default function Welcome() {
@@ -42,7 +43,7 @@ export default function Welcome() {
     <div className={`min-h-screen bg-background text-foreground font-sans transition-opacity duration-300 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
       <Helmet>
         <title>GetStack - Detect Any Website's CMS Instantly</title>
-        <meta name="description" content="Instantly detect if any website is built on WordPress, Shopify, Wix, or Squarespace. See themes, plugins, and apps in seconds — free, no account required." />
+        <meta name="description" content="Instantly detect if any website is built on WordPress, Shopify, Wix, Squarespace, or Drupal. See themes, plugins, apps, and modules in seconds — free, no account required." />
       </Helmet>
       <Header />
       <main className="flex-1 py-12 px-4 sm:px-6 lg:px-8">
@@ -85,7 +86,7 @@ export default function Welcome() {
                 <Eye className="w-8 h-8 text-primary" />
               </div>
               <h3 className="text-xl font-semibold mb-3">Instant Detection</h3>
-              <p className="text-muted-foreground">Identify the platform behind any website in seconds — WordPress, Wix, Shopify, Squarespace, and more.</p>
+              <p className="text-muted-foreground">Identify the platform behind any website in seconds — WordPress, Wix, Shopify, Squarespace, Drupal, and more.</p>
             </div>
             
             <div className="text-center p-6 rounded-lg border bg-card">
@@ -113,7 +114,7 @@ export default function Welcome() {
               <h2 className="text-2xl font-bold text-foreground mb-2">Supported Platforms</h2>
               <p className="text-muted-foreground">Deep detection for the web's most popular site builders</p>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
               {platforms.map((platform) => {
                 const Icon = platform.icon || Globe;
                 return (
