@@ -6,7 +6,7 @@ export default function Footer() {
       {/* Main footer */}
       <div className="bg-muted/30 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
             {/* Brand */}
             <div className="col-span-2 md:col-span-1">
               <div className="flex items-center space-x-2 mb-3">
@@ -27,6 +27,14 @@ export default function Footer() {
                 <li><Link href="/" className="hover:text-foreground transition-colors">Detect a Site</Link></li>
                 <li><Link href="/pricing" className="hover:text-foreground transition-colors">Pricing</Link></li>
                 <li><Link href="/dashboard" className="hover:text-foreground transition-colors">Dashboard</Link></li>
+              </ul>
+            </div>
+
+            {/* Tools */}
+            <div>
+              <h3 className="text-sm font-semibold text-foreground mb-3">Tools</h3>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><Link href="/wordpress-detector" className="hover:text-foreground transition-colors">WordPress Detector</Link></li>
               </ul>
             </div>
 

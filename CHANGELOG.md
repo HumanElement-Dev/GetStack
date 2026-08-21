@@ -5,6 +5,13 @@ Production domain: [gtstk.dev](https://gtstk.dev)
 
 ---
 
+## v3.8.10
+
+### Added
+- **WordPress Detector** — new SEO landing page at `/wordpress-detector` with an in-page scan tool, WordPress-specific guidance, accordion FAQs, FAQ structured data, page-specific social metadata, footer discovery link, and sitemap entry.
+
+---
+
 ## v3.8.9
 
 ### Added
