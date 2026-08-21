@@ -1,0 +1,165 @@
+Here's the full copy first, then the Replit prompt.
+
+PAGE COPY — /wordpress-detector
+
+H1: WordPress Detector — Find Any WordPress Site's Theme, Plugins and Version
+
+Subheading: Paste any URL and see exactly what WordPress theme, plugins, and version a site is running. Free, instant, no account required.
+
+[TOOL EMBEDDED HERE]
+
+What this detects
+
+GetStack analyzes any WordPress site and surfaces the full picture — not just whether it's running WordPress, but what version, which theme, every detectable plugin, and whether the core installation is up to date or carrying known security risks.
+
+Most WordPress sites don't advertise this information. Some actively hide it. GetStack finds it anyway, pulling from multiple signals in the page source, HTTP headers, and asset structure to build a complete stack profile.
+
+What you'll see in your results:
+
+WordPress version — current, outdated, or actively hidden
+Active theme — including parent and child theme relationships
+Detected plugins — categorized by function with direct links to WordPress.org
+Version status — whether core and plugins are up to date
+Security signals — login URL changes, version suppression, admin access indicators
+
+Why people use this
+
+Freelancers and agencies run a WordPress detection scan before every client call. Knowing whether a site is running 47 plugins on an outdated WordPress core tells you more about the project scope than the client brief will.
+
+Developers use it to research sites they admire — what page builder are they using, how heavy is their plugin stack, what's their theme setup.
+
+Site owners use it to check their own site the way an outsider would see it — version exposure, plugin footprint, security signals.
+
+What WordPress version tells you
+
+WordPress releases major updates roughly twice a year. Sites running more than one major version behind are missing security patches and performance improvements. A site on WordPress 5.x in 2025 is carrying years of unpatched vulnerabilities.
+
+GetStack flags version status clearly — current, outdated, or hidden. Hidden versions are actually a good sign — it means someone has actively configured the site to suppress version exposure, which is a basic security best practice.
+
+What the plugin list tells you
+
+Plugin count is a proxy for technical debt. A WordPress site with 8 well-maintained plugins is a different project than one with 34 plugins, several of which haven't been updated in two years.
+
+GetStack detects active plugins and categorizes them — page builders, SEO tools, security plugins, forms, ecommerce, performance. That breakdown tells you immediately what the site is trying to do and how it's doing it.
+
+FAQ
+
+Can I detect a WordPress site if the version is hidden?
+Yes. GetStack uses multiple detection signals beyond the version meta tag — asset paths, script handles, REST API endpoints, and structural patterns that persist even when the version is actively suppressed.
+
+Does this work on WordPress.com sites?
+Yes, though WordPress.com hosted sites have a more restricted plugin environment than self-hosted WordPress.org installations. GetStack will detect the platform and available signals regardless.
+
+Can I see what theme a WordPress site is using even if it's a custom theme?
+GetStack detects the active theme including custom themes — name, version, and parent theme if a child theme is in use. If the theme is heavily modified or the stylesheet is obscured, some details may be limited.
+
+Is this free?
+The WordPress detector is completely free. No account required. For saved results, site monitoring, and deeper vulnerability analysis, GetStack offers a premium plan.
+
+How accurate is the plugin detection?
+GetStack detects plugins that leave identifiable traces in the page source or asset structure. Some plugins are deliberately obfuscated or load conditionally — those may not appear in results. The detection covers the majority of commonly used plugins reliably.
+
+CTA
+
+Heading: Ready to see what's under the hood?
+
+Subtext: GetStack detects WordPress themes, plugins, and version status on any site — free, in seconds.
+
+Button: Run a Free Scan →
+
+REPLIT PROMPT:
+
+Create a new page at /wordpress-detector in the React app. This is an SEO landing page targeting searches like "wordpress theme detector", "wordpress plugin detector", and "what wordpress theme is this site using".
+
+The page needs the following:
+
+Route and navigation
+
+Add the route /wordpress-detector to the router
+Do not add it to the main navigation — it is an SEO page only
+Link to it from the homepage footer under a "Tools" section alongside future detector pages
+
+Page structure — in this exact order:
+
+H1 heading: "WordPress Detector — Find Any WordPress Site's Theme, Plugins and Version"
+Subheading: "Paste any URL and see exactly what WordPress theme, plugins, and version a site is running. Free, instant, no account required."
+The existing scan tool component embedded directly — same as homepage, fully functional
+Content sections with the copy I will provide below
+FAQ section with structured data markup (JSON-LD FAQ schema in the page head)
+CTA section at the bottom — heading, subtext, and button linking back to the tool at the top of the page
+
+Meta tags — dynamic, specific to this page:
+
+title: "WordPress Theme & Plugin Detector — GetStack"
+description: "Instantly detect any WordPress site's theme, plugins, and version. See what's running under the hood — free, no account required."
+og:title: "WordPress Theme & Plugin Detector — GetStack"
+og:description: "Instantly detect any WordPress site's theme, plugins, and version. Free, no account required."
+
+FAQ structured data — add this JSON-LD to the page head:
+
+json
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Can I detect a WordPress site if the version is hidden?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. GetStack uses multiple detection signals beyond the version meta tag — asset paths, script handles, REST API endpoints, and structural patterns that persist even when the version is actively suppressed."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does this work on WordPress.com sites?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes, though WordPress.com hosted sites have a more restricted plugin environment than self-hosted WordPress.org installations. GetStack will detect the platform and available signals regardless."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I see what theme a WordPress site is using even if it's a custom theme?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "GetStack detects the active theme including custom themes — name, version, and parent theme if a child theme is in use. If the theme is heavily modified or the stylesheet is obscured, some details may be limited."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is this free?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The WordPress detector is completely free. No account required. For saved results, site monitoring, and deeper vulnerability analysis, GetStack offers a premium plan."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How accurate is the plugin detection?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "GetStack detects plugins that leave identifiable traces in the page source or asset structure. Some plugins are deliberately obfuscated or load conditionally — those may not appear in results. The detection covers the majority of commonly used plugins reliably."
+      }
+    }
+  ]
+}
+
+Page copy to use in the content sections — paste exactly as written:
+
+[paste the full copy from above here]
+
+Design:
+
+Match existing site design exactly — fonts, colors, spacing, components
+Content sections should be clean and readable — not dense blocks of text
+FAQ section should use an accordion component if one exists in the codebase, otherwise simple expand/collapse
+Mobile responsive
+
+Do not:
+
+Add this page to the main navigation
+Change any existing pages or components
+Install new packages if avoidable
+
+Show me the new route path and confirm the FAQ schema is in the page head when done.
