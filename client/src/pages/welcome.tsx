@@ -139,6 +139,10 @@ export default function Welcome() {
                 <Globe className="w-4 h-4 text-orange-500" />
                 <span className="text-sm font-medium text-foreground">Joomla</span>
               </div>
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/50 border">
+                <SiDrupal className="w-4 h-4" style={{ color: "#0678BE" }} />
+                <span className="text-sm font-medium text-foreground">Drupal</span>
+              </div>
             </div>
           </div>
 
