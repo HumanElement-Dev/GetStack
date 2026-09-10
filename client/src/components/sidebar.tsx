@@ -32,6 +32,7 @@ export default function SitesSidebar({ collapsed, selectedSiteId, onSelectSite, 
   const queryClient = useQueryClient();
   const lastAutoPinnedRef = useRef<string | null>(null);
   const [savedVisible, setSavedVisible] = useState(false);
+  const [savedDomain, setSavedDomain] = useState<string | null>(null);
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { data } = useQuery<{ pins: PinnedSite[]; allowed: boolean; current: number; limit: number }>({
@@ -44,11 +45,15 @@ export default function SitesSidebar({ collapsed, selectedSiteId, onSelectSite, 
       const res = await apiRequest("POST", "/api/pins", { domain, name: domain, cmsType });
       return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (_data, { domain }) => {
       queryClient.invalidateQueries({ queryKey: ["/api/pins"] });
       if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
+      setSavedDomain(domain);
       setSavedVisible(true);
-      savedTimerRef.current = setTimeout(() => setSavedVisible(false), 2000);
+      savedTimerRef.current = setTimeout(() => {
+        setSavedVisible(false);
+        setSavedDomain(null);
+      }, 2000);
     },
     onError: () => {
     },
@@ -86,20 +91,30 @@ export default function SitesSidebar({ collapsed, selectedSiteId, onSelectSite, 
   if (collapsed) {
     return (
       <aside className="w-14 bg-card border-r border-border flex flex-col items-center py-3 gap-1.5 shrink-0">
-        {pins.map((site) => (
-          <button
-            key={site.id}
-            onClick={() => onSelectSite(site)}
-            title={site.domain}
-            className={`w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold transition-colors ${
-              selectedSiteId === site.id
-                ? "bg-primary text-primary-foreground"
-                : `${CMS_COLORS[site.cmsType?.toLowerCase() ?? ""] ?? "bg-muted"} text-white`
-            }`}
-          >
-            {getInitial(site.domain)}
-          </button>
-        ))}
+        {pins.map((site) => {
+          const showSavedCue = savedVisible && savedDomain === site.domain;
+          return (
+            <div key={site.id} className="relative">
+              <button
+                onClick={() => onSelectSite(site)}
+                title={site.domain}
+                className={`w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold transition-colors ${
+                  selectedSiteId === site.id
+                    ? "bg-primary text-primary-foreground"
+                    : `${CMS_COLORS[site.cmsType?.toLowerCase() ?? ""] ?? "bg-muted"} text-white`
+                }`}
+              >
+                {getInitial(site.domain)}
+              </button>
+              <span
+                aria-hidden="true"
+                className={`absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-card bg-emerald-500 transition-all duration-300 ${
+                  showSavedCue ? "scale-100 opacity-100 animate-pulse" : "scale-0 opacity-0"
+                }`}
+              />
+            </div>
+          );
+        })}
 
         <div className="flex-1" />
 
