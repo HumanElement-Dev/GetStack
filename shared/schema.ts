@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, boolean, jsonb, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, boolean, jsonb, integer, uniqueIndex } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -27,7 +27,9 @@ export const pinnedSites = pgTable("pinned_sites", {
   cmsType: text("cms_type"),
   lastChecked: timestamp("last_checked"),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => [
+  uniqueIndex("pinned_sites_user_domain_unique").on(table.userId, table.domain),
+]);
 
 export const pluginSchema = z.object({
   slug: z.string(),
@@ -159,6 +161,10 @@ export const detectionRequests = pgTable("detection_requests", {
   cmsType: text("cms_type"), // 'wordpress', 'wix', 'shopify', 'squarespace', 'webflow', 'joomla', 'drupal', or null
   isWordPress: boolean("is_wordpress"), // keeping for backward compatibility
   wordPressVersion: text("wordpress_version"),
+  latestWordPressVersion: text("latest_wordpress_version"),
+  wordPressVersionStatus: text("wordpress_version_status"),
+  wpScore: integer("wp_score"),
+  detectedIndicators: text("detected_indicators").array(),
   theme: text("theme"),
   themeInfo: jsonb("theme_info").$type<ThemeInfo>(),
   wixInfo: jsonb("wix_info").$type<WixInfo>(),

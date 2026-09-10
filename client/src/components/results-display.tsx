@@ -213,10 +213,10 @@ function PremiumInsightCTA({ isPremium }: { isPremium: boolean }) {
 
 function ShareBar({ resultId, platform }: { resultId: string; platform?: string | null }) {
   const [copied, setCopied] = useState(false);
+  const shareUrl = `${window.location.origin}/result/${resultId}`;
 
   const handleCopy = () => {
-    const url = `${window.location.origin}/result/${resultId}`;
-    navigator.clipboard.writeText(url).then(() => {
+    navigator.clipboard.writeText(shareUrl).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
 
@@ -231,7 +231,10 @@ function ShareBar({ resultId, platform }: { resultId: string; platform?: string 
 
   return (
     <div className="flex items-center justify-between gap-3 px-4 py-2.5 rounded-lg border bg-muted/30 text-sm">
-      <span className="text-muted-foreground text-xs">Share these results</span>
+      <div className="min-w-0">
+        <span className="block text-muted-foreground text-xs mb-0.5">Share these results</span>
+        <span className="block text-xs font-mono text-foreground truncate">{shareUrl}</span>
+      </div>
       <button
         onClick={handleCopy}
         className="flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors"

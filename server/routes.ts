@@ -10,7 +10,7 @@ import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
 import { db } from "./db";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import rateLimit from "express-rate-limit";
 
 // Load plugin signatures once at startup
@@ -252,6 +252,28 @@ function isValidRedirect(url: string): boolean {
   return url.startsWith('/') && !url.startsWith('//');
 }
 
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function formatCmsName(cmsType: string): string {
+  const names: Record<string, string> = {
+    wordpress: "WordPress",
+    wix: "Wix",
+    shopify: "Shopify",
+    squarespace: "Squarespace",
+    webflow: "Webflow",
+    joomla: "Joomla",
+    drupal: "Drupal",
+  };
+  return names[cmsType.toLowerCase()] ?? cmsType;
+}
+
 // Middleware to require a specific tier
 /**
  * SSRF protection — returns true if the hostname should be blocked.
@@ -348,8 +370,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Protected endpoint: Get user's pinned sites (premium only)
-  app.get("/api/pins", isAuthenticated, requireTier("premium"), async (req: any, res) => {
+  // Protected endpoint: Get user's saved sites
+  app.get("/api/pins", isAuthenticated, requireTier("free"), async (req: any, res) => {
     try {
       const userId = req.user?.claims?.sub;
       const pins = await db.select().from(pinnedSites).where(eq(pinnedSites.userId, userId));
@@ -362,8 +384,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Protected endpoint: Add a pinned site (premium only)
-  app.post("/api/pins", isAuthenticated, requireTier("premium"), async (req: any, res) => {
+  // Protected endpoint: Add a saved site
+  app.post("/api/pins", isAuthenticated, requireTier("free"), async (req: any, res) => {
     try {
       const userId = req.user?.claims?.sub;
       const { domain, name, cmsType } = req.body;
@@ -371,31 +393,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!domain) {
         return res.status(400).json({ message: "Domain is required" });
       }
-      
-      // Check pin limit
-      const pinStatus = await canPinMoreSites(userId);
-      if (!pinStatus.allowed) {
+
+      const outcome = await db.transaction(async (tx) => {
+        // Serialize saves for this user so concurrent requests cannot exceed the quota.
+        await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${userId}))`);
+
+        const [existingPin] = await tx
+          .select()
+          .from(pinnedSites)
+          .where(and(eq(pinnedSites.userId, userId), eq(pinnedSites.domain, domain)));
+        if (existingPin) {
+          return { kind: "existing" as const, pin: existingPin };
+        }
+
+        const [userTier] = await tx
+          .select()
+          .from(userTiers)
+          .where(eq(userTiers.userId, userId));
+        const limit = userTier?.tier === "premium" ? 100 : 3;
+        const existingPins = await tx
+          .select({ id: pinnedSites.id })
+          .from(pinnedSites)
+          .where(eq(pinnedSites.userId, userId));
+
+        if (existingPins.length >= limit) {
+          return { kind: "limit" as const, current: existingPins.length, limit };
+        }
+
+        const [pin] = await tx.insert(pinnedSites).values({
+          userId,
+          domain,
+          name: name || domain,
+          cmsType,
+        }).onConflictDoNothing({
+          target: [pinnedSites.userId, pinnedSites.domain],
+        }).returning();
+
+        if (pin) {
+          return { kind: "created" as const, pin };
+        }
+
+        const [concurrentPin] = await tx
+          .select()
+          .from(pinnedSites)
+          .where(and(eq(pinnedSites.userId, userId), eq(pinnedSites.domain, domain)));
+        return { kind: "existing" as const, pin: concurrentPin };
+      });
+
+      if (outcome.kind === "limit") {
         return res.status(403).json({ 
-          message: `Pin limit reached. You have ${pinStatus.current}/${pinStatus.limit} pins. Upgrade to premium for more.` 
+          message: `Pin limit reached. You have ${outcome.current}/${outcome.limit} pins. Upgrade to premium for more.`
         });
       }
-      
-      const [pin] = await db.insert(pinnedSites).values({
-        userId,
-        domain,
-        name: name || domain,
-        cmsType,
-      }).returning();
-      
-      res.json(pin);
+
+      res.json({
+        ...outcome.pin,
+        alreadySaved: outcome.kind === "existing",
+      });
     } catch (error) {
       console.error("Error creating pin:", error);
       res.status(500).json({ message: "Failed to create pin" });
     }
   });
   
-  // Protected endpoint: Delete a pinned site (premium only)
-  app.delete("/api/pins/:id", isAuthenticated, requireTier("premium"), async (req: any, res) => {
+  // Protected endpoint: Delete a saved site
+  app.delete("/api/pins/:id", isAuthenticated, requireTier("free"), async (req: any, res) => {
     try {
       const userId = req.user?.claims?.sub;
       const pinId = req.params.id;
@@ -1922,6 +1984,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           cmsType,
           isWordPress,
           wordPressVersion,
+          latestWordPressVersion,
+          wordPressVersionStatus,
+          wpScore,
+          detectedIndicators,
           theme,
           themeInfo,
           wixInfo,
@@ -2016,6 +2082,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error fetching result:', error);
       res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Serve production result pages with scan-specific metadata for link unfurlers.
+  app.get("/result/:id", async (req, res, next) => {
+    if (process.env.NODE_ENV !== "production") return next();
+
+    try {
+      const result = await storage.getDetectionRequest(req.params.id);
+      if (!result) return next();
+
+      const indexPath = join(process.cwd(), "dist", "public", "index.html");
+      if (!existsSync(indexPath)) return next();
+
+      const platform = result.cmsType ? formatCmsName(result.cmsType) : "website technology";
+      const title = `${result.domain} — GetStack scan result`;
+      const description = result.cmsType
+        ? `${result.domain} is running ${platform}. View its detected technology stack on GetStack.`
+        : `View the detected technology stack for ${result.domain} on GetStack.`;
+      const canonicalUrl = `${req.protocol}://${req.get("host")}${req.originalUrl}`;
+      const meta = [
+        `<meta property="og:type" content="website">`,
+        `<meta property="og:site_name" content="GetStack">`,
+        `<meta property="og:title" content="${escapeHtml(title)}">`,
+        `<meta property="og:description" content="${escapeHtml(description)}">`,
+        `<meta property="og:url" content="${escapeHtml(canonicalUrl)}">`,
+        `<meta name="twitter:card" content="summary">`,
+        `<meta name="twitter:title" content="${escapeHtml(title)}">`,
+        `<meta name="twitter:description" content="${escapeHtml(description)}">`,
+      ].join("\n");
+      const html = readFileSync(indexPath, "utf-8")
+        .replace(
+          /<meta\s+(?:property=["']og:[^"']+["']|name=["']twitter:[^"']+["'])[^>]*>\s*/gi,
+          "",
+        )
+        .replace("</head>", `${meta}\n</head>`);
+
+      res.setHeader("Cache-Control", "public, max-age=300");
+      return res.type("html").send(html);
+    } catch (error) {
+      console.error("Error rendering shared result metadata:", error);
+      return next();
     }
   });
 
