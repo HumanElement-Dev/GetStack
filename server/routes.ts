@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { lookup as dnsLookup } from "dns/promises";
 import { storage } from "./storage";
-import { detectionRequestSchema, type Plugin, type ThemeInfo, type WixInfo, type SquarespaceInfo, type JoomlaInfo, type DrupalInfo, userTiers, pinnedSites } from "@shared/schema";
+import { detectionRequestSchema, type Plugin, type ThemeInfo, type WixInfo, type SquarespaceInfo, type WebflowInfo, type JoomlaInfo, type DrupalInfo, userTiers, pinnedSites } from "@shared/schema";
 import { users } from "@shared/models/auth";
 import { fromZodError } from "zod-validation-error";
 import { readFileSync, existsSync } from "fs";
@@ -465,6 +465,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         let wixInfo: WixInfo | null = null;
         let shopifyInfo: import("@shared/schema").ShopifyInfo | null = null;
         let squarespaceInfo: SquarespaceInfo | null = null;
+        let isWebflow = false;
+        let webflowInfo: WebflowInfo | null = null;
         let joomlaInfo: JoomlaInfo | null = null;
         let drupalInfo: DrupalInfo | null = null;
         let pluginCount = null;
@@ -1554,8 +1556,89 @@ export async function registerRoutes(app: Express): Promise<Server> {
               }
             }
 
+            // === Webflow Detection ===
+            // Webflow references in prose are deliberately ignored: detection requires
+            // concrete public platform signals from the page or response headers.
+            if (!isWordPress && !isWix && !isSquarespace) {
+              let webflowScore = 0;
+              const webflowIndicators: string[] = [];
+              const webflowGenerator = content.match(/<meta[^>]+name=["']generator["'][^>]+content=["']([^"']*Webflow[^"']*)["']/i)
+                || content.match(/<meta[^>]+content=["']([^"']*Webflow[^"']*)["'][^>]+name=["']generator["']/i);
+              if (webflowGenerator) {
+                webflowScore += 5;
+                webflowIndicators.push('Webflow generator meta tag');
+              }
+              if (/\bdata-wf-site\s*=\s*["'][^"']+["']/i.test(content)) {
+                webflowScore += 5;
+                webflowIndicators.push('data-wf-site attribute');
+              }
+              if (/\bdata-wf-page\s*=\s*["'][^"']+["']/i.test(content)) {
+                webflowScore += 4;
+                webflowIndicators.push('data-wf-page attribute');
+              }
+              if (/website-files\.com/i.test(content)) {
+                webflowScore += 4;
+                webflowIndicators.push('Webflow website-files asset');
+              }
+              if (/(?:https?:)?\/\/[^"'\s]+webflow\.js\b/i.test(content) || /["'](?:[^"']*\/)?webflow\.js["']/i.test(content)) {
+                webflowScore += 4;
+                webflowIndicators.push('webflow.js asset');
+              }
+              if (/\b(?:w-nav|w-container|w-row|w-col|w-button|w-form|w-slider|w-dyn-item|w-layout-grid)\b/i.test(content)) {
+                webflowScore += 3;
+                webflowIndicators.push('Webflow CSS classes');
+              }
+              const webflowHeader = fullResponse.headers.get('x-powered-by') || fullResponse.headers.get('server') || '';
+              if (/webflow/i.test(webflowHeader)) {
+                webflowScore += 5;
+                webflowIndicators.push('Webflow response header');
+              }
+              if (webflowScore >= 8 && webflowIndicators.length >= 2) {
+                isWebflow = true;
+                // Native Webflow document signals outrank embedded Shopify Buy Button assets.
+                isShopify = false;
+                shopifyInfo = null;
+              }
+              console.log(`\n=== Webflow Detection for ${normalizedDomain} ===`);
+              console.log(`Score: ${webflowScore}`);
+              console.log(`Indicators: [${webflowIndicators.join(', ')}]`);
+              console.log(`Detection result: ${isWebflow ? 'Webflow' : 'Not Webflow'}`);
+              console.log(`=====================================\n`);
+
+              if (isWebflow) {
+                const extractedWebflowInfo: WebflowInfo = {};
+                const siteIdMatch = content.match(/\bdata-wf-site\s*=\s*["']([^"']+)["']/i);
+                const pageIdMatch = content.match(/\bdata-wf-page\s*=\s*["']([^"']+)["']/i);
+                if (siteIdMatch) extractedWebflowInfo.siteId = siteIdMatch[1].trim();
+                if (pageIdMatch) extractedWebflowInfo.pageId = pageIdMatch[1].trim();
+                const ogTitleMatch = content.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)["']/i)
+                  || content.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:title["']/i);
+                const titleMatch = content.match(/<title[^>]*>([^<]+)<\/title>/i);
+                if (ogTitleMatch?.[1]) extractedWebflowInfo.siteTitle = ogTitleMatch[1].trim();
+                else if (titleMatch?.[1]) extractedWebflowInfo.siteTitle = titleMatch[1].trim();
+                const descriptionMatch = content.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i)
+                  || content.match(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']description["']/i)
+                  || content.match(/<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']+)["']/i);
+                if (descriptionMatch?.[1]) extractedWebflowInfo.siteDescription = descriptionMatch[1].trim();
+                const languageMatch = content.match(/<html[^>]+lang=["']([^"']+)["']/i);
+                if (languageMatch?.[1]) extractedWebflowInfo.language = languageMatch[1].trim();
+                const imageMatch = content.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i)
+                  || content.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i);
+                if (imageMatch?.[1]) extractedWebflowInfo.ogImage = imageMatch[1].trim();
+
+                const features: string[] = [];
+                if (/<form\b|w-form|form-block/i.test(content)) features.push('Forms');
+                if (/ecommerce|e-commerce|w-commerce|checkout|add-to-cart|products/i.test(content)) features.push('E-commerce');
+                if (/membership|memberships|user-account|w-members/i.test(content)) features.push('Membership');
+                if (features.length) extractedWebflowInfo.detectedFeatures = features;
+                extractedWebflowInfo.indicators = webflowIndicators;
+                webflowInfo = extractedWebflowInfo;
+                console.log('Webflow info extracted:', JSON.stringify(webflowInfo, null, 2));
+              }
+            }
+
             // === Joomla Detection ===
-            if (!isWordPress && !isWix && !isShopify && !isSquarespace) {
+            if (!isWordPress && !isWix && !isShopify && !isSquarespace && !isWebflow) {
               let joomlaScore = 0;
               const joomlaIndicators: string[] = [];
 
@@ -1670,7 +1753,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // === Drupal Detection ===
             // Inspect only the response already fetched above. We never request Drupal
             // admin routes, module directories, or other non-public endpoints.
-            if (!isWordPress && !isWix && !isShopify && !isSquarespace && !joomlaInfo) {
+            if (!isWordPress && !isWix && !isShopify && !isSquarespace && !isWebflow && !joomlaInfo) {
               let drupalScore = 0;
               const drupalIndicators: string[] = [];
               const headerGenerator = fullResponse.headers.get('x-generator') || fullResponse.headers.get('generator') || '';
@@ -1791,6 +1874,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           cmsType = 'shopify';
         } else if (isSquarespace) {
           cmsType = 'squarespace';
+        } else if (isWebflow) {
+          cmsType = 'webflow';
         } else if (isJoomla) {
           cmsType = 'joomla';
         } else if (isDrupal) {
@@ -1842,6 +1927,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           wixInfo,
           shopifyInfo,
           squarespaceInfo,
+          webflowInfo,
           joomlaInfo,
           drupalInfo,
           pluginCount,
@@ -1857,6 +1943,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           cmsType,
           isWordPress,
           isSquarespace,
+          isWebflow,
+          webflowInfo,
           isJoomla,
           isDrupal,
           wordPressVersion,
@@ -1889,6 +1977,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           wordPressVersion: null,
           theme: null,
           themeInfo: null,
+          webflowInfo: null,
           pluginCount: null,
           plugins: [],
           technologies: [],
@@ -1898,6 +1987,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.status(500).json({
           id: detectionRequest.id,
           domain: normalizedDomain,
+          cmsType: null,
+          isWebflow: false,
+          webflowInfo: null,
           error: 'Unable to analyze the website. Please check the URL and try again.',
           details: errorMessage,
         });

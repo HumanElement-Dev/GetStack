@@ -155,6 +155,7 @@ export class MemStorage implements IStorage {
             WHEN 'shopify' THEN 'Shopify'
             WHEN 'wix' THEN 'Wix'
             WHEN 'squarespace' THEN 'Squarespace'
+            WHEN 'webflow' THEN 'Webflow'
             WHEN 'joomla' THEN 'Joomla'
             WHEN 'drupal' THEN 'Drupal'
             ELSE initcap(cms)
@@ -202,6 +203,7 @@ export class MemStorage implements IStorage {
             WHEN 'shopify' THEN 'Shopify'
             WHEN 'wix' THEN 'Wix'
             WHEN 'squarespace' THEN 'Squarespace'
+            WHEN 'webflow' THEN 'Webflow'
             WHEN 'joomla' THEN 'Joomla'
             WHEN 'drupal' THEN 'Drupal'
             WHEN 'unknown' THEN 'Other / Unknown'

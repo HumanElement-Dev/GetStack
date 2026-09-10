@@ -40,7 +40,7 @@ type StatsResponse = {
 const seo = {
   title: "Website Technology Statistics & Trends | GetStack",
   description:
-    "Explore the most popular CMS platforms, WordPress themes, plugins and website technologies detected by GetStack.",
+    "Explore the most popular CMS platforms, including Webflow, WordPress themes, plugins and website technologies detected by GetStack.",
   canonical: "https://gtstk.dev/stats",
 };
 

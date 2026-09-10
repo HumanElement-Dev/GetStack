@@ -5,7 +5,7 @@ import Footer from "@/components/footer";
 const faqs = [
   {
     q: "Will GetStack detect any WordPress theme?",
-    a: "GetStack can identify the majority of WordPress themes, including the theme name, version, and author. However, a small number of sites may have their theme details obscured — either for security reasons or because they're running a heavily customised build with no public theme signature. In those cases, GetStack will still confirm that WordPress is running and report as much detail as it can find. Note that GetStack also detects other platforms such as Wix, Shopify, Squarespace, Joomla, and Drupal, so if a site isn't powered by WordPress, you'll still get useful results.",
+    a: "GetStack can identify the majority of WordPress themes, including the theme name, version, and author. However, a small number of sites may have their theme details obscured — either for security reasons or because they're running a heavily customised build with no public theme signature. In those cases, GetStack will still confirm that WordPress is running and report as much detail as it can find. Note that GetStack also detects other platforms such as Wix, Shopify, Squarespace, Webflow, Joomla, and Drupal, so if a site isn't powered by WordPress, you'll still get useful results.",
   },
   {
     q: "Will this work with all WordPress versions?",
@@ -40,7 +40,7 @@ export default function FAQ() {
         <title>FAQ - GetStack</title>
         <meta
           name="description"
-          content="Answers to common questions about how GetStack detects WordPress themes, plugins, and technology stacks."
+          content="Answers to common questions about how GetStack detects WordPress themes, plugins, Webflow sites, and technology stacks."
         />
       </Helmet>
       <Header />

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import ScanEngine from "@/components/scan-engine";
-import type { Plugin, ThemeInfo, WixInfo, ShopifyInfo, SquarespaceInfo, JoomlaInfo, DrupalInfo } from "@shared/schema";
+import type { Plugin, ThemeInfo, WixInfo, ShopifyInfo, SquarespaceInfo, WebflowInfo, JoomlaInfo, DrupalInfo } from "@shared/schema";
 import { 
   Layout, ShoppingCart, Mail, Search, TrendingUp, 
   Zap, Shield, ShieldCheck, FileText, Image, Globe, Code, 
@@ -58,6 +58,8 @@ export interface DetectionResult {
   squarespaceInfo?: SquarespaceInfo | null;
   joomlaInfo?: JoomlaInfo | null;
   drupalInfo?: DrupalInfo | null;
+  isWebflow?: boolean | null;
+  webflowInfo?: WebflowInfo | null;
   pluginCount?: string | null;
   plugins?: Plugin[];
   technologies?: string[];
@@ -280,6 +282,108 @@ export default function ResultsDisplay({ result, isLoading, compact = false, sca
             </p>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  // Webflow detected
+  if (result.cmsType === 'webflow' || result.isWebflow) {
+    const info = result.webflowInfo;
+    const safePreviewImage = (() => {
+      if (!info?.ogImage) return null;
+      try {
+        const imageUrl = new URL(info.ogImage);
+        const isWebflowAsset =
+          imageUrl.hostname === 'webflow.com'
+          || imageUrl.hostname.endsWith('.webflow.com')
+          || imageUrl.hostname === 'website-files.com'
+          || imageUrl.hostname.endsWith('.website-files.com');
+        return imageUrl.protocol === 'https:' && isWebflowAsset ? imageUrl.toString() : null;
+      } catch {
+        return null;
+      }
+    })();
+    const details = [
+      { label: 'Site ID', value: info?.siteId },
+      { label: 'Page ID', value: info?.pageId },
+      { label: 'Language', value: info?.language },
+    ].filter((detail): detail is { label: string; value: string } => Boolean(detail.value));
+
+    return (
+      <div className="space-y-4 md:space-y-6">
+        <ShareBar resultId={result.id} platform="webflow" />
+        <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 md:p-6" data-testid="webflow-detected">
+          <div className="flex flex-col sm:flex-row items-start gap-3 sm:space-x-4">
+            <div className="flex-shrink-0">
+              <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                <Globe className="w-5 h-5 text-indigo-600" />
+              </div>
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-xl md:text-2xl font-bold text-indigo-950 mb-2 break-all" data-testid="text-domain">
+                {result.domain}
+              </h3>
+              <p className="text-sm md:text-base text-indigo-800 mb-4">
+                This website is built with <span className="font-semibold">Webflow</span>
+              </p>
+              <div className="bg-white rounded-lg p-3 md:p-4 border border-indigo-200 space-y-3">
+                <p className="text-sm font-medium text-indigo-950">Webflow site detected</p>
+                {details.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {details.map((detail) => (
+                      <span key={detail.label} className="text-xs bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full font-medium">
+                        {detail.label}: {detail.value}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {(info?.siteTitle || info?.siteDescription) && (
+                  <div className="pt-3 border-t border-indigo-100">
+                    {info.siteTitle && <p className="text-sm font-semibold text-indigo-950">{info.siteTitle}</p>}
+                    {info.siteDescription && <p className="text-sm text-indigo-800 mt-1">{info.siteDescription}</p>}
+                  </div>
+                )}
+                {safePreviewImage && (
+                  <img
+                    src={safePreviewImage}
+                    alt={info?.siteTitle ? `${info.siteTitle} preview` : "Webflow site preview"}
+                    referrerPolicy="no-referrer"
+                    className="w-full max-h-48 object-cover rounded-md border border-indigo-100"
+                    onError={(event) => { event.currentTarget.style.display = 'none'; }}
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+        {info?.detectedFeatures && info.detectedFeatures.length > 0 && (
+          <div className="bg-violet-50 border border-violet-200 rounded-xl p-4 md:p-6" data-testid="webflow-features">
+            <div className="flex items-start gap-3 sm:gap-4">
+              <div className="w-10 h-10 bg-violet-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <Puzzle className="w-5 h-5 text-violet-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-violet-900 mb-1">Detected Webflow Features</h3>
+                <p className="text-xs text-violet-700 mb-3">Features and integrations visible on this public page</p>
+                <div className="flex flex-wrap gap-2">
+                  {info.detectedFeatures.map((feature) => (
+                    <span key={feature} className="text-xs bg-white border border-violet-200 text-violet-800 px-2.5 py-1 rounded-full">
+                      {feature}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        {info?.indicators && info.indicators.length > 0 && (
+          <div className="rounded-lg border border-border bg-muted/20 px-4 py-3">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Public detection signals</p>
+            <ul className="space-y-1 text-xs text-muted-foreground">
+              {info.indicators.map((indicator) => <li key={indicator}>• {indicator}</li>)}
+            </ul>
+          </div>
+        )}
       </div>
     );
   }
@@ -1487,7 +1591,7 @@ export default function ResultsDisplay({ result, isLoading, compact = false, sca
             Platform Not Recognized
           </h3>
           <p className="text-sm md:text-base text-amber-700 mb-4" data-testid="text-domain">
-            <span className="font-medium break-all">{result.domain}</span> does not appear to be running WordPress, Wix, Shopify, Squarespace, or Joomla
+            <span className="font-medium break-all">{result.domain}</span> does not appear to be running WordPress, Wix, Shopify, Squarespace, Webflow, Joomla, or Drupal
           </p>
           {result.technologies && result.technologies.length > 0 && (
             <div className="bg-white rounded-lg p-3 md:p-4 border border-amber-200">

@@ -118,6 +118,19 @@ export const squarespaceInfoSchema = z.object({
 
 export type SquarespaceInfo = z.infer<typeof squarespaceInfoSchema>;
 
+export const webflowInfoSchema = z.object({
+  siteId: z.string().optional(),
+  pageId: z.string().optional(),
+  siteTitle: z.string().optional(),
+  siteDescription: z.string().optional(),
+  language: z.string().optional(),
+  ogImage: z.string().optional(),
+  detectedFeatures: z.array(z.string()).optional(),
+  indicators: z.array(z.string()).optional(),
+});
+
+export type WebflowInfo = z.infer<typeof webflowInfoSchema>;
+
 export const joomlaInfoSchema = z.object({
   version: z.string().optional(),
   template: z.string().optional(),
@@ -143,7 +156,7 @@ export type DrupalInfo = z.infer<typeof drupalInfoSchema>;
 export const detectionRequests = pgTable("detection_requests", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   domain: text("domain").notNull(),
-  cmsType: text("cms_type"), // 'wordpress', 'wix', 'shopify', 'squarespace', 'joomla', 'drupal', or null
+  cmsType: text("cms_type"), // 'wordpress', 'wix', 'shopify', 'squarespace', 'webflow', 'joomla', 'drupal', or null
   isWordPress: boolean("is_wordpress"), // keeping for backward compatibility
   wordPressVersion: text("wordpress_version"),
   theme: text("theme"),
@@ -151,6 +164,7 @@ export const detectionRequests = pgTable("detection_requests", {
   wixInfo: jsonb("wix_info").$type<WixInfo>(),
   shopifyInfo: jsonb("shopify_info").$type<ShopifyInfo>(),
   squarespaceInfo: jsonb("squarespace_info").$type<SquarespaceInfo>(),
+  webflowInfo: jsonb("webflow_info").$type<WebflowInfo>(),
   joomlaInfo: jsonb("joomla_info").$type<JoomlaInfo>(),
   drupalInfo: jsonb("drupal_info").$type<DrupalInfo>(),
   pluginCount: text("plugin_count"),

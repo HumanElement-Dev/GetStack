@@ -80,7 +80,7 @@ export default function Detect() {
     <div className={`min-h-screen bg-background text-foreground font-sans transition-opacity duration-300 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
       <Helmet>
         <title>Detect CMS & Technology Stack - GetStack</title>
-        <meta name="description" content="Enter any website URL to instantly identify its CMS, theme, plugins, modules, and technology stack. Supports WordPress, Shopify, Wix, Squarespace, Joomla, and Drupal." />
+        <meta name="description" content="Enter any website URL to instantly identify its CMS, theme, plugins, modules, and technology stack. Supports WordPress, Shopify, Wix, Squarespace, Webflow, Joomla, and Drupal." />
       </Helmet>
       <Header />
       

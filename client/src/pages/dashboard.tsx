@@ -61,6 +61,7 @@ const CMS_COLORS: Record<string, string> = {
   wix: "bg-purple-600",
   shopify: "bg-green-600",
   squarespace: "bg-gray-700",
+  webflow: "bg-indigo-600",
   joomla: "bg-orange-600",
   drupal: "bg-blue-700",
 };
