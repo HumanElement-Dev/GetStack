@@ -1,8 +1,7 @@
-import { useEffect, useRef } from "react";
-import { LogOut, Globe, Trash2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { LogOut, Globe, Trash2, Check } from "lucide-react";
 import { Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import type { PinnedSite } from "@shared/schema";
 import type { DetectionResult } from "@/components/results-display";
@@ -29,9 +28,10 @@ function getInitial(domain: string) {
 
 
 export default function SitesSidebar({ collapsed, selectedSiteId, onSelectSite, currentResult }: SitesSidebarProps) {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const lastAutoPinnedRef = useRef<string | null>(null);
+  const [savedVisible, setSavedVisible] = useState(false);
+  const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { data } = useQuery<{ pins: PinnedSite[]; allowed: boolean; current: number; limit: number }>({
     queryKey: ["/api/pins"],
@@ -45,7 +45,9 @@ export default function SitesSidebar({ collapsed, selectedSiteId, onSelectSite, 
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/pins"] });
-      toast({ title: "Site saved", description: "Added to your websites list." });
+      if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
+      setSavedVisible(true);
+      savedTimerRef.current = setTimeout(() => setSavedVisible(false), 2000);
     },
     onError: () => {
     },
@@ -58,10 +60,14 @@ export default function SitesSidebar({ collapsed, selectedSiteId, onSelectSite, 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/pins"] });
     },
-    onError: () => {
-      toast({ title: "Could not remove site", variant: "destructive" });
-    },
+    onError: () => {},
   });
+
+  useEffect(() => {
+    return () => {
+      if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (!currentResult) return;
@@ -112,6 +118,14 @@ export default function SitesSidebar({ collapsed, selectedSiteId, onSelectSite, 
       <div className="flex items-center justify-between px-4 py-3 border-b border-border">
         <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Websites
+        </span>
+        <span
+          className={`flex items-center gap-1 text-xs font-medium text-emerald-500 transition-all duration-300 ${
+            savedVisible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-1 pointer-events-none"
+          }`}
+        >
+          <Check className="w-3 h-3" />
+          Saved
         </span>
       </div>
 
