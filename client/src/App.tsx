@@ -22,6 +22,7 @@ import PrivacyPolicy from "@/pages/privacy-policy";
 import TermsOfService from "@/pages/terms-of-service";
 import Disclaimer from "@/pages/disclaimer";
 import WordPressDetector from "@/pages/wordpress-detector";
+import Stats from "@/pages/stats";
 import { useAnalytics } from "./hooks/use-analytics";
 
 function Router() {
@@ -32,6 +33,7 @@ function Router() {
       <Route path="/" component={Welcome} />
       <Route path="/detect" component={Detect} />
       <Route path="/wordpress-detector" component={WordPressDetector} />
+      <Route path="/stats" component={Stats} />
       <Route path="/login" component={Login} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/pricing" component={Pricing} />

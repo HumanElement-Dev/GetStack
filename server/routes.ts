@@ -232,6 +232,19 @@ const authRateLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+const statsRateLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 120,
+  message: { error: "Too many requests, please try again later" },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+let publicStatsCache: {
+  data: Awaited<ReturnType<typeof storage.getPublicStats>>;
+  expiresAt: number;
+} | null = null;
+
 // Helper to validate redirect URLs (prevent open redirects)
 function isValidRedirect(url: string): boolean {
   if (!url) return false;
@@ -312,6 +325,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup auth BEFORE other routes
   await setupAuth(app);
   registerAuthRoutes(app);
+
+  app.get("/api/stats", statsRateLimiter, async (_req, res) => {
+    try {
+      const now = Date.now();
+      if (publicStatsCache && publicStatsCache.expiresAt > now) {
+        res.setHeader("Cache-Control", "public, max-age=300, stale-while-revalidate=600");
+        return res.json(publicStatsCache.data);
+      }
+
+      const stats = await storage.getPublicStats();
+      publicStatsCache = {
+        data: stats,
+        expiresAt: now + 5 * 60 * 1000,
+      };
+
+      res.setHeader("Cache-Control", "public, max-age=300, stale-while-revalidate=600");
+      return res.json(stats);
+    } catch (error) {
+      console.error("Error fetching public stats:", error);
+      return res.status(500).json({ error: "Unable to load statistics" });
+    }
+  });
   
   // Protected endpoint: Get user's pinned sites (premium only)
   app.get("/api/pins", isAuthenticated, requireTier("premium"), async (req: any, res) => {
@@ -396,12 +431,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const { domain } = validationResult.data;
       
-      // Normalize domain (remove protocol if present)  
-      const normalizedDomain = domain.replace(/^https?:\/\//, '').replace(/\/$/, '');
-      const urlToCheck = normalizedDomain.startsWith('http') ? normalizedDomain : `https://${normalizedDomain}`;
+      let parsedUrl: URL;
+      try {
+        parsedUrl = new URL(/^https?:\/\//i.test(domain) ? domain : `https://${domain}`);
+      } catch {
+        return res.status(400).json({
+          error: "Invalid input",
+          details: "Please enter a valid public website URL",
+        });
+      }
+
+      const hostname = parsedUrl.hostname.toLowerCase().replace(/\.$/, "");
+      const normalizedDomain = hostname.replace(/^www\./, "");
+      const urlToCheck = parsedUrl.toString();
 
       // SSRF protection — reject private IPs, cloud metadata, and internal hostnames
-      const hostname = new URL(urlToCheck).hostname;
       if (isBlockedDomain(hostname)) {
         return res.status(400).json({
           error: 'Invalid domain - private IP addresses are not allowed',
@@ -1805,6 +1849,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           technologies,
           error: null,
         });
+        publicStatsCache = null;
 
         res.json({
           id: detectionRequest.id,
@@ -1883,7 +1928,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get detection history for a domain
-  app.get("/api/detection-history/:domain", async (req, res) => {
+  app.get("/api/detection-history/:domain", statsRateLimiter, isAuthenticated, requireTier("premium"), async (req, res) => {
     try {
       const { domain } = req.params;
       const history = await storage.getDetectionRequestsByDomain(domain);

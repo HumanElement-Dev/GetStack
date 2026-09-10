@@ -1,0 +1,552 @@
+Create a new public page for **GetStack** at:
+
+`https://gtstk.dev/stats`
+
+The page is called **GetStack Stats** and should serve as the public-facing hub for aggregate technology intelligence gathered from websites analyzed by GetStack.
+
+## Core idea
+
+GetStack already scans websites to identify CMS platforms, themes, plugins, apps, frameworks, analytics tools, hosting technologies, and other detectable components.
+
+The `/stats` page should turn that accumulated scan data into useful public intelligence.
+
+Think:
+
+**Wappalyzer/BuiltWith-level data presented with the simplicity and polish of a modern SaaS product.**
+
+This should NOT feel like an admin dashboard.
+
+It should feel like a clean, editorial, public-facing **State of the Web Stack** report that happens to be powered by live GetStack data.
+
+Match the existing GetStack visual identity, typography, spacing, navigation, buttons, cards, colors, border radii, and footer. Do not redesign the overall GetStack brand.
+
+---
+
+# PAGE STRUCTURE
+
+## 1. Header
+
+Use the existing GetStack global header/navigation exactly as used elsewhere on gtstk.dev.
+
+Add **Stats** to the navigation if appropriate.
+
+---
+
+# 2. HERO
+
+Large, restrained hero.
+
+Eyebrow:
+
+`GETSTACK INTELLIGENCE`
+
+H1:
+
+**What is the web built with?**
+
+Supporting copy:
+
+`Explore the technologies, platforms, themes, plugins and apps detected across websites analyzed by GetStack.`
+
+Below that, include a compact metadata line such as:
+
+`Based on 42,871 website scans · Updated September 2026`
+
+IMPORTANT:
+
+Do not hard-code fake production statistics.
+
+The total scans and update date should come from real GetStack data when available.
+
+If the backend is not yet connected, implement the component with safe placeholder/demo data clearly separated from production data.
+
+Include a primary CTA:
+
+`Scan a Website`
+
+which returns users to the main GetStack scanner.
+
+Optional secondary CTA:
+
+`Explore the Data`
+
+scrolls to the statistics below.
+
+---
+
+# 3. OVERVIEW METRICS
+
+Create a clean horizontal stats row containing approximately four high-level metrics.
+
+Example structure:
+
+**42,871**
+Websites analyzed
+
+**18**
+CMS platforms detected
+
+**2,400+**
+Technologies identified
+
+**127**
+Countries represented
+
+Only display metrics that GetStack can actually calculate.
+
+Do not invent data merely to fill the layout.
+
+On mobile, stack these into a 2×2 grid or vertical layout.
+
+---
+
+# 4. TECHNOLOGY SHARE
+
+Section heading:
+
+**The web, according to GetStack**
+
+Description:
+
+`A snapshot of the platforms appearing most frequently across websites analyzed with GetStack.`
+
+Create a visually strong chart showing CMS/platform share.
+
+Potential categories:
+
+* WordPress
+* Shopify
+* Wix
+* Squarespace
+* Joomla
+* Drupal
+* Other / Unknown
+
+Use either:
+
+* horizontal bars
+* a refined donut chart
+* or both if it remains visually restrained
+
+Each technology should show:
+
+* platform name
+* percentage/share
+* number of detected sites if available
+* directional movement if historical data exists
+
+For example:
+
+`WordPress   43.8%   ↑ 1.2%`
+
+Do not show trend arrows unless historical comparison data genuinely exists.
+
+Include:
+
+`View CMS statistics →`
+
+linking to:
+
+`/stats/cms`
+
+---
+
+# 5. STATISTICS DIRECTORY
+
+Create the main navigation hub for the deeper statistics pages.
+
+Heading:
+
+**Explore the stack**
+
+Create a grid of large interactive cards.
+
+### CMS Platforms
+
+Title:
+`CMS Platforms`
+
+Description:
+`See which content management systems and website platforms appear most frequently.`
+
+CTA:
+`Explore CMS data →`
+
+URL:
+`/stats/cms`
+
+---
+
+### WordPress Themes
+
+Title:
+`WordPress Themes`
+
+Description:
+`The most frequently detected WordPress themes across GetStack scans.`
+
+CTA:
+`Explore themes →`
+
+URL:
+`/stats/wordpress-themes`
+
+---
+
+### WordPress Plugins
+
+Title:
+`WordPress Plugins`
+
+Description:
+`See which WordPress plugins appear most often across analyzed websites.`
+
+CTA:
+`Explore plugins →`
+
+URL:
+`/stats/wordpress-plugins`
+
+---
+
+### Shopify Apps
+
+Title:
+`Shopify Apps`
+
+Description:
+`The apps and integrations most frequently detected on Shopify storefronts.`
+
+CTA:
+`Explore Shopify apps →`
+
+URL:
+`/stats/shopify-apps`
+
+---
+
+Leave the component architecture flexible enough to later add:
+
+* Shopify Themes
+* Page Builders
+* Analytics Tools
+* JavaScript Frameworks
+* Ecommerce Platforms
+* Hosting Providers
+* CDN Providers
+* Marketing Technologies
+* Fastest Growing Technologies
+
+Do not show empty categories publicly until there is useful data.
+
+---
+
+# 6. TOP TECHNOLOGIES
+
+Heading:
+
+**Most detected technologies**
+
+Create a ranked table showing the most commonly detected technologies across all scans.
+
+Columns:
+
+`Rank`
+`Technology`
+`Category`
+`Sites`
+`Share`
+
+Example:
+
+1. Elementor — Page Builder
+2. WooCommerce — Ecommerce
+3. Google Analytics — Analytics
+4. Yoast SEO — SEO
+5. Shopify — Ecommerce Platform
+6. jQuery — JavaScript Library
+
+Allow 10–20 results on the `/stats` overview page.
+
+Include:
+
+`View all technologies →`
+
+if/when a dedicated technology index exists.
+
+The table should be beautiful and readable, not a dense enterprise data grid.
+
+Mobile should convert gracefully into cards or simplified rows.
+
+---
+
+# 7. WORDPRESS SNAPSHOT
+
+Because WordPress is likely one of GetStack's richest datasets, create a dedicated teaser section.
+
+Heading:
+
+**Inside WordPress**
+
+Use three compact rankings side-by-side on desktop:
+
+### Top Themes
+
+1. Theme Name
+2. Theme Name
+3. Theme Name
+4. Theme Name
+5. Theme Name
+
+CTA:
+`View WordPress themes →`
+
+### Top Plugins
+
+1. Plugin Name
+2. Plugin Name
+3. Plugin Name
+4. Plugin Name
+5. Plugin Name
+
+CTA:
+`View WordPress plugins →`
+
+### Top Page Builders
+
+1. Elementor
+2. Divi
+3. Gutenberg
+4. Bricks
+5. Beaver Builder
+
+Only list technologies actually detected in GetStack data.
+
+Do not hard-code these example rankings as factual results.
+
+---
+
+# 8. TRENDING / MOVEMENT
+
+If GetStack stores timestamps or historical scan records, add:
+
+Heading:
+
+**What's changing**
+
+Show technologies gaining or losing share.
+
+Example card structure:
+
+`↑ +14.2%`
+**Bricks**
+Fastest-growing WordPress builder
+
+or
+
+`↓ −3.8%`
+**Legacy technology**
+Declining detection share
+
+Compare a meaningful period such as:
+
+`Last 30 days vs previous 30 days`
+
+or
+
+`September vs August`
+
+Clearly explain the comparison methodology.
+
+If GetStack does not currently retain enough historical data to calculate trends accurately, DO NOT fake this section.
+
+Hide it until the data exists.
+
+---
+
+# 9. METHODOLOGY / DATA EXPLANATION
+
+This is important.
+
+Heading:
+
+**About the data**
+
+Short, readable explanation:
+
+`GetStack statistics are based on websites submitted for analysis through GetStack. They represent the websites our users investigate, not a random sample of the entire internet. Technologies are identified using publicly detectable signals and may not always be visible or identifiable.`
+
+Include a link:
+
+`Learn how GetStack detects technologies →`
+
+which may point to `/faq` or a future `/methodology` page.
+
+Include key caveats:
+
+* statistics reflect GetStack scans, not the entire web
+* individual websites should only count once within an appropriate reporting period if needed to prevent repeated scans distorting results
+* detection is based on publicly observable technology
+* hidden/server-side technologies may not be detectable
+* detection confidence can vary
+
+Keep this visually understated.
+
+---
+
+# 10. CTA
+
+Near the bottom:
+
+Large heading:
+
+**Curious what a website is running?**
+
+Copy:
+
+`Enter any URL and let GetStack identify the technologies behind it.`
+
+CTA:
+
+`Scan a Website`
+
+Link to the main detector.
+
+This closes the loop:
+
+Stats → curiosity → scanner → more scans → better stats.
+
+---
+
+# 11. FOOTER
+
+Use the existing GetStack footer unchanged.
+
+---
+
+# DATA ARCHITECTURE
+
+Build this page so it can consume real aggregate GetStack scan data.
+
+Suggested normalized concepts:
+
+* total_scans
+* unique_domains
+* detected_technologies
+* technology_category
+* technology_name
+* detection_count
+* detection_share
+* cms
+* theme
+* plugin
+* app
+* framework
+* first_seen
+* last_seen
+* reporting_period
+
+Avoid letting repeated scans of one popular domain artificially dominate public statistics.
+
+Prefer unique-domain aggregation for percentage/share calculations.
+
+For example:
+
+`Sites using Elementor / unique WordPress sites analyzed`
+
+rather than:
+
+`Number of Elementor detections / total scan events`
+
+Where possible, expose the methodology transparently.
+
+---
+
+# SEO
+
+Page title:
+
+`Website Technology Statistics & Trends | GetStack`
+
+Meta description:
+
+`Explore the most popular CMS platforms, WordPress themes, plugins, Shopify apps and website technologies detected by GetStack.`
+
+H1:
+
+`What is the web built with?`
+
+Use semantic headings throughout.
+
+Add internal links to:
+
+* homepage scanner
+* FAQ
+* About
+* CMS stats
+* WordPress theme stats
+* WordPress plugin stats
+* Shopify app stats
+
+Implement appropriate structured data where useful.
+
+Make the page indexable.
+
+Canonical:
+
+`https://gtstk.dev/stats`
+
+---
+
+# DESIGN DIRECTION
+
+The visual treatment should be:
+
+* clean
+* modern
+* intelligent
+* restrained
+* data-forward
+* spacious
+* premium SaaS
+* highly legible
+
+Avoid:
+
+* crypto-dashboard aesthetics
+* excessive gradients
+* neon visualization
+* dozens of tiny widgets
+* generic Bootstrap dashboard appearance
+* fake real-time indicators
+* enormous enterprise tables
+* visual clutter
+
+Use subtle borders, cards, typography hierarchy and whitespace.
+
+Charts should feel editorial rather than financial-terminal-like.
+
+Think:
+
+**“State of the Web report” rather than “Google Analytics clone.”**
+
+---
+
+# MOST IMPORTANT PRODUCT IDEA
+
+The page should communicate that GetStack's scanner creates a growing proprietary view of the technologies people are encountering on the web.
+
+The product loop is:
+
+`Website scans`
+→ `technology detections`
+→ `aggregate statistics`
+→ `public insights`
+→ `organic discovery`
+→ `more website scans`
+
+This is therefore not merely a stats page.
+
+It is the beginning of **GetStack Intelligence**.
+
+Build the architecture so `/stats` can grow into a substantial public data product without needing to rebuild the page later.

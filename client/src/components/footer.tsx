@@ -35,6 +35,7 @@ export default function Footer() {
               <h3 className="text-sm font-semibold text-foreground mb-3">Tools</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><Link href="/wordpress-detector" className="hover:text-foreground transition-colors">WordPress Detector</Link></li>
+                <li><Link href="/stats" className="hover:text-foreground transition-colors">Technology Stats</Link></li>
               </ul>
             </div>
 
