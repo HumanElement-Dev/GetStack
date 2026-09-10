@@ -18,6 +18,9 @@ const platforms: { name: string; icon: PlatformIcon; color: string; summary: str
   { name: "Shopify", icon: SiShopify, color: "#96BF48", summary: "Theme, store info & apps" },
   { name: "Squarespace", icon: SiSquarespace, color: "#222222", summary: "Version, features & template" },
   { name: "Webflow", icon: SiWebflow, color: "#146EF5", summary: "Site details & features" },
+  { name: "Joomla", icon: Globe, color: "#F9A541", summary: "Version, template & extensions" },
+  { name: "Drupal", icon: SiDrupal, color: "#0678BE", summary: "Version, theme & modules" },
+  { name: "And more", icon: Puzzle, color: "#64748B", summary: "Frameworks & technologies" },
 ];
 
 export default function Welcome() {
@@ -114,7 +117,7 @@ export default function Welcome() {
               <h2 className="text-2xl font-bold text-foreground mb-2">Supported Platforms</h2>
               <p className="text-muted-foreground">Deep detection for the web's most popular site builders</p>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 max-w-4xl mx-auto justify-items-stretch">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
               {platforms.map((platform) => {
                 const Icon = platform.icon || Globe;
                 return (
@@ -128,21 +131,6 @@ export default function Welcome() {
                   </div>
                 );
               })}
-            </div>
-          </div>
-
-          {/* Also Detects */}
-          <div className="mb-16">
-            <div className="flex flex-wrap items-center gap-3 p-5 rounded-lg border bg-card">
-              <span className="text-sm font-semibold text-muted-foreground whitespace-nowrap">Also detects:</span>
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/50 border">
-                <Globe className="w-4 h-4 text-orange-500" />
-                <span className="text-sm font-medium text-foreground">Joomla</span>
-              </div>
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/50 border">
-                <SiDrupal className="w-4 h-4" style={{ color: "#0678BE" }} />
-                <span className="text-sm font-medium text-foreground">Drupal</span>
-              </div>
             </div>
           </div>
 
