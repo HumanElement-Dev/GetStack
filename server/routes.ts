@@ -261,6 +261,17 @@ function escapeHtml(value: string): string {
     .replace(/'/g, "&#039;");
 }
 
+function decodeHtmlText(value: string): string {
+  return value
+    .replace(/&#(\d+);/g, (_, code) => String.fromCodePoint(Number(code)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, code) => String.fromCodePoint(parseInt(code, 16)))
+    .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, '"')
+    .replace(/&apos;|&#39;/gi, "'")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">");
+}
+
 function formatCmsName(cmsType: string): string {
   const names: Record<string, string> = {
     wordpress: "WordPress",
@@ -534,6 +545,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         let pluginCount = null;
         let plugins: Plugin[] = [];
         let technologies: string[] = [];
+        let siteTitle: string | null = null;
+        let faviconUrl: string | null = null;
         const pluginVersions = new Map<string, string>();
         let wpScore = 0;
         let detectedIndicators: string[] = [];
@@ -563,6 +576,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
 
             const content = await fullResponse.text();
+
+            const genericTitleMatch = content.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+            if (genericTitleMatch?.[1]) {
+              siteTitle = genericTitleMatch[1]
+                .replace(/<[^>]+>/g, "")
+                .replace(/\s+/g, " ")
+                .trim();
+              siteTitle = decodeHtmlText(siteTitle)
+                .slice(0, 200) || null;
+            }
+
+            const faviconMatch =
+              content.match(/<link[^>]+rel=["'][^"']*(?:shortcut\s+icon|icon)[^"']*["'][^>]+href=["']([^"']+)["']/i)
+              || content.match(/<link[^>]+href=["']([^"']+)["'][^>]+rel=["'][^"']*(?:shortcut\s+icon|icon)[^"']*["']/i);
+            if (faviconMatch?.[1]) {
+              try {
+                const resolvedFavicon = new URL(faviconMatch[1].trim(), urlToCheck);
+                if (resolvedFavicon.protocol === "http:" || resolvedFavicon.protocol === "https:") {
+                  faviconUrl = resolvedFavicon.toString();
+                }
+              } catch {
+                faviconUrl = null;
+              }
+            }
             
             // Very strict WordPress detection - require concrete evidence
             
@@ -1981,6 +2018,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Store the detection result
         const detectionRequest = await storage.createDetectionRequest({
           domain: normalizedDomain,
+          siteTitle,
+          faviconUrl,
           cmsType,
           isWordPress,
           wordPressVersion,
@@ -2006,6 +2045,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.json({
           id: detectionRequest.id,
           domain: normalizedDomain,
+          siteTitle,
+          faviconUrl,
           cmsType,
           isWordPress,
           isSquarespace,

@@ -1,5 +1,5 @@
 import { Layers, CheckCircle, AlertTriangle, HelpCircle, Clock, Puzzle } from "lucide-react";
-import type { DetectionResult } from "@/components/results-display";
+import { SiteIdentityCard, type DetectionResult } from "@/components/results-display";
 
 interface DashboardViewProps {
   result: DetectionResult;
@@ -90,10 +90,10 @@ export default function DashboardView({ result, site }: DashboardViewProps) {
 
   return (
     <div className="max-w-2xl space-y-6">
-      <div>
-        <h2 className="text-xl font-semibold text-foreground">{domainLabel}</h2>
-        <p className="text-sm text-muted-foreground mt-0.5">Site overview</p>
-      </div>
+      <SiteIdentityCard
+        result={{ ...result, siteTitle: result.siteTitle || site?.name || domainLabel }}
+        compact
+      />
 
       {/* Summary strip */}
       <div className="grid grid-cols-2 gap-3">

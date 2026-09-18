@@ -43,6 +43,8 @@ const iconMap: Record<string, LucideIcon> = {
 export interface DetectionResult {
   id: string;
   domain: string;
+  siteTitle?: string | null;
+  faviconUrl?: string | null;
   cmsType?: string | null;
   isWordPress: boolean | null;
   isSquarespace?: boolean | null;
@@ -72,6 +74,79 @@ interface ResultsDisplayProps {
   isLoading: boolean;
   compact?: boolean;
   scanDomain?: string;
+}
+
+interface SiteIdentityCardProps {
+  result: DetectionResult;
+  compact?: boolean;
+}
+
+function getResultSiteTitle(result: DetectionResult): string {
+  return result.siteTitle
+    || result.wixInfo?.siteTitle
+    || result.shopifyInfo?.storeName
+    || result.squarespaceInfo?.siteTitle
+    || result.webflowInfo?.siteTitle
+    || result.joomlaInfo?.siteTitle
+    || result.drupalInfo?.siteTitle
+    || result.domain;
+}
+
+export function SiteIdentityCard({ result, compact = false }: SiteIdentityCardProps) {
+  const [faviconFailed, setFaviconFailed] = useState(false);
+  const [previewFailed, setPreviewFailed] = useState(false);
+  const title = getResultSiteTitle(result);
+  const siteUrl = `https://${result.domain}`;
+  const faviconUrl = result.faviconUrl || `${siteUrl}/favicon.ico`;
+  const previewUrl = `https://image.thum.io/get/width/1200/crop/760/noanimate/wait/8/${siteUrl}`;
+
+  return (
+    <section className="overflow-hidden rounded-2xl border border-green-200 bg-green-50 shadow-sm" data-testid="site-identity-card">
+      {!previewFailed && (
+        <div className={`relative w-full overflow-hidden border-b border-green-200 bg-white ${compact ? "aspect-[16/6]" : "aspect-[16/7]"}`}>
+          <img
+            src={previewUrl}
+            alt={`Above-the-fold preview of ${title}`}
+            className="h-full w-full object-cover object-top"
+            loading="eager"
+            referrerPolicy="no-referrer"
+            onError={() => setPreviewFailed(true)}
+            data-testid="site-preview-image"
+          />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-black/20 to-transparent" />
+        </div>
+      )}
+      <div className="flex items-start gap-3 p-4 sm:gap-4 sm:p-6">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-green-200 bg-white shadow-sm">
+          {!faviconFailed ? (
+            <img
+              src={faviconUrl}
+              alt=""
+              className="h-7 w-7 object-contain"
+              onError={() => setFaviconFailed(true)}
+              data-testid="site-favicon"
+            />
+          ) : (
+            <Globe className="h-6 w-6 text-green-700" aria-hidden="true" />
+          )}
+        </div>
+        <div className="min-w-0">
+          <h1 className="break-words text-2xl font-bold tracking-tight text-green-950 sm:text-3xl" data-testid="site-title">
+            {title}
+          </h1>
+          <a
+            href={siteUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-1 block truncate text-sm text-green-700 underline-offset-4 hover:underline sm:text-base"
+            data-testid="site-url"
+          >
+            {siteUrl}
+          </a>
+        </div>
+      </div>
+    </section>
+  );
 }
 
 // ─── WordPress Version Intelligence Card ─────────────────────────────────────
@@ -315,6 +390,7 @@ export default function ResultsDisplay({ result, isLoading, compact = false, sca
     return (
       <div className="space-y-4 md:space-y-6">
         <ShareBar resultId={result.id} platform="webflow" />
+        <SiteIdentityCard result={result} compact={compact} />
         <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 md:p-6" data-testid="webflow-detected">
           <div className="flex flex-col sm:flex-row items-start gap-3 sm:space-x-4">
             <div className="flex-shrink-0">
@@ -397,6 +473,7 @@ export default function ResultsDisplay({ result, isLoading, compact = false, sca
       <div className="space-y-4 md:space-y-6">
         {/* WordPress Confirmation Card */}
         <ShareBar resultId={result.id} platform={result.cmsType} />
+        <SiteIdentityCard result={result} compact={compact} />
         <div className="bg-green-50 border border-green-200 rounded-xl p-4 md:p-6" data-testid="wordpress-detected">
           <div className="flex flex-col sm:flex-row items-start gap-3 sm:space-x-4">
             <div className="flex-shrink-0">
@@ -732,6 +809,7 @@ export default function ResultsDisplay({ result, isLoading, compact = false, sca
       <div className="space-y-4 md:space-y-6">
         {/* Wix Confirmation Card */}
         <ShareBar resultId={result.id} platform={result.cmsType} />
+        <SiteIdentityCard result={result} compact={compact} />
         <div className="bg-green-50 border border-green-200 rounded-xl p-4 md:p-6" data-testid="wix-detected">
           <div className="flex flex-col sm:flex-row items-start gap-3 sm:space-x-4">
             <div className="flex-shrink-0">
@@ -943,6 +1021,7 @@ export default function ResultsDisplay({ result, isLoading, compact = false, sca
       <div className="space-y-4 md:space-y-6">
         {/* Shopify Confirmation Card */}
         <ShareBar resultId={result.id} platform={result.cmsType} />
+        <SiteIdentityCard result={result} compact={compact} />
         <div className="bg-green-50 border border-green-200 rounded-xl p-4 md:p-6" data-testid="shopify-detected">
           <div className="flex flex-col sm:flex-row items-start gap-3 sm:space-x-4">
             <div className="flex-shrink-0">
@@ -1205,6 +1284,7 @@ export default function ResultsDisplay({ result, isLoading, compact = false, sca
       <div className="space-y-4 md:space-y-6">
         {/* Squarespace Confirmation Card */}
         <ShareBar resultId={result.id} platform={result.cmsType} />
+        <SiteIdentityCard result={result} compact={compact} />
         <div className="bg-green-50 border border-green-200 rounded-xl p-4 md:p-6" data-testid="squarespace-detected">
           <div className="flex flex-col sm:flex-row items-start gap-3 sm:space-x-4">
             <div className="flex-shrink-0">
@@ -1416,6 +1496,7 @@ export default function ResultsDisplay({ result, isLoading, compact = false, sca
       <div className="space-y-4 md:space-y-6">
         {/* Joomla Confirmation Card */}
         <ShareBar resultId={result.id} platform={result.cmsType} />
+        <SiteIdentityCard result={result} compact={compact} />
         <div className="bg-green-50 border border-green-200 rounded-xl p-4 md:p-6" data-testid="joomla-detected">
           <div className="flex flex-col sm:flex-row items-start gap-3 sm:space-x-4">
             <div className="flex-shrink-0">
@@ -1504,6 +1585,7 @@ export default function ResultsDisplay({ result, isLoading, compact = false, sca
     return (
       <div className="space-y-4 md:space-y-6">
         <ShareBar resultId={result.id} platform={result.cmsType} />
+        <SiteIdentityCard result={result} compact={compact} />
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 md:p-6" data-testid="drupal-detected">
           <div className="flex flex-col sm:flex-row items-start gap-3 sm:space-x-4">
             <div className="flex-shrink-0">
@@ -1582,8 +1664,10 @@ export default function ResultsDisplay({ result, isLoading, compact = false, sca
 
   // Platform not recognized
   return (
-    <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 md:p-6 mb-4 md:mb-8" data-testid="platform-not-detected">
-      <div className="flex flex-col sm:flex-row items-start gap-3 sm:space-x-4">
+    <div className="space-y-4 md:space-y-6">
+      <SiteIdentityCard result={result} compact={compact} />
+      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 md:p-6 mb-4 md:mb-8" data-testid="platform-not-detected">
+        <div className="flex flex-col sm:flex-row items-start gap-3 sm:space-x-4">
         <div className="flex-shrink-0">
           <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
             <i className="fas fa-question text-amber-600 text-lg"></i>
@@ -1606,6 +1690,7 @@ export default function ResultsDisplay({ result, isLoading, compact = false, sca
               </ul>
             </div>
           )}
+        </div>
         </div>
       </div>
     </div>

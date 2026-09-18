@@ -158,6 +158,8 @@ export type DrupalInfo = z.infer<typeof drupalInfoSchema>;
 export const detectionRequests = pgTable("detection_requests", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   domain: text("domain").notNull(),
+  siteTitle: text("site_title"),
+  faviconUrl: text("favicon_url"),
   cmsType: text("cms_type"), // 'wordpress', 'wix', 'shopify', 'squarespace', 'webflow', 'joomla', 'drupal', or null
   isWordPress: boolean("is_wordpress"), // keeping for backward compatibility
   wordPressVersion: text("wordpress_version"),
