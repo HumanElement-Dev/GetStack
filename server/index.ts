@@ -3,6 +3,7 @@ import { registerRoutes } from "./routes";
 import { registerStripeRoutes } from "./stripeRoutes";
 import { WebhookHandlers } from "./webhookHandlers";
 import { setupVite, serveStatic, log } from "./vite";
+import { ensurePremiumProduct } from "./premiumProduct";
 
 const app = express();
 
@@ -71,6 +72,11 @@ async function initStripe() {
     await runMigrations({ databaseUrl });
     log("Stripe schema ready");
 
+    const premium = await ensurePremiumProduct();
+    if (premium.createdProduct || premium.createdPrice) {
+      log("Stripe Premium plan configured");
+    }
+
     const stripeSync = await getStripeSync();
     const domains = process.env.REPLIT_DOMAINS?.split(",");
     if (domains?.[0]) {
@@ -79,11 +85,8 @@ async function initStripe() {
       log("Stripe webhook configured");
     }
 
-    stripeSync.syncBackfill().then(() => {
-      log("Stripe data synced");
-    }).catch((err: any) => {
-      console.error("Stripe sync error:", err.message);
-    });
+    await stripeSync.syncBackfill();
+    log("Stripe data synced");
   } catch (err: any) {
     // Stripe not configured yet — server continues without it
     if (!err.message?.includes("not configured")) {

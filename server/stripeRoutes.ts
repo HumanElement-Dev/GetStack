@@ -5,6 +5,7 @@ import { userTiers } from "@shared/schema";
 import { eq, sql } from "drizzle-orm";
 import { isAuthenticated } from "./replit_integrations/auth";
 import { getUncachableStripeClient } from "./stripeClient";
+import { PREMIUM_PRODUCT_NAME } from "./premiumProduct";
 
 export function registerStripeRoutes(app: Express) {
   // Get current user's subscription status — reads from user_tiers (source of truth)
@@ -53,7 +54,7 @@ export function registerStripeRoutes(app: Express) {
         WHERE p.active = true
           AND pr.active = true
           AND pr.recurring IS NOT NULL
-          AND p.name = 'GTSTK Premium'
+          AND p.name = ${PREMIUM_PRODUCT_NAME}
         ORDER BY pr.unit_amount ASC
         LIMIT 1
       `);

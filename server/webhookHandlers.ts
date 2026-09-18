@@ -4,6 +4,7 @@ import { db } from './db';
 import { users } from '@shared/models/auth';
 import { userTiers } from '@shared/schema';
 import { eq, sql } from 'drizzle-orm';
+import { PREMIUM_PRODUCT_NAME } from './premiumProduct';
 
 const SUBSCRIPTION_EVENTS = new Set([
   'customer.subscription.created',
@@ -55,7 +56,7 @@ export class WebhookHandlers {
 
   /**
    * Returns true only if the subscription contains at least one item whose
-   * product is our approved Premium product (name contains "premium").
+   * product is our approved Premium product (by exact canonical name).
    * This prevents granting premium access via subscriptions from other products.
    */
   static async isApprovedPremiumSubscription(subscription: any): Promise<boolean> {
@@ -74,7 +75,7 @@ export class WebhookHandlers {
         SELECT id FROM stripe.products
         WHERE id = ANY(${productIds})
           AND active = true
-          AND name = 'GTSTK Premium'
+          AND name = ${PREMIUM_PRODUCT_NAME}
         LIMIT 1
       `);
       return result.rows.length > 0;
