@@ -2,7 +2,8 @@ import type { Express } from "express";
 import { authStorage } from "./storage";
 import { isAuthenticated } from "./replitAuth";
 import { db } from "../../db";
-import { userTiers, users } from "@shared/schema";
+import { userTiers } from "@shared/schema";
+import { users } from "@shared/models/auth";
 import { eq, desc } from "drizzle-orm";
 
 export function registerAuthRoutes(app: Express): void {

@@ -11,12 +11,16 @@ import { Separator } from "@/components/ui/separator";
 export default function Login() {
   const { isAuthenticated, isLoading } = useAuth();
   const [, setLocation] = useLocation();
+  const requestedReturnTo = new URLSearchParams(window.location.search).get("returnTo");
+  const returnTo = requestedReturnTo?.startsWith("/") && !requestedReturnTo.startsWith("//")
+    ? requestedReturnTo
+    : "/dashboard";
 
   useEffect(() => {
     if (isAuthenticated) {
-      setLocation("/dashboard");
+      setLocation(returnTo);
     }
-  }, [isAuthenticated, setLocation]);
+  }, [isAuthenticated, returnTo, setLocation]);
 
   if (isLoading) {
     return (
@@ -65,7 +69,7 @@ export default function Login() {
 
               <div className="pt-4 space-y-3">
                 <a 
-                  href="/api/auth/google" 
+                  href={`/api/auth/google?returnTo=${encodeURIComponent(returnTo)}`}
                   className="block w-full"
                   onClick={() => trackEvent('login_click', 'auth', 'google_login')}
                 >
@@ -82,7 +86,7 @@ export default function Login() {
                 </div>
 
                 <a 
-                  href="/api/login" 
+                  href={`/api/login?returnTo=${encodeURIComponent(returnTo)}`}
                   className="block w-full"
                   onClick={() => trackEvent('login_click', 'auth', 'replit_login')}
                 >

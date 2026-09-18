@@ -1,4 +1,5 @@
-import { type User, type UpsertUser as InsertUser, type DetectionRequest, type InsertDetectionRequest, detectionRequests } from "@shared/schema";
+import { type DetectionRequest, type InsertDetectionRequest, detectionRequests } from "@shared/schema";
+import { type User, type UpsertUser as InsertUser } from "@shared/models/auth";
 import { randomUUID } from "crypto";
 import { desc, eq, ilike, sql } from "drizzle-orm";
 import { db } from "./db";

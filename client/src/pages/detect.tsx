@@ -24,6 +24,21 @@ export default function Detect() {
 
   useEffect(() => {
     setMounted(true);
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("reveal") === "1") {
+      const savedResult = sessionStorage.getItem("getstack:last-scan-result");
+      if (savedResult) {
+        try {
+          const restoredResult = JSON.parse(savedResult) as DetectionResult;
+          setResult(restoredResult);
+          setScanDomain(restoredResult.domain);
+          sessionStorage.removeItem("getstack:last-scan-result");
+          window.history.replaceState({}, "", "/detect");
+        } catch {
+          sessionStorage.removeItem("getstack:last-scan-result");
+        }
+      }
+    }
   }, []);
 
   useEffect(() => {
@@ -107,7 +122,7 @@ export default function Detect() {
           </div>
 
           {/* Results Display */}
-          <ResultsDisplay result={result} isLoading={isLoading} scanDomain={scanDomain} />
+          <ResultsDisplay result={result} isLoading={isLoading} scanDomain={scanDomain} gateDetails />
 
           {/* Feature Section - only show when no results */}
           {!result && <FeatureSection />}

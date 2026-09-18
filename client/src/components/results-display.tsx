@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Link } from "wouter";
 import { useUserTier } from "@/hooks/use-tier";
+import { useAuth } from "@/hooks/use-auth";
 
 const iconMap: Record<string, LucideIcon> = {
   'layout': Layout,
@@ -75,6 +76,7 @@ interface ResultsDisplayProps {
   isLoading: boolean;
   compact?: boolean;
   scanDomain?: string;
+  gateDetails?: boolean;
 }
 
 interface SiteIdentityCardProps {
@@ -147,6 +149,36 @@ export function SiteIdentityCard({ result, compact = false }: SiteIdentityCardPr
         </div>
       </div>
     </section>
+  );
+}
+
+function SignInToReveal({ result, hiddenCount }: { result: DetectionResult; hiddenCount: number }) {
+  const handleSignIn = () => {
+    try {
+      sessionStorage.setItem("getstack:last-scan-result", JSON.stringify(result));
+    } catch {
+      // The scan remains visible until navigation; the login flow still works if storage is unavailable.
+    }
+    window.location.href = `/login?returnTo=${encodeURIComponent("/detect?reveal=1")}`;
+  };
+
+  return (
+    <div className="mt-3 rounded-lg border border-primary/20 bg-primary/5 p-4 text-center" data-testid="signin-to-reveal">
+      <Lock className="mx-auto mb-2 h-5 w-5 text-primary" />
+      <p className="text-sm font-semibold text-foreground">See the full stack — it’s free</p>
+      <p className="mt-1 text-xs text-muted-foreground">
+        {hiddenCount} more {hiddenCount === 1 ? "item is" : "items are"} ready to reveal.
+      </p>
+      <button
+        type="button"
+        onClick={handleSignIn}
+        className="mt-3 inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+        data-testid="button-reveal-full-stack"
+      >
+        Sign in to see the full stack
+        <ArrowRight className="h-3.5 w-3.5" />
+      </button>
+    </div>
   );
 }
 
@@ -409,8 +441,9 @@ function ShareBar({ resultId, platform }: { resultId: string; platform?: string 
   );
 }
 
-export default function ResultsDisplay({ result, isLoading, compact = false, scanDomain }: ResultsDisplayProps) {
+export default function ResultsDisplay({ result, isLoading, compact = false, scanDomain, gateDetails = false }: ResultsDisplayProps) {
   const { isPremium } = useUserTier();
+  const { isAuthenticated } = useAuth();
 
   if (isLoading) {
     return <ScanEngine domain={scanDomain || "target"} />;
@@ -419,6 +452,8 @@ export default function ResultsDisplay({ result, isLoading, compact = false, sca
   if (!result) {
     return null;
   }
+
+  const detailsLocked = gateDetails && !isAuthenticated;
 
   // Error state
   if (result.error) {
@@ -772,9 +807,10 @@ export default function ResultsDisplay({ result, isLoading, compact = false, sca
                         <div className="space-y-2" data-testid="list-plugins">
                           {(() => {
                             // Organize plugins into parent-child relationships
-                            const parentPlugins = result.plugins.filter(p => !p.parent);
-                            const childPlugins = result.plugins.filter(p => p.parent);
-                            const pluginMap = new Map(result.plugins.map(p => [p.slug, p]));
+                            const visiblePlugins = detailsLocked ? result.plugins.slice(0, 3) : result.plugins;
+                            const parentPlugins = visiblePlugins.filter(p => !p.parent);
+                            const childPlugins = visiblePlugins.filter(p => p.parent);
+                            const pluginMap = new Map(visiblePlugins.map(p => [p.slug, p]));
                             
                             // Sort parent plugins alphabetically
                             const sortedParents = parentPlugins.sort((a, b) => a.name.localeCompare(b.name));
@@ -852,6 +888,9 @@ export default function ResultsDisplay({ result, isLoading, compact = false, sca
                             );
                           })()}
                         </div>
+                      )}
+                      {detailsLocked && result.plugins && result.plugins.length > 3 && (
+                        <SignInToReveal result={result} hiddenCount={result.plugins.length - 3} />
                       )}
                     </div>
                   )}
@@ -1766,10 +1805,13 @@ export default function ResultsDisplay({ result, isLoading, compact = false, sca
             <div className="bg-white rounded-lg p-3 md:p-4 border border-amber-200">
               <h4 className="font-medium text-amber-800 mb-2 text-sm md:text-base">Detected Technologies:</h4>
               <ul className="space-y-1 text-xs md:text-sm text-amber-700" data-testid="list-technologies">
-                {result.technologies.map((tech, index) => (
+                {result.technologies.slice(0, detailsLocked ? 3 : undefined).map((tech, index) => (
                   <li key={index}>• {tech}</li>
                 ))}
               </ul>
+              {detailsLocked && result.technologies.length > 3 && (
+                <SignInToReveal result={result} hiddenCount={result.technologies.length - 3} />
+              )}
             </div>
           )}
         </div>

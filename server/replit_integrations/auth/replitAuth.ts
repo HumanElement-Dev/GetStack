@@ -104,6 +104,10 @@ export async function setupAuth(app: Express) {
   passport.deserializeUser((user: Express.User, cb) => cb(null, user));
 
   app.get("/api/login", (req, res, next) => {
+    const returnTo = typeof req.query.returnTo === "string" ? req.query.returnTo : "";
+    if (returnTo.startsWith("/") && !returnTo.startsWith("//")) {
+      (req.session as session.Session & { returnTo?: string }).returnTo = returnTo;
+    }
     ensureStrategy(req.hostname);
     passport.authenticate(`replitauth:${req.hostname}`, {
       prompt: "login consent",
@@ -199,17 +203,27 @@ export async function setupAuth(app: Express) {
       )
     );
 
-    app.get(
-      "/api/auth/google",
-      passport.authenticate("google", { scope: ["profile", "email"] })
-    );
+    app.get("/api/auth/google", (req, res, next) => {
+      const returnTo = typeof req.query.returnTo === "string" ? req.query.returnTo : "";
+      if (returnTo.startsWith("/") && !returnTo.startsWith("//")) {
+        (req.session as session.Session & { returnTo?: string }).returnTo = returnTo;
+      }
+      passport.authenticate("google", { scope: ["profile", "email"] })(req, res, next);
+    });
 
     app.get(
       "/api/auth/google/callback",
-      passport.authenticate("google", {
-        successRedirect: "/dashboard",
-        failureRedirect: "/login",
-      })
+      passport.authenticate("google", { failureRedirect: "/login" }),
+      (req, res) => {
+        const sessionWithReturn = req.session as session.Session & { returnTo?: string };
+        const returnTo = sessionWithReturn.returnTo;
+        delete sessionWithReturn.returnTo;
+        res.redirect(
+          typeof returnTo === "string" && returnTo.startsWith("/") && !returnTo.startsWith("//")
+            ? returnTo
+            : "/dashboard"
+        );
+      }
     );
   }
 }
