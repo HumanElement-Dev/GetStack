@@ -6,6 +6,7 @@ import { eq, sql } from "drizzle-orm";
 import { isAuthenticated } from "./replit_integrations/auth";
 import { getUncachableStripeClient } from "./stripeClient";
 import { PREMIUM_PRODUCT_NAME } from "./premiumProduct";
+import { hasActivePremiumTier } from "./premiumAccess";
 
 export function registerStripeRoutes(app: Express) {
   // Get current user's subscription status — reads from user_tiers (source of truth)
@@ -25,7 +26,7 @@ export function registerStripeRoutes(app: Express) {
       // Read from user_tiers — this is the app's source of truth, updated by webhooks
       const [tier] = await db.select().from(userTiers).where(eq(userTiers.userId, userId));
 
-      if (tier && (tier.tier === "premium") && (tier.status === "active" || tier.status === "trialing")) {
+      if (tier && hasActivePremiumTier(tier.tier, tier.status)) {
         return res.json({
           tier: "premium",
           status: tier.status,

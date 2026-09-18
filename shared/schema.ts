@@ -3,10 +3,6 @@ import { pgTable, text, varchar, timestamp, boolean, jsonb, integer, uniqueIndex
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// Re-export auth models (users and sessions tables)
-export * from "./models/auth";
-
-// User tiers for subscription management
 export const userTiers = pgTable("user_tiers", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().unique(),
@@ -224,3 +220,22 @@ export type PinnedSite = typeof pinnedSites.$inferSelect;
 export type InsertDetectionRequest = z.infer<typeof insertDetectionRequestSchema>;
 export type DetectionRequest = typeof detectionRequests.$inferSelect;
 export type DetectionRequestInput = z.infer<typeof detectionRequestSchema>;
+
+export const wordpressVulnerabilitySchema = z.object({
+  id: z.string(),
+  cve: z.string().nullable(),
+  severity: z.enum(["critical", "high", "medium", "low", "unknown"]),
+  description: z.string(),
+  references: z.array(z.string()),
+  fixedIn: z.string().nullable(),
+  recommendedUpgrade: z.string().nullable(),
+});
+
+export const wordpressVulnerabilityResultSchema = z.object({
+  version: z.string(),
+  vulnerabilities: z.array(wordpressVulnerabilitySchema),
+});
+
+export type WordPressVulnerabilityResult = z.infer<typeof wordpressVulnerabilityResultSchema>;
+
+export type WordPressVulnerability = z.infer<typeof wordpressVulnerabilitySchema>;

@@ -11,7 +11,9 @@ import { dirname, join } from "path";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
 import { db } from "./db";
 import { eq, and, sql } from "drizzle-orm";
-import rateLimit from "express-rate-limit";
+import rateLimit, { ipKeyGenerator } from "express-rate-limit";
+import { lookupWordPressVulnerabilities, VulnerabilityProviderError } from "./wordpressVulnerabilities";
+import { hasActivePremiumTier } from "./premiumAccess";
 
 // Load plugin signatures once at startup
 const __filename = fileURLToPath(import.meta.url);
@@ -240,6 +242,14 @@ const statsRateLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+const vulnerabilityRateLimiter = rateLimit({
+  windowMs: 24 * 60 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req: any) => req.user?.claims?.sub ?? ipKeyGenerator(req.ip),
+  message: { message: "Vulnerability lookup limit reached. Please try again later." },
+});
 let publicStatsCache: {
   data: Awaited<ReturnType<typeof storage.getPublicStats>>;
   expiresAt: number;
@@ -330,7 +340,7 @@ function requireTier(tier: "free" | "premium") {
       return next();
     }
     
-    if (tier === "premium" && userTier.tier !== "premium") {
+    if (tier === "premium" && !hasActivePremiumTier(userTier.tier, userTier.status)) {
       return res.status(403).json({ message: "Premium subscription required" });
     }
     
@@ -358,6 +368,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup auth BEFORE other routes
   await setupAuth(app);
   registerAuthRoutes(app);
+
+  app.get(
+    "/api/wordpress/vulnerabilities/:version",
+    isAuthenticated,
+    requireTier("premium"),
+    vulnerabilityRateLimiter,
+    async (req, res) => {
+      const version = req.params.version?.trim();
+      if (!version || !/^\d+(?:\.\d+){1,3}(?:[-+][0-9A-Za-z.-]+)?$/.test(version)) {
+        return res.status(400).json({ message: "A valid WordPress version is required" });
+      }
+      try {
+        res.setHeader("Cache-Control", "private, no-store");
+        return res.json(await lookupWordPressVulnerabilities(version));
+      } catch (error) {
+        if (error instanceof VulnerabilityProviderError) {
+          return res.status(503).json({
+            message: "Vulnerability data is temporarily unavailable. Please try again later.",
+          });
+        }
+        console.error("WordPress vulnerability lookup failed:", error);
+        return res.status(503).json({
+          message: "Vulnerability data is temporarily unavailable. Please try again later.",
+        });
+      }
+    },
+  );
 
   app.get("/api/stats", statsRateLimiter, async (_req, res) => {
     try {

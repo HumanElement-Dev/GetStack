@@ -1,6 +1,7 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import ScanEngine from "@/components/scan-engine";
-import type { Plugin, ThemeInfo, WixInfo, ShopifyInfo, SquarespaceInfo, WebflowInfo, JoomlaInfo, DrupalInfo } from "@shared/schema";
+import type { Plugin, ThemeInfo, WixInfo, ShopifyInfo, SquarespaceInfo, WebflowInfo, JoomlaInfo, DrupalInfo, WordPressVulnerabilityResult } from "@shared/schema";
 import { 
   Layout, ShoppingCart, Mail, Search, TrendingUp, 
   Zap, Shield, ShieldCheck, FileText, Image, Globe, Code, 
@@ -214,7 +215,7 @@ function WordPressVersionCard({ detectedVersion, latestVersion, status }: WordPr
             {isCurrent && (
               <>
                 <p className="text-xs font-semibold text-green-700">Status: ✅ Up to date</p>
-                <p className="text-xs text-gray-500">→ No known core vulnerabilities</p>
+                <p className="text-xs text-gray-500">→ Latest WordPress release detected</p>
                 <p className="text-xs text-gray-500">→ Actively maintained environment</p>
               </>
             )}
@@ -236,7 +237,35 @@ function WordPressVersionCard({ detectedVersion, latestVersion, status }: WordPr
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
-function PremiumInsightCTA({ isPremium }: { isPremium: boolean }) {
+function PremiumInsightCTA({
+  isPremium,
+  detectedVersion,
+}: {
+  isPremium: boolean;
+  detectedVersion?: string | null;
+}) {
+  const vulnerabilityQuery = useQuery<WordPressVulnerabilityResult>({
+    queryKey: ["/api/wordpress/vulnerabilities", detectedVersion],
+    queryFn: async () => {
+      const response = await fetch(`/api/wordpress/vulnerabilities/${encodeURIComponent(detectedVersion!)}`, {
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Vulnerability data unavailable");
+      return response.json();
+    },
+    enabled: isPremium && Boolean(detectedVersion),
+    staleTime: 30 * 60 * 1000,
+    retry: false,
+  });
+
+  const severityStyles = {
+    critical: "bg-red-100 text-red-800 border-red-200",
+    high: "bg-orange-100 text-orange-800 border-orange-200",
+    medium: "bg-amber-100 text-amber-800 border-amber-200",
+    low: "bg-blue-100 text-blue-800 border-blue-200",
+    unknown: "bg-gray-100 text-gray-700 border-gray-200",
+  };
+
   return (
     <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50/60 overflow-hidden">
       <div className="px-4 py-2.5 flex items-center gap-2 border-b border-gray-200/70">
@@ -244,10 +273,60 @@ function PremiumInsightCTA({ isPremium }: { isPremium: boolean }) {
         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Premium Insight</p>
       </div>
       {isPremium ? (
-        <div className="px-4 py-3">
-          <p className="text-xs text-gray-500 italic">
-            Detailed vulnerability analysis, CVE references, and fix recommendations are coming soon for premium users.
-          </p>
+        <div className="px-4 py-3" data-testid="premium-vulnerability-results">
+          {!detectedVersion || vulnerabilityQuery.isError ? (
+            <div className="flex items-start gap-2 text-sm text-gray-600">
+              <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0 text-amber-500" />
+              <p>Vulnerability details are unavailable right now{!detectedVersion ? " because the WordPress version could not be detected" : ""}. This does not indicate that the site is secure.</p>
+            </div>
+          ) : vulnerabilityQuery.isLoading ? (
+            <p className="text-sm text-gray-500">Checking WordPress core vulnerability data…</p>
+          ) : vulnerabilityQuery.data?.vulnerabilities.length === 0 ? (
+            <div className="flex items-start gap-2 text-sm text-green-700">
+              <ShieldCheck className="w-4 h-4 mt-0.5 shrink-0" />
+              <p>No known core vulnerabilities were returned for WordPress {detectedVersion}. This is not a guarantee that the site is secure.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {vulnerabilityQuery.data?.vulnerabilities.map((vulnerability) => (
+                <article key={vulnerability.id} className="rounded-md border border-gray-200 bg-white p-3 space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="font-mono text-xs font-semibold text-red-700">
+                      {vulnerability.cve ?? `WPScan ${vulnerability.id}`}
+                    </p>
+                    <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase ${severityStyles[vulnerability.severity]}`}>
+                      {vulnerability.severity}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-700">{vulnerability.description}</p>
+                  {vulnerability.fixedIn || vulnerability.recommendedUpgrade ? (
+                    <p className="text-xs font-medium text-green-700">
+                      Fixed in WordPress {vulnerability.fixedIn ?? vulnerability.recommendedUpgrade}
+                    </p>
+                  ) : (
+                    <p className="text-xs font-medium text-amber-700">
+                      No fixed version is currently provided. Review the references before taking action.
+                    </p>
+                  )}
+                  {vulnerability.references.length > 0 && (
+                    <div className="flex flex-wrap gap-x-3 gap-y-1">
+                      {vulnerability.references.map((reference, index) => (
+                        <a
+                          key={reference}
+                          href={reference}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-primary underline underline-offset-2"
+                        >
+                          Reference {index + 1}
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </article>
+              ))}
+            </div>
+          )}
         </div>
       ) : (
         <div className="px-4 py-3 space-y-2.5">
@@ -524,7 +603,10 @@ export default function ResultsDisplay({ result, isLoading, compact = false, sca
         </div>
 
         {/* Premium CTA — always visible for WordPress results */}
-        <PremiumInsightCTA isPremium={isPremium} />
+        <PremiumInsightCTA
+          isPremium={isPremium}
+          detectedVersion={result.wordPressVersion}
+        />
 
         {/* Theme Details Card */}
         {(result.theme || result.themeInfo) && (
