@@ -5,10 +5,16 @@ Production domain: [gtstk.dev](https://gtstk.dev)
 
 ---
 
-## Unreleased
+## v3.8.11
+
+### Added
+- **Long-tail blog content** — Added five guides covering WordPress detection, Shopify themes, WordPress plugins, BuiltWith alternatives, and agency onboarding audits. Included the new posts in the sitemap.
+- **Site identity card** — Scan results now include an above-the-fold site preview, favicon, site title, and URL.
 
 ### Changed
-- **WordPress plugin results** — Logged-out scans now show the full detected plugin list. The free sign-in prompt is a separate CTA below the list, and signing in returns users to their scan.
+- **Pricing page** — Reworked Premium messaging around agency, freelancer, and developer needs, with outcome-focused copy for pitches and audits. Checkout and sign-in behavior are unchanged.
+- **Blog publishing dates** — Distributed three new articles across June, July, and September. The index sorts by publication date and displays date-only values without shifting a day across time zones.
+- **WordPress plugin results** — Logged-out scans show the full detected plugin list, with a separate free sign-in CTA below it. Signing in returns users to their scan; the separate technology-list gate is unchanged.
 
 ---
 
