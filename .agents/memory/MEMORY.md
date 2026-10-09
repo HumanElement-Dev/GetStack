@@ -1,1 +1,2 @@
 - [TanStack Query stale error caching](tanstack-stale-error.md) — global staleTime:Infinity + retry:false caches errors permanently; override per-query for volatile/auth-gated endpoints.
+- [Dependency remediation decisions](dependency-remediation.md) — why Tailwind was upgraded; verify installed trees as well as scans when changing npm overrides.

@@ -1,7 +1,28 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@config "../../tailwind.config.ts";
+
+/* Preserve the v3 defaults used by the existing components. */
+@theme {
+  --default-ring-width: 3px;
+  --default-ring-color: #3b82f6;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --blur-sm: 4px;
+  --radius-sm: calc(var(--radius) - 4px);
+}
+
+@utility shadow {
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+}
+
+@utility outline-none {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
+@utility flex-shrink-0 {
+  flex-shrink: 0;
+}
 
 :root {
   --background: hsl(0 0% 100%);
@@ -40,14 +61,6 @@
   --font-serif: Georgia, serif;
   --font-mono: Menlo, monospace;
   --radius: 0.5rem;
-  --shadow-2xs: 0px 2px 0px 0px hsl(221.2 83.2% 53.3% / 0.00);
-  --shadow-xs: 0px 2px 0px 0px hsl(221.2 83.2% 53.3% / 0.00);
-  --shadow-sm: 0px 2px 0px 0px hsl(221.2 83.2% 53.3% / 0.00), 0px 1px 2px -1px hsl(221.2 83.2% 53.3% / 0.00);
-  --shadow: 0px 2px 0px 0px hsl(221.2 83.2% 53.3% / 0.00), 0px 1px 2px -1px hsl(221.2 83.2% 53.3% / 0.00);
-  --shadow-md: 0px 2px 0px 0px hsl(221.2 83.2% 53.3% / 0.00), 0px 2px 4px -1px hsl(221.2 83.2% 53.3% / 0.00);
-  --shadow-lg: 0px 2px 0px 0px hsl(221.2 83.2% 53.3% / 0.00), 0px 4px 6px -1px hsl(221.2 83.2% 53.3% / 0.00);
-  --shadow-xl: 0px 2px 0px 0px hsl(221.2 83.2% 53.3% / 0.00), 0px 8px 10px -1px hsl(221.2 83.2% 53.3% / 0.00);
-  --shadow-2xl: 0px 2px 0px 0px hsl(221.2 83.2% 53.3% / 0.00);
   --tracking-normal: 0em;
   --spacing: 0.25rem;
 }
@@ -89,17 +102,19 @@
   --font-serif: Georgia, serif;
   --font-mono: Menlo, monospace;
   --radius: 0.5rem;
-  --shadow-2xs: 0px 2px 0px 0px hsl(221.2 83.2% 53.3% / 0.00);
-  --shadow-xs: 0px 2px 0px 0px hsl(221.2 83.2% 53.3% / 0.00);
-  --shadow-sm: 0px 2px 0px 0px hsl(221.2 83.2% 53.3% / 0.00), 0px 1px 2px -1px hsl(221.2 83.2% 53.3% / 0.00);
-  --shadow: 0px 2px 0px 0px hsl(221.2 83.2% 53.3% / 0.00), 0px 1px 2px -1px hsl(221.2 83.2% 53.3% / 0.00);
-  --shadow-md: 0px 2px 0px 0px hsl(221.2 83.2% 53.3% / 0.00), 0px 2px 4px -1px hsl(221.2 83.2% 53.3% / 0.00);
-  --shadow-lg: 0px 2px 0px 0px hsl(221.2 83.2% 53.3% / 0.00), 0px 4px 6px -1px hsl(221.2 83.2% 53.3% / 0.00);
-  --shadow-xl: 0px 2px 0px 0px hsl(221.2 83.2% 53.3% / 0.00), 0px 8px 10px -1px hsl(221.2 83.2% 53.3% / 0.00);
-  --shadow-2xl: 0px 2px 0px 0px hsl(221.2 83.2% 53.3% / 0.00);
 }
 
 @layer base {
+  input::placeholder,
+  textarea::placeholder {
+    color: #9ca3af;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
   * {
     @apply border-border;
   }
