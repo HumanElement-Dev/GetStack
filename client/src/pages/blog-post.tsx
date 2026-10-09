@@ -66,6 +66,18 @@ export default function BlogPost() {
                   </h3>
                 );
               }
+              if (block.type === "link") {
+                return (
+                  <p key={i}>
+                    <Link
+                      href={block.href}
+                      className="text-primary underline underline-offset-4 hover:text-blue-600 transition-colors"
+                    >
+                      {block.text}
+                    </Link>
+                  </p>
+                );
+              }
               if (block.type === "ul") {
                 return (
                   <ul key={i} className="list-disc pl-6 space-y-1.5 text-muted-foreground">
