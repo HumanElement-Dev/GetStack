@@ -5,6 +5,13 @@ Production domain: [gtstk.dev](https://gtstk.dev)
 
 ---
 
+## Unreleased
+
+### Changed
+- **WordPress plugin results** — Logged-out scans now show the full detected plugin list. The free sign-in prompt is a separate CTA below the list, and signing in returns users to their scan.
+
+---
+
 ## v3.8.10
 
 ### Added
