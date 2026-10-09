@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import ScanEngine from "@/components/scan-engine";
 import type { Plugin, ThemeInfo, WixInfo, ShopifyInfo, SquarespaceInfo, WebflowInfo, JoomlaInfo, DrupalInfo, WordPressVulnerabilityResult } from "@shared/schema";
@@ -41,6 +41,86 @@ const iconMap: Record<string, LucideIcon> = {
   'database': Database,
   'slider': Image,
 };
+
+type WordPressPluginDirectoryInfo = {
+  icons?: Record<string, string>;
+};
+
+const pluginDirectoryIconRequests = new Map<string, Promise<string | null>>();
+
+function getPluginDirectoryIconUrl(slug: string): Promise<string | null> {
+  const cachedRequest = pluginDirectoryIconRequests.get(slug);
+  if (cachedRequest) return cachedRequest;
+
+  const params = new URLSearchParams({
+    action: "plugin_information",
+    "request[slug]": slug,
+    "request[fields][icons]": "1",
+  });
+
+  const request = fetch(`https://api.wordpress.org/plugins/info/1.2/?${params.toString()}`)
+    .then(async (response): Promise<string | null> => {
+      if (!response.ok) return null;
+
+      const pluginInfo = await response.json() as WordPressPluginDirectoryInfo;
+      const iconUrl = pluginInfo.icons?.["2x"] || pluginInfo.icons?.["1x"];
+      return iconUrl?.startsWith("https://ps.w.org/") ? iconUrl : null;
+    })
+    .catch(() => null);
+
+  pluginDirectoryIconRequests.set(slug, request);
+  return request;
+}
+
+function PluginDirectoryIcon({ plugin }: { plugin: Plugin }) {
+  const [iconUrl, setIconUrl] = useState<string | null>(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageFailed, setImageFailed] = useState(false);
+  const FallbackIcon = iconMap[plugin.icon] || Puzzle;
+
+  useEffect(() => {
+    let cancelled = false;
+    setIconUrl(null);
+    setImageLoaded(false);
+    setImageFailed(false);
+
+    getPluginDirectoryIconUrl(plugin.slug).then((url) => {
+      if (!cancelled) setIconUrl(url);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [plugin.slug]);
+
+  return (
+    <div
+      className="relative flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center text-white font-semibold overflow-hidden"
+      style={{ backgroundColor: plugin.color }}
+      data-testid={`plugin-icon-${plugin.slug}`}
+    >
+      {(!iconUrl || !imageLoaded || imageFailed) && (
+        <FallbackIcon className="w-5 h-5" data-icon={plugin.icon} aria-hidden="true" />
+      )}
+      {iconUrl && !imageFailed && (
+        <img
+          src={iconUrl}
+          alt=""
+          aria-hidden="true"
+          className={`absolute inset-0 h-full w-full object-contain p-1 transition-opacity ${imageLoaded ? "opacity-100" : "opacity-0"}`}
+          loading="lazy"
+          referrerPolicy="no-referrer"
+          onLoad={() => setImageLoaded(true)}
+          onError={() => {
+            setImageFailed(true);
+            setImageLoaded(false);
+          }}
+          data-testid={`plugin-directory-icon-${plugin.slug}`}
+        />
+      )}
+    </div>
+  );
+}
 
 export interface DetectionResult {
   id: string;
@@ -859,15 +939,7 @@ export default function ResultsDisplay({ result, isLoading, compact = false, sca
                                 style={isChild ? { borderLeftColor: plugin.color } : {}}
                                 data-testid={`plugin-${plugin.slug}`}
                               >
-                                <div 
-                                  className="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center text-white font-semibold"
-                                  style={{ backgroundColor: plugin.color }}
-                                >
-                                  {(() => {
-                                    const IconComponent = iconMap[plugin.icon] || Puzzle;
-                                    return <IconComponent className="w-5 h-5" data-icon={plugin.icon} />;
-                                  })()}
-                                </div>
+                                <PluginDirectoryIcon plugin={plugin} />
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-start justify-between gap-2">
                                     <div className="flex-1">
