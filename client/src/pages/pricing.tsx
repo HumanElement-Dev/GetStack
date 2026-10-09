@@ -22,9 +22,9 @@ const FEATURES_FREE = [
 
 const FEATURES_PREMIUM = [
   "Everything in Free",
-  "Full dashboard access",
-  "Save & monitor up to 100 sites",
-  "Detection history & tracking",
+  "A dashboard for your website research",
+  "Save and revisit up to 100 sites",
+  "Detection history for saved sites",
   "Priority support",
 ];
 
@@ -136,8 +136,8 @@ export default function Pricing() {
   return (
     <div className="min-h-screen bg-background text-foreground font-sans">
       <Helmet>
-        <title>Pricing - GetStack</title>
-        <meta name="description" content="GetStack is free to use with no account needed. Upgrade to premium for site monitoring, detection history, and unlimited saved sites." />
+        <title>Pricing for Client Audits &amp; Pitch Prep — GetStack</title>
+        <meta name="description" content="GetStack helps agencies, freelancers, and developers prepare for client pitches and website audits. Detect a site's technology for free, or save up to 100 sites with Premium." />
       </Helmet>
       <Header />
       <main className="py-16 px-4 sm:px-6 lg:px-8">
@@ -158,9 +158,12 @@ export default function Pricing() {
 
           {/* Heading */}
           <div className="text-center mb-14">
+            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-primary mb-3">
+              Website research, ready when you are
+            </p>
             <h1 className="text-4xl sm:text-5xl font-bold mb-4">Simple, honest pricing</h1>
             <p className="text-lg text-muted-foreground">
-              The public detection tool is always free. Upgrade for a full dashboard.
+              Get the context you need before the pitch, the audit, and the call.
             </p>
           </div>
 
@@ -216,7 +219,7 @@ export default function Pricing() {
                   <span className="text-muted-foreground ml-1">/ month</span>
                 </div>
                 <CardDescription className="mt-2">
-                  Full dashboard, site monitoring, and detection history.
+                  Everything you need before the pitch, the audit, and the call.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -257,38 +260,67 @@ export default function Pricing() {
                       : "Sign in to Upgrade"}
                   </Button>
                 )}
+                <p className="text-center text-xs leading-relaxed text-muted-foreground">
+                  Payments securely processed by Stripe. Cancel anytime.
+                </p>
               </CardContent>
             </Card>
           </div>
+
+          {/* Who it's for */}
+          <section className="mt-16" aria-labelledby="who-its-for">
+            <div className="mb-6 text-center">
+              <h2 id="who-its-for" className="text-2xl font-bold">Who it’s for</h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Less guesswork before you talk shop.
+              </p>
+            </div>
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="rounded-lg border bg-card p-5">
+                <h3 className="font-semibold mb-2">Agencies</h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  Walk into a pitch knowing what a prospect’s site is built with.
+                </p>
+              </div>
+              <div className="rounded-lg border bg-card p-5">
+                <h3 className="font-semibold mb-2">Freelancers</h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  Check a client’s current setup before scoping the next job.
+                </p>
+              </div>
+              <div className="rounded-lg border bg-card p-5">
+                <h3 className="font-semibold mb-2">Developers</h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  Get a quick read on a site’s stack before an audit or handoff.
+                </p>
+              </div>
+            </div>
+          </section>
 
           {/* Feature comparison callouts */}
           <div className="grid md:grid-cols-3 gap-6 mt-16">
             <div className="text-center p-5">
               <LayoutDashboard className="w-8 h-8 text-primary mx-auto mb-3" />
-              <h3 className="font-semibold mb-1">Personal Dashboard</h3>
+              <h3 className="font-semibold mb-1">Prepared calls</h3>
               <p className="text-sm text-muted-foreground">
-                Your own space to run analyses and track results.
+                Bring a clearer picture of a prospect’s website to the conversation.
               </p>
             </div>
             <div className="text-center p-5">
               <Globe className="w-8 h-8 text-primary mx-auto mb-3" />
-              <h3 className="font-semibold mb-1">100 Saved Sites</h3>
+              <h3 className="font-semibold mb-1">Organized client research</h3>
               <p className="text-sm text-muted-foreground">
-                Pin and monitor up to 100 websites from your dashboard.
+                Keep up to 100 saved sites together in your dashboard.
               </p>
             </div>
             <div className="text-center p-5">
               <History className="w-8 h-8 text-primary mx-auto mb-3" />
-              <h3 className="font-semibold mb-1">Detection History</h3>
+              <h3 className="font-semibold mb-1">Revisit scan history</h3>
               <p className="text-sm text-muted-foreground">
-                Track how sites change over time with full history.
+                Return to previous detections when a client conversation picks up again.
               </p>
             </div>
           </div>
-
-          <p className="text-center text-sm text-muted-foreground mt-10">
-            Cancel anytime. No hidden fees. Payments are securely processed by Stripe.
-          </p>
         </div>
       </main>
       <Footer />

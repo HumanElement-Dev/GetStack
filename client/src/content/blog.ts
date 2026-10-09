@@ -17,7 +17,7 @@ export const articles: Article[] = [
   {
     slug: "how-to-tell-if-a-website-is-built-on-wordpress",
     title: "How to Tell If a Website Is Built on WordPress",
-    date: "2026-10-09",
+    date: "2026-06-15",
     excerpt:
       "Spot the public clues that can identify WordPress, learn where to check page source and URLs, and understand why one signal alone is never proof.",
     content: [
@@ -71,7 +71,7 @@ export const articles: Article[] = [
   {
     slug: "how-to-find-what-shopify-theme-a-store-is-using",
     title: "How to Find Out What Shopify Theme a Store Is Using",
-    date: "2026-10-09",
+    date: "2026-07-15",
     excerpt:
       "Learn how to inspect a Shopify storefront for theme clues, what a detector can reveal, and why custom themes may not have a reliable public name.",
     content: [
@@ -132,7 +132,7 @@ export const articles: Article[] = [
   {
     slug: "how-to-see-what-plugins-a-wordpress-site-is-running",
     title: "How to See What Plugins a WordPress Site Is Running",
-    date: "2026-10-09",
+    date: "2026-09-15",
     excerpt:
       "Find public clues to WordPress plugins, understand the limits of browser-based detection, and distinguish visible files from a confirmed active plugin list.",
     content: [

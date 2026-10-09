@@ -5,7 +5,8 @@ import Footer from "@/components/footer";
 import { articles } from "@/content/blog";
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", {
+  const [year, month, day] = iso.split("-").map(Number);
+  return new Date(year, month - 1, day).toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -31,7 +32,9 @@ export default function Blog() {
           </p>
 
           <div className="divide-y divide-border">
-            {articles.map((article) => (
+            {[...articles]
+              .sort((a, b) => b.date.localeCompare(a.date))
+              .map((article) => (
               <article key={article.slug} className="py-8 first:pt-0">
                 <Link href={`/blog/${article.slug}`}>
                   <h2 className="text-xl font-semibold text-foreground hover:text-primary transition-colors cursor-pointer mb-2">
@@ -47,7 +50,7 @@ export default function Blog() {
                   Read more →
                 </Link>
               </article>
-            ))}
+              ))}
           </div>
         </div>
       </main>
