@@ -63,7 +63,10 @@ function getPluginDirectoryIconUrl(slug: string): Promise<string | null> {
       if (!response.ok) return null;
 
       const pluginInfo = await response.json() as WordPressPluginDirectoryInfo;
-      const iconUrl = pluginInfo.icons?.["2x"] || pluginInfo.icons?.["1x"];
+      const iconUrl = pluginInfo.icons?.svg
+        || pluginInfo.icons?.["2x"]
+        || pluginInfo.icons?.["1x"]
+        || pluginInfo.icons?.default;
       return iconUrl?.startsWith("https://ps.w.org/") ? iconUrl : null;
     })
     .catch(() => null);
