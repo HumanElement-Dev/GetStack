@@ -120,13 +120,19 @@ export default function Detect() {
               onScanStart={setScanDomain}
             />
           </div>
-
-          {/* Results Display */}
-          <ResultsDisplay result={result} isLoading={isLoading} scanDomain={scanDomain} gateDetails />
-
-          {/* Feature Section - only show when no results */}
-          {!result && <FeatureSection />}
         </div>
+
+        {/* Results Display */}
+        <div className="w-full max-w-[1200px] mx-auto">
+          <ResultsDisplay result={result} isLoading={isLoading} scanDomain={scanDomain} gateDetails />
+        </div>
+
+        {/* Feature Section - only show when no results */}
+        {!result && (
+          <div className="max-w-2xl mx-auto">
+            <FeatureSection />
+          </div>
+        )}
       </main>
 
       <Footer />
