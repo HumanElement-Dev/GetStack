@@ -1,165 +1,108 @@
-import { Layers, CheckCircle, AlertTriangle, HelpCircle, Clock, Puzzle } from "lucide-react";
+import { ChevronRight, Layers, Palette, Puzzle, type LucideIcon } from "lucide-react";
 import { SiteIdentityCard, type DetectionResult } from "@/components/results-display";
-import { NetworkSummaryCard } from "@/components/network-details-card";
+import { NetworkSummaryCards } from "@/components/network-details-card";
 
 interface DashboardViewProps {
   result: DetectionResult;
   site?: { domain: string; name?: string | null };
+  onNavigate: (view: string) => void;
 }
 
-function formatScanned(iso: string) {
-  const date = new Date(iso);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  if (diffMins < 1) return "Just now";
-  if (diffMins < 60) return `${diffMins}m ago`;
-  const diffHours = Math.floor(diffMins / 60);
-  if (diffHours < 24) return `${diffHours}h ago`;
-  const diffDays = Math.floor(diffHours / 24);
-  if (diffDays < 7) return `${diffDays}d ago`;
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+function detectPlatform(result: DetectionResult): string {
+  if (result.isWordPress) return "WordPress";
+  if (result.wixInfo) return "Wix";
+  if (result.shopifyInfo) return "Shopify";
+  if (result.squarespaceInfo) return "Squarespace";
+  if (result.webflowInfo || result.isWebflow) return "Webflow";
+  if (result.joomlaInfo) return "Joomla";
+  if (result.drupalInfo) return "Drupal";
+  return result.cmsType || "Unknown";
 }
 
-function detectPlatform(result: DetectionResult): { label: string; color: string; bg: string } {
-  if (result.isWordPress) return { label: "WordPress", color: "text-blue-700", bg: "bg-blue-50 border-blue-200" };
-  if (result.wixInfo) return { label: "Wix", color: "text-purple-700", bg: "bg-purple-50 border-purple-200" };
-  if (result.shopifyInfo) return { label: "Shopify", color: "text-green-700", bg: "bg-green-50 border-green-200" };
-  if (result.squarespaceInfo) return { label: "Squarespace", color: "text-gray-700", bg: "bg-gray-50 border-gray-200" };
-  if (result.webflowInfo || result.isWebflow) return { label: "Webflow", color: "text-indigo-700", bg: "bg-indigo-50 border-indigo-200" };
-  if (result.joomlaInfo) return { label: "Joomla", color: "text-orange-700", bg: "bg-orange-50 border-orange-200" };
-  if (result.drupalInfo) return { label: "Drupal", color: "text-blue-800", bg: "bg-blue-50 border-blue-200" };
-  if (result.cmsType) return { label: result.cmsType, color: "text-foreground", bg: "bg-muted border-border" };
-  return { label: "Unknown", color: "text-muted-foreground", bg: "bg-muted border-border" };
-}
-
-function VersionStatus({ result }: { result: DetectionResult }) {
-  const status = result.wordPressVersionStatus;
-  const version = result.wordPressVersion;
-
-  if (!result.isWordPress) {
-    return (
-      <div className="flex items-center gap-2">
-        <HelpCircle className="w-5 h-5 text-muted-foreground/40" />
-        <span className="text-sm text-muted-foreground">N/A</span>
-      </div>
-    );
-  }
-
-  if (status === "current") {
-    return (
-      <div className="flex items-center gap-2">
-        <CheckCircle className="w-5 h-5 text-green-500" />
-        <div>
-          <span className="text-sm font-medium text-green-700">Up to date</span>
-          {version && <p className="text-xs text-muted-foreground">v{version}</p>}
-        </div>
-      </div>
-    );
-  }
-
-  if (status === "outdated") {
-    return (
-      <div className="flex items-center gap-2">
-        <AlertTriangle className="w-5 h-5 text-amber-500" />
-        <div>
-          <span className="text-sm font-medium text-amber-700">Outdated</span>
-          {version && <p className="text-xs text-muted-foreground">v{version}</p>}
-        </div>
-      </div>
-    );
-  }
-
+function SummaryLinkCard({
+  title,
+  summary,
+  icon: Icon,
+  onClick,
+  testId,
+}: {
+  title: string;
+  summary: string;
+  icon: LucideIcon;
+  onClick: () => void;
+  testId: string;
+}) {
   return (
-    <div className="flex items-center gap-2">
-      <HelpCircle className="w-5 h-5 text-muted-foreground/50" />
-      <div>
-        <span className="text-sm font-medium text-muted-foreground">Unknown</span>
-        {version && <p className="text-xs text-muted-foreground">v{version}</p>}
-      </div>
-    </div>
+    <button
+      type="button"
+      onClick={onClick}
+      className="group flex min-h-24 w-full items-start justify-between gap-3 rounded-xl border border-border bg-card p-4 text-left transition-colors hover:border-primary/40 hover:bg-primary/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+      data-testid={testId}
+    >
+      <span className="min-w-0">
+        <span className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+          {title}
+        </span>
+        <span className="mt-2 block break-words text-sm font-semibold text-foreground">{summary}</span>
+      </span>
+      <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+    </button>
   );
 }
 
-export default function DashboardView({ result, site }: DashboardViewProps) {
+export default function DashboardView({ result, site, onNavigate }: DashboardViewProps) {
+  const title = site?.name || site?.domain || result.domain;
   const platform = detectPlatform(result);
-  const pluginCount =
-    result.plugins?.length ??
-    (result.pluginCount ? parseInt(result.pluginCount, 10) : null);
-
-  const domainLabel = site?.name || site?.domain || result.domain;
+  const versionSummary = result.isWordPress
+    ? result.wordPressVersion
+      ? `v${result.wordPressVersion}${result.wordPressVersionStatus ? ` · ${result.wordPressVersionStatus}` : ""}`
+      : "Version not exposed"
+    : "Version not detected";
+  const reportedPluginCount = result.pluginCount ? Number.parseInt(result.pluginCount, 10) : Number.NaN;
+  const pluginCount = result.plugins?.length
+    ? result.plugins.length
+    : Number.isFinite(reportedPluginCount) ? reportedPluginCount : null;
+  const pluginSummary = pluginCount !== null
+    ? `${pluginCount} plugin${pluginCount === 1 ? "" : "s"} detected`
+    : result.isWordPress ? "Plugin details unavailable" : "Not applicable";
+  const themeSummary = result.themeInfo?.name || result.theme || result.shopifyInfo?.themeName || "No theme detected";
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="max-w-3xl space-y-6">
       <SiteIdentityCard
-        result={{ ...result, siteTitle: result.siteTitle || site?.name || domainLabel }}
+        result={{ ...result, siteTitle: result.siteTitle || title }}
         compact
       />
 
-      {/* Summary strip */}
-      <div className="grid grid-cols-2 gap-3">
-
-        {/* Platform */}
-        <div className={`rounded-xl border p-4 ${platform.bg}`}>
-          <div className="flex items-center gap-2 mb-2">
-            <Layers className={`w-4 h-4 ${platform.color}`} />
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Platform</span>
-          </div>
-          <p className={`text-lg font-bold ${platform.color}`}>{platform.label}</p>
-          {result.isWordPress && result.wordPressVersion && (
-            <p className="text-xs text-muted-foreground mt-0.5">v{result.wordPressVersion}</p>
-          )}
-        </div>
-
-        {/* Version status */}
-        <div className="rounded-xl border border-border bg-card p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <CheckCircle className="w-4 h-4 text-muted-foreground" />
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Version Status</span>
-          </div>
-          <VersionStatus result={result} />
-        </div>
-
-        <NetworkSummaryCard domain={result.domain} />
-
-        {/* Last scanned */}
-        <div className="rounded-xl border border-border bg-card p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Clock className="w-4 h-4 text-muted-foreground" />
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Last Scanned</span>
-          </div>
-          <p className="text-lg font-bold text-foreground">{formatScanned(result.createdAt)}</p>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {new Date(result.createdAt).toLocaleDateString("en-US", {
-              month: "short", day: "numeric", year: "numeric",
-            })}
-          </p>
-        </div>
-
-        {/* Plugins */}
-        <div className="rounded-xl border border-border bg-card p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Puzzle className="w-4 h-4 text-muted-foreground" />
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Plugins</span>
-          </div>
-          {pluginCount !== null && pluginCount > 0 ? (
-            <>
-              <p className="text-lg font-bold text-foreground">{pluginCount}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">detected</p>
-            </>
-          ) : result.isWordPress ? (
-            <>
-              <p className="text-lg font-bold text-muted-foreground">—</p>
-              <p className="text-xs text-muted-foreground mt-0.5">none detected</p>
-            </>
-          ) : (
-            <>
-              <p className="text-lg font-bold text-muted-foreground">N/A</p>
-              <p className="text-xs text-muted-foreground mt-0.5">WordPress only</p>
-            </>
-          )}
-        </div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <SummaryLinkCard
+          title="Platform & version"
+          summary={`${platform} · ${versionSummary}`}
+          icon={Layers}
+          onClick={() => onNavigate("cms-stack")}
+          testId="dashboard-platform-summary"
+        />
+        <SummaryLinkCard
+          title="Plugins"
+          summary={pluginSummary}
+          icon={Puzzle}
+          onClick={() => onNavigate("plugins")}
+          testId="dashboard-plugins-summary"
+        />
+        <SummaryLinkCard
+          title="Theme"
+          summary={themeSummary}
+          icon={Palette}
+          onClick={() => onNavigate("theme")}
+          testId="dashboard-theme-summary"
+        />
       </div>
+
+      <section className="space-y-3" aria-labelledby="dashboard-network-heading">
+        <h2 id="dashboard-network-heading" className="text-sm font-semibold text-foreground">Network</h2>
+        <NetworkSummaryCards domain={result.domain} onNavigate={onNavigate} />
+      </section>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Globe, Server, Wifi, type LucideIcon } from "lucide-react";
 import type { NetworkDetails } from "@shared/schema";
 import { useUserTier } from "@/hooks/use-tier";
 
@@ -22,55 +22,84 @@ function useNetworkDetails(domain: string) {
   return { isPremium, ...query };
 }
 
-export function NetworkSummaryCard({ domain }: { domain: string }) {
-  const { isPremium, data, isLoading, isError } = useNetworkDetails(domain);
-  if (!isPremium) return null;
-
+function NetworkSummaryCardItem({
+  label,
+  summary,
+  icon: Icon,
+  onClick,
+  testId,
+}: {
+  label: string;
+  summary: string;
+  icon: LucideIcon;
+  onClick: () => void;
+  testId: string;
+}) {
   return (
-    <section className="rounded-xl border border-border bg-card p-4" data-testid="network-summary-card">
-      <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">Network</p>
-      {isLoading ? (
-        <div className="h-6 w-40 animate-pulse rounded bg-muted" />
-      ) : isError || !data ? (
-        <p className="text-sm text-muted-foreground">Network information unavailable</p>
-      ) : (
-        <>
-          <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">IP address</p>
-          {data.addresses[0] ? (
-            <p className="break-all font-mono text-sm font-semibold text-foreground">{data.addresses[0].address}</p>
-          ) : (
-            <p className="text-sm text-muted-foreground">No IP address found</p>
-          )}
-          {data.dnsProvider && (
-            <p className="mt-1 text-xs text-muted-foreground">DNS: {data.dnsProvider}</p>
-          )}
-        </>
-      )}
-    </section>
+    <button
+      type="button"
+      onClick={onClick}
+      className="group min-h-24 rounded-xl border border-border bg-card p-4 text-left transition-colors hover:border-primary/40 hover:bg-primary/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+      data-testid={testId}
+    >
+      <span className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        <Icon className="h-4 w-4" aria-hidden="true" />
+        {label}
+      </span>
+      <span className="mt-2 block break-all font-mono text-sm font-semibold text-foreground">{summary}</span>
+    </button>
   );
 }
 
-export function NetworkDetailsCard({ domain }: { domain: string }) {
+export function NetworkSummaryCards({ domain, onNavigate }: { domain: string; onNavigate: (view: string) => void }) {
+  const { isPremium, data, isLoading, isError } = useNetworkDetails(domain);
+  if (!isPremium) return null;
+
+  const cards = isLoading || isError || !data
+    ? [
+        { label: "Network", summary: isLoading ? "Checking…" : "Unavailable", icon: Globe, view: "infrastructure" },
+        { label: "IP address", summary: isLoading ? "Checking…" : "Unavailable", icon: Server, view: "infrastructure" },
+        { label: "DNS", summary: isLoading ? "Checking…" : "Unavailable", icon: Wifi, view: "dns" },
+      ]
+    : [
+        { label: "Network", summary: data.networkOwner || "Not identified", icon: Globe, view: "infrastructure" },
+        { label: "IP address", summary: data.addresses[0]?.address || "Not found", icon: Server, view: "infrastructure" },
+        { label: "DNS", summary: data.dnsProvider || `${data.dnsRecords.length} records`, icon: Wifi, view: "dns" },
+      ];
+
+  return (
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3" data-testid="dashboard-network-summary">
+      {cards.map((card) => (
+        <NetworkSummaryCardItem
+          key={card.label}
+          label={card.label}
+          summary={card.summary}
+          icon={card.icon}
+          onClick={() => onNavigate(card.view)}
+          testId={`dashboard-${card.label.toLowerCase().replace(/\s+/g, "-")}-summary`}
+        />
+      ))}
+    </div>
+  );
+}
+
+export function InfrastructureDetailsCard({ domain }: { domain: string }) {
   const { isPremium, data, isLoading, isError } = useNetworkDetails(domain);
   if (!isPremium) return null;
 
   return (
     <section className="rounded-xl border border-border bg-card p-5 sm:p-6" data-testid="premium-network-details">
-      <h3 className="text-base font-semibold text-foreground">Network and DNS details</h3>
+      <h3 className="text-base font-semibold text-foreground">Infrastructure details</h3>
       {isLoading ? (
-        <p className="mt-2 text-sm text-muted-foreground">Looking up DNS and network information…</p>
+        <p className="mt-2 text-sm text-muted-foreground">Looking up infrastructure information…</p>
       ) : isError || !data ? (
-        <p className="mt-2 text-sm text-muted-foreground">Network details are unavailable for this domain right now.</p>
+        <p className="mt-2 text-sm text-muted-foreground">Infrastructure details are unavailable for this domain right now.</p>
       ) : (
         <div className="mt-4 space-y-5 text-sm">
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Network owner</p>
               <p className="mt-1 break-words text-foreground">{data.networkOwner || "Not identified"}</p>
-            </div>
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">DNS provider</p>
-              <p className="mt-1 text-foreground">{data.dnsProvider || "Not identified from nameservers"}</p>
             </div>
             <div className="sm:col-span-2">
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">IP addresses</p>
@@ -85,6 +114,51 @@ export function NetworkDetailsCard({ domain }: { domain: string }) {
                 </ul>
               ) : <p className="mt-1 text-foreground">No A or AAAA records found</p>}
             </div>
+          </div>
+
+          <div>
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Redirects</p>
+            {data.redirects.length ? (
+              <ol className="mt-1 space-y-1">
+                {data.redirects.map((redirect, index) => (
+                  <li key={`${redirect.status}-${redirect.from}-${index}`} className="break-all text-xs text-foreground">
+                    <span className="mr-2 rounded bg-muted px-1.5 py-0.5">{redirect.status}</span>
+                    {redirect.from} <ArrowRight className="mx-1 inline h-3 w-3" aria-hidden="true" /> {redirect.to}
+                  </li>
+                ))}
+              </ol>
+            ) : <p className="mt-1 text-foreground">No HTTP redirects observed</p>}
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+export function DnsDetailsCard({ domain }: { domain: string }) {
+  const { isPremium, data, isLoading, isError } = useNetworkDetails(domain);
+  if (!isPremium) return null;
+
+  return (
+    <section className="rounded-xl border border-border bg-card p-5 sm:p-6" data-testid="premium-dns-details">
+      <h3 className="text-base font-semibold text-foreground">DNS details</h3>
+      {isLoading ? (
+        <p className="mt-2 text-sm text-muted-foreground">Looking up DNS information…</p>
+      ) : isError || !data ? (
+        <p className="mt-2 text-sm text-muted-foreground">DNS details are unavailable for this domain right now.</p>
+      ) : (
+        <div className="mt-4 space-y-5 text-sm">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">DNS provider</p>
+              <p className="mt-1 text-foreground">{data.dnsProvider || "Not identified from nameservers"}</p>
+            </div>
+            {data.mailProvider && (
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Email provider</p>
+                <p className="mt-1 text-foreground">{data.mailProvider}</p>
+              </div>
+            )}
             <div className="sm:col-span-2">
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Nameservers</p>
               {data.nameservers.length ? (
@@ -95,12 +169,6 @@ export function NetworkDetailsCard({ domain }: { domain: string }) {
                 </ul>
               ) : <p className="mt-1 text-foreground">No nameservers found</p>}
             </div>
-            {data.mailProvider && (
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Email provider</p>
-                <p className="mt-1 text-foreground">{data.mailProvider}</p>
-              </div>
-            )}
           </div>
 
           <div>
@@ -116,20 +184,6 @@ export function NetworkDetailsCard({ domain }: { domain: string }) {
                 ))}
               </ul>
             ) : <p className="mt-1 text-foreground">No A, AAAA, MX, or CNAME records found</p>}
-          </div>
-
-          <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Redirects</p>
-            {data.redirects.length ? (
-              <ol className="mt-1 space-y-1">
-                {data.redirects.map((redirect, index) => (
-                  <li key={`${redirect.status}-${redirect.from}-${index}`} className="break-all text-xs text-foreground">
-                    <span className="mr-2 rounded bg-muted px-1.5 py-0.5">{redirect.status}</span>
-                    {redirect.from} <ArrowRight className="mx-1 inline h-3 w-3" aria-hidden="true" /> {redirect.to}
-                  </li>
-                ))}
-              </ol>
-            ) : <p className="mt-1 text-foreground">No HTTP redirects observed</p>}
           </div>
         </div>
       )}

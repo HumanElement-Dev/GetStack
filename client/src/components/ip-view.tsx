@@ -1,5 +1,5 @@
 import { Globe } from "lucide-react";
-import { NetworkDetailsCard } from "@/components/network-details-card";
+import { InfrastructureDetailsCard } from "@/components/network-details-card";
 
 interface IpViewProps {
   domain: string | null | undefined;
@@ -23,7 +23,7 @@ export default function IpView({ domain }: IpViewProps) {
         <h2 className="text-xl font-semibold text-foreground">IP & Infrastructure</h2>
         <p className="text-sm text-muted-foreground mt-0.5">{cleanDomain}</p>
       </div>
-      <NetworkDetailsCard domain={cleanDomain} />
+      <InfrastructureDetailsCard domain={cleanDomain} />
     </div>
   );
 }

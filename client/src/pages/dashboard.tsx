@@ -5,6 +5,8 @@ import ResultsDisplay, { type DetectionResult } from "@/components/results-displ
 import ThemeView from "@/components/theme-view";
 import DashboardView from "@/components/dashboard-view";
 import IpView from "@/components/ip-view";
+import DnsView from "@/components/dns-view";
+import PluginsView from "@/components/plugins-view";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useUserTier } from "@/hooks/use-tier";
@@ -185,10 +187,16 @@ export default function Dashboard() {
             <main className="flex-1 p-4 md:p-8 overflow-auto">
               {siteView === "infrastructure" ? (
                 <IpView domain={result?.domain ?? selectedSite?.domain} />
+              ) : siteView === "dns" ? (
+                <DnsView domain={result?.domain ?? selectedSite?.domain} />
+              ) : siteView === "plugins" ? (
+                <PluginsView result={result} />
               ) : siteView === "theme" ? (
                 <ThemeView result={result} />
               ) : siteView === "dashboard" && result ? (
-                <DashboardView result={result} site={selectedSite ?? undefined} />
+                <DashboardView result={result} site={selectedSite ?? undefined} onNavigate={setSiteView} />
+              ) : siteView === "cms-stack" ? (
+                <ResultsDisplay result={result} isLoading={isLoading} compact={true} />
               ) : selectedSite && !result && !isLoading ? (
                 <SiteOverview site={selectedSite} />
               ) : (

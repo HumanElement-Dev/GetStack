@@ -16,12 +16,12 @@ const NAV_SECTIONS = [
   [
     { id: "cms-stack", icon: Layers, label: "CMS Stack", enabled: true },
     { id: "theme", icon: Palette, label: "Theme", enabled: true },
-    { id: "plugins", icon: Plug, label: "Plugins", enabled: false },
+    { id: "plugins", icon: Plug, label: "Plugins", enabled: true },
   ],
   [
     { id: "hosting", icon: Globe, label: "Hosting", enabled: false },
     { id: "infrastructure", icon: Server, label: "IP & Infrastructure", enabled: true },
-    { id: "dns", icon: Wifi, label: "DNS", enabled: false },
+    { id: "dns", icon: Wifi, label: "DNS", enabled: true },
   ],
   [
     { id: "frontend", icon: Code2, label: "CSS / Frontend", enabled: false },
