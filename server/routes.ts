@@ -282,6 +282,34 @@ function decodeHtmlText(value: string): string {
     .replace(/&gt;/gi, ">");
 }
 
+function extractSiteDescription(html: string): string | null {
+  const descriptions = new Map<string, string>();
+  const metaTags = html.match(/<meta\b[^>]*>/gi) ?? [];
+
+  for (const tag of metaTags) {
+    const attributes = new Map<string, string>();
+    const attributePattern = /([^\s=/>]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/g;
+    let match: RegExpExecArray | null;
+    while ((match = attributePattern.exec(tag)) !== null) {
+      attributes.set(match[1].toLowerCase(), match[2] ?? match[3] ?? match[4] ?? "");
+    }
+
+    const key = (attributes.get("name") || attributes.get("property") || "").toLowerCase();
+    const value = attributes.get("content")?.trim();
+    if (value && !descriptions.has(key)) descriptions.set(key, value);
+  }
+
+  for (const key of ["description", "og:description", "twitter:description"]) {
+    const value = descriptions.get(key);
+    if (!value) continue;
+
+    const normalized = decodeHtmlText(value).replace(/\s+/g, " ").trim();
+    if (normalized) return normalized.length > 320 ? `${normalized.slice(0, 317).trimEnd()}...` : normalized;
+  }
+
+  return null;
+}
+
 function formatCmsName(cmsType: string): string {
   const names: Record<string, string> = {
     wordpress: "WordPress",
@@ -583,6 +611,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         let plugins: Plugin[] = [];
         let technologies: string[] = [];
         let siteTitle: string | null = null;
+        let siteDescription: string | null = null;
         let faviconUrl: string | null = null;
         const pluginVersions = new Map<string, string>();
         let wpScore = 0;
@@ -613,6 +642,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
 
             const content = await fullResponse.text();
+            siteDescription = extractSiteDescription(content);
 
             const genericTitleMatch = content.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
             if (genericTitleMatch?.[1]) {
@@ -2056,6 +2086,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const detectionRequest = await storage.createDetectionRequest({
           domain: normalizedDomain,
           siteTitle,
+          siteDescription,
           faviconUrl,
           cmsType,
           isWordPress,
@@ -2083,6 +2114,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           id: detectionRequest.id,
           domain: normalizedDomain,
           siteTitle,
+          siteDescription,
           faviconUrl,
           cmsType,
           isWordPress,

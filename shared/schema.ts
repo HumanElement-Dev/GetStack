@@ -1,7 +1,31 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, boolean, jsonb, integer, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, boolean, jsonb, integer, index, uniqueIndex } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+
+// Preserve existing auth/session tables during Drizzle schema pushes.
+export const users = pgTable("users", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: varchar("email"),
+  firstName: varchar("first_name"),
+  lastName: varchar("last_name"),
+  profileImageUrl: varchar("profile_image_url"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  role: varchar("role", { length: 20 }).notNull().default("user"),
+  stripeCustomerId: varchar("stripe_customer_id"),
+  stripeSubscriptionId: varchar("stripe_subscription_id"),
+}, (table) => [
+  uniqueIndex("users_email_unique").on(table.email),
+]);
+
+export const sessions = pgTable("sessions", {
+  sid: varchar("sid").primaryKey(),
+  sess: jsonb("sess").notNull(),
+  expire: timestamp("expire").notNull(),
+}, (table) => [
+  index("IDX_session_expire").on(table.expire),
+]);
 
 export const userTiers = pgTable("user_tiers", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -155,6 +179,7 @@ export const detectionRequests = pgTable("detection_requests", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   domain: text("domain").notNull(),
   siteTitle: text("site_title"),
+  siteDescription: text("site_description"),
   faviconUrl: text("favicon_url"),
   cmsType: text("cms_type"), // 'wordpress', 'wix', 'shopify', 'squarespace', 'webflow', 'joomla', 'drupal', or null
   isWordPress: boolean("is_wordpress"), // keeping for backward compatibility

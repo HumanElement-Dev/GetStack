@@ -7,7 +7,7 @@ import {
   Zap, Shield, ShieldCheck, FileText, Image, Globe, Code, 
   Rocket, Gauge, HardDrive, Lock, Smartphone, Copy, Check,
   Edit, ArrowRight, Puzzle, CreditCard, FileInput, Database,
-  AlertTriangle, CheckCircle2, ShieldAlert,
+  AlertTriangle, CheckCircle2, ShieldAlert, ExternalLink,
   type LucideIcon
 } from "lucide-react";
 import { Link } from "wouter";
@@ -129,6 +129,7 @@ export interface DetectionResult {
   id: string;
   domain: string;
   siteTitle?: string | null;
+  siteDescription?: string | null;
   faviconUrl?: string | null;
   cmsType?: string | null;
   isWordPress: boolean | null;
@@ -178,10 +179,21 @@ function getResultSiteTitle(result: DetectionResult): string {
     || result.domain;
 }
 
+function getResultSiteDescription(result: DetectionResult): string | null {
+  return result.siteDescription
+    || result.wixInfo?.siteDescription
+    || result.squarespaceInfo?.siteDescription
+    || result.webflowInfo?.siteDescription
+    || result.joomlaInfo?.siteDescription
+    || result.drupalInfo?.siteDescription
+    || null;
+}
+
 export function SiteIdentityCard({ result, compact = false }: SiteIdentityCardProps) {
   const [faviconFailed, setFaviconFailed] = useState(false);
   const [previewFailed, setPreviewFailed] = useState(false);
   const title = getResultSiteTitle(result);
+  const description = getResultSiteDescription(result);
   const siteUrl = `https://${result.domain}`;
   const faviconUrl = result.faviconUrl || `${siteUrl}/favicon.ico`;
   const previewUrl = `https://image.thum.io/get/width/1200/crop/760/noanimate/wait/8/${siteUrl}`;
@@ -224,11 +236,18 @@ export function SiteIdentityCard({ result, compact = false }: SiteIdentityCardPr
             href={siteUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-1 block truncate text-sm text-green-700 underline-offset-4 hover:underline sm:text-base"
+            aria-label={`Open ${siteUrl} in a new tab`}
+            className="mt-1 inline-flex max-w-full items-center gap-1.5 text-sm text-green-700 underline-offset-4 hover:underline sm:text-base"
             data-testid="site-url"
           >
-            {siteUrl}
+            <span className="truncate">{siteUrl}</span>
+            <ExternalLink className="h-4 w-4 shrink-0" aria-hidden="true" />
           </a>
+          {description && (
+            <p className="mt-2 max-w-prose text-sm leading-relaxed text-green-900/80" data-testid="site-description">
+              {description}
+            </p>
+          )}
         </div>
       </div>
     </section>
