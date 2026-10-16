@@ -175,6 +175,16 @@ export const drupalInfoSchema = z.object({
 
 export type DrupalInfo = z.infer<typeof drupalInfoSchema>;
 
+export type NetworkDetails = {
+  addresses: { address: string; family: 4 | 6 }[];
+  networkOwner: string | null;
+  nameservers: string[];
+  dnsProvider: string | null;
+  dnsRecords: { type: string; value: string; priority?: number }[];
+  mailProvider: string | null;
+  redirects: { status: number; from: string; to: string }[];
+};
+
 export const detectionRequests = pgTable("detection_requests", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   domain: text("domain").notNull(),

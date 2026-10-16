@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { lookup as dnsLookup } from "dns/promises";
 import { storage } from "./storage";
+import { getNetworkDetails } from "./network-details";
 import { detectionRequestSchema, type Plugin, type ThemeInfo, type WixInfo, type SquarespaceInfo, type WebflowInfo, type JoomlaInfo, type DrupalInfo, userTiers, pinnedSites } from "@shared/schema";
 import { users } from "@shared/models/auth";
 import { fromZodError } from "zod-validation-error";
@@ -2273,6 +2274,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (err) {
       console.error(`[ip-lookup] DNS error for "${domain}":`, err);
       res.status(404).json({ error: "Could not resolve domain" });
+    }
+  });
+
+  // Network, DNS, and redirect intelligence — premium only
+  app.get("/api/network-details", statsRateLimiter, isAuthenticated, requireTier("premium"), async (req: any, res) => {
+    const input = String(req.query.domain ?? "").trim();
+    if (!input) return res.status(400).json({ error: "domain is required" });
+
+    let hostname: string;
+    try {
+      const url = new URL(/^[a-z][a-z0-9+.-]*:\/\//i.test(input) ? input : `https://${input}`);
+      hostname = url.hostname.toLowerCase().replace(/\.$/, "");
+    } catch {
+      return res.status(400).json({ error: "Please enter a valid public domain" });
+    }
+
+    if (isBlockedDomain(hostname)) {
+      return res.status(400).json({
+        error: "Invalid domain - private IP addresses are not allowed",
+        details: "Please use a public domain name",
+      });
+    }
+
+    try {
+      const details = await getNetworkDetails(hostname, isBlockedDomain);
+      res.json({ domain: hostname, ...details });
+    } catch (error) {
+      console.error(`[network-details] lookup failed for "${hostname}":`, error);
+      res.status(502).json({ error: "Could not retrieve network details" });
     }
   });
 
