@@ -661,16 +661,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
               detectedIndicators.push('WordPress admin-ajax');
             }
             
-            // WordPress theme directory structure
-            if (/wp-content\/themes\/[^\/\s"']+\/style\.css/i.test(content)) {
+            // WordPress theme assets may use bundled/minified filenames instead of style.css.
+            if (/<(?:script|link|img|source)\b[^>]*\b(?:src|href|srcset)=["'][^"']*\/wp-content\/themes\/[^\/\s"']+\/[^"']*["']/i.test(content)) {
               wpScore += 2;
-              detectedIndicators.push('WordPress theme structure');
+              detectedIndicators.push('WordPress theme asset paths');
             }
             
-            // WordPress plugin directory structure  
-            if (/wp-content\/plugins\/[^\/\s"']+\/[^\/\s"']+\.js/i.test(content)) {
+            // Plugin assets may be CSS, images, or nested/bundled files rather than direct .js files.
+            if (/<(?:script|link|img|source)\b[^>]*\b(?:src|href|srcset)=["'][^"']*\/wp-content\/plugins\/[^\/\s"']+\/[^"']*["']/i.test(content)) {
               wpScore += 2;
-              detectedIndicators.push('WordPress plugin structure');
+              detectedIndicators.push('WordPress plugin asset paths');
             }
             
             // WordPress includes
