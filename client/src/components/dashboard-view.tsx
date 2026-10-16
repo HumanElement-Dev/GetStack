@@ -1,5 +1,6 @@
 import { Layers, CheckCircle, AlertTriangle, HelpCircle, Clock, Puzzle } from "lucide-react";
 import { SiteIdentityCard, type DetectionResult } from "@/components/results-display";
+import { NetworkSummaryCard } from "@/components/network-details-card";
 
 interface DashboardViewProps {
   result: DetectionResult;
@@ -118,6 +119,8 @@ export default function DashboardView({ result, site }: DashboardViewProps) {
           </div>
           <VersionStatus result={result} />
         </div>
+
+        <NetworkSummaryCard domain={result.domain} />
 
         {/* Last scanned */}
         <div className="rounded-xl border border-border bg-card p-4">

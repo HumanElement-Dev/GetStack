@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import ScanEngine from "@/components/scan-engine";
-import type { Plugin, ThemeInfo, WixInfo, ShopifyInfo, SquarespaceInfo, WebflowInfo, JoomlaInfo, DrupalInfo, NetworkDetails, WordPressVulnerabilityResult } from "@shared/schema";
+import type { Plugin, ThemeInfo, WixInfo, ShopifyInfo, SquarespaceInfo, WebflowInfo, JoomlaInfo, DrupalInfo, WordPressVulnerabilityResult } from "@shared/schema";
 import { 
   Layout, ShoppingCart, Mail, Search, TrendingUp, 
   Zap, Shield, ShieldCheck, FileText, Image, Globe, Code, 
@@ -189,105 +189,6 @@ function getResultSiteDescription(result: DetectionResult): string | null {
     || null;
 }
 
-function NetworkDetailsCard({ domain }: { domain: string }) {
-  const { isPremium } = useUserTier();
-  const { data, isLoading, isError } = useQuery<NetworkDetails>({
-    queryKey: ["/api/network-details", domain],
-    queryFn: async () => {
-      const response = await fetch(`/api/network-details?domain=${encodeURIComponent(domain)}`);
-      if (!response.ok) throw new Error("Network lookup failed");
-      return response.json();
-    },
-    enabled: isPremium && Boolean(domain),
-    staleTime: 5 * 60 * 1000,
-    retry: false,
-  });
-
-  if (!isPremium) return null;
-
-  return (
-    <div className="mt-5 rounded-xl border border-green-200 bg-white p-4 sm:p-5" data-testid="premium-network-details">
-      <h2 className="text-base font-semibold text-green-950">Network details</h2>
-      {isLoading ? (
-        <p className="mt-2 text-sm text-green-800">Looking up DNS and network information…</p>
-      ) : isError || !data ? (
-        <p className="mt-2 text-sm text-muted-foreground">Network details are unavailable for this domain right now.</p>
-      ) : (
-        <div className="mt-3 space-y-4 text-sm">
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Network owner</p>
-              <p className="mt-1 break-words text-foreground">{data.networkOwner || "Not identified"}</p>
-            </div>
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">DNS provider</p>
-              <p className="mt-1 text-foreground">{data.dnsProvider || "Not identified from nameservers"}</p>
-            </div>
-            <div className="sm:col-span-2">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">IP addresses</p>
-              {data.addresses.length ? (
-                <ul className="mt-1 space-y-1">
-                  {data.addresses.map(({ address, family }) => (
-                    <li key={`${family}-${address}`} className="flex flex-wrap items-center gap-2">
-                      <span className="rounded bg-muted px-1.5 py-0.5 text-xs">IPv{family}</span>
-                      <code className="break-all text-xs text-foreground">{address}</code>
-                    </li>
-                  ))}
-                </ul>
-              ) : <p className="mt-1 text-foreground">No A or AAAA records found</p>}
-            </div>
-            <div className="sm:col-span-2">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Nameservers</p>
-              {data.nameservers.length ? (
-                <ul className="mt-1 space-y-1">
-                  {data.nameservers.map((nameserver) => (
-                    <li key={nameserver} className="break-all font-mono text-xs text-foreground">{nameserver}</li>
-                  ))}
-                </ul>
-              ) : <p className="mt-1 text-foreground">No nameservers found</p>}
-            </div>
-            {data.mailProvider && (
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Email provider</p>
-                <p className="mt-1 text-foreground">{data.mailProvider}</p>
-              </div>
-            )}
-          </div>
-
-          <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">DNS records</p>
-            {data.dnsRecords.length ? (
-              <ul className="mt-1 space-y-1">
-                {data.dnsRecords.map((record, index) => (
-                  <li key={`${record.type}-${record.value}-${index}`} className="flex flex-wrap gap-x-2">
-                    <span className="w-12 shrink-0 font-semibold text-green-800">{record.type}</span>
-                    {record.priority !== undefined && <span className="text-muted-foreground">Priority {record.priority}</span>}
-                    <code className="min-w-0 break-all text-xs text-foreground">{record.value}</code>
-                  </li>
-                ))}
-              </ul>
-            ) : <p className="mt-1 text-foreground">No A, AAAA, MX, or CNAME records found</p>}
-          </div>
-
-          <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Redirects</p>
-            {data.redirects.length ? (
-              <ol className="mt-1 space-y-1">
-                {data.redirects.map((redirect, index) => (
-                  <li key={`${redirect.status}-${redirect.from}-${index}`} className="break-all text-xs text-foreground">
-                    <span className="mr-2 rounded bg-muted px-1.5 py-0.5">{redirect.status}</span>
-                    {redirect.from} <ArrowRight className="mx-1 inline h-3 w-3" aria-hidden="true" /> {redirect.to}
-                  </li>
-                ))}
-              </ol>
-            ) : <p className="mt-1 text-foreground">No HTTP redirects observed</p>}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
 export function SiteIdentityCard({ result, compact = false }: SiteIdentityCardProps) {
   const [faviconFailed, setFaviconFailed] = useState(false);
   const [previewFailed, setPreviewFailed] = useState(false);
@@ -347,7 +248,6 @@ export function SiteIdentityCard({ result, compact = false }: SiteIdentityCardPr
               {description}
             </p>
           )}
-          <NetworkDetailsCard domain={result.domain} />
         </div>
       </div>
     </section>
